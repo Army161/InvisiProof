@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "ProofLoop",
-    "slug": "proofloop-verify",
+    "slug": "proofloop",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
@@ -31,9 +31,18 @@
       "favicon": "./assets/images/newly.png",
       "bundler": "metro"
     },
-    "plugins": ["expo-font", "expo-router", "expo-web-browser", "expo-secure-store"],
+    "plugins": [
+      "expo-font",
+      "expo-router",
+      "expo-web-browser",
+      "expo-secure-store"
+    ],
     "scheme": "proofloop",
-    "experiments": { "typedRoutes": true },
-    "extra": { "router": {} }
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {}
+    }
   }
 }
