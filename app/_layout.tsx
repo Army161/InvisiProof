@@ -14,6 +14,7 @@ import {
 } from '@react-navigation/native';
 import { ThemeProvider, useAppTheme } from '@/contexts/ThemeContext';
 import { WidgetProvider } from '@/contexts/WidgetContext';
+import { AuthProvider } from '@/contexts/AuthContext';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 const DevErrorBoundary = __DEV__
@@ -23,7 +24,7 @@ const DevErrorBoundary = __DEV__
 SplashScreen.preventAutoHideAsync();
 
 export const unstable_settings = {
-  initialRouteName: '(tabs)',
+  initialRouteName: 'index',
 };
 
 function RootLayoutInner() {
@@ -43,6 +44,8 @@ function RootLayoutInner() {
   return (
     <NavThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
       <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       </Stack>
       <SystemBars style="auto" />
@@ -56,11 +59,13 @@ export default function RootLayout() {
     <DevErrorBoundary>
       <SafeAreaProvider>
         <ThemeProvider>
-          <WidgetProvider>
-            <GestureHandlerRootView style={{ flex: 1 }}>
-              <RootLayoutInner />
-            </GestureHandlerRootView>
-          </WidgetProvider>
+          <AuthProvider>
+            <WidgetProvider>
+              <GestureHandlerRootView style={{ flex: 1 }}>
+                <RootLayoutInner />
+              </GestureHandlerRootView>
+            </WidgetProvider>
+          </AuthProvider>
         </ThemeProvider>
       </SafeAreaProvider>
     </DevErrorBoundary>

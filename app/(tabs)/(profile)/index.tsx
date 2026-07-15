@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Modal } from 'react-native';
+import { View, Text, ScrollView, Modal, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -14,14 +14,16 @@ import {
   Info,
   ChevronRight,
   Check,
+  LogOut,
 } from 'lucide-react-native';
 import { useAppTheme } from '@/hooks/useAppTheme';
+import { useAuth } from '@/contexts/AuthContext';
 import type { AppearanceMode } from '@/contexts/ThemeContext';
 import { TYPOGRAPHY, SPACING, RADIUS, SHADOWS } from '@/constants/theme';
 import { InfoCard } from '@/components/InfoCard';
 import { Divider } from '@/components/Divider';
 import { AnimatedPressable } from '@/components/AnimatedPressable';
-import { PrimaryButton } from '@/components/PrimaryButton';
+import { PrimaryButton, SecondaryButton } from '@/components/PrimaryButton';
 
 interface SettingsRowProps {
   icon: React.ComponentType<{ size: number; color: string }>;
@@ -29,10 +31,20 @@ interface SettingsRowProps {
   onPress?: () => void;
   rightValue?: string;
   showChevron?: boolean;
+  destructive?: boolean;
 }
 
-function SettingsRow({ icon: Icon, label, onPress, rightValue, showChevron = true }: SettingsRowProps) {
+function SettingsRow({
+  icon: Icon,
+  label,
+  onPress,
+  rightValue,
+  showChevron = true,
+  destructive = false,
+}: SettingsRowProps) {
   const { colors } = useAppTheme();
+  const textColor = destructive ? colors.danger : colors.text;
+  const iconColor = destructive ? colors.danger : colors.textSecondary;
 
   const content = (
     <View
@@ -44,8 +56,8 @@ function SettingsRow({ icon: Icon, label, onPress, rightValue, showChevron = tru
         paddingVertical: SPACING.sm,
       }}
     >
-      <Icon size={20} color={colors.textSecondary} />
-      <Text style={[TYPOGRAPHY.body, { color: colors.text, flex: 1 }]}>{label}</Text>
+      <Icon size={20} color={iconColor} />
+      <Text style={[TYPOGRAPHY.body, { color: textColor, flex: 1 }]}>{label}</Text>
       {rightValue ? (
         <Text style={[TYPOGRAPHY.body, { color: colors.textSecondary }]}>{rightValue}</Text>
       ) : null}
@@ -114,11 +126,121 @@ const APPEARANCE_OPTIONS: { key: AppearanceMode; label: string }[] = [
   { key: 'dark', label: 'Dark' },
 ];
 
+function AuthenticatedProfileCard() {
+  const { colors } = useAppTheme();
+  const { user, profile } = useAuth();
+
+  const displayName = profile?.display_name ?? user?.user_metadata?.display_name ?? 'ProofLoop User';
+  const email = profile?.email ?? user?.email ?? '';
+  const initial = displayName.charAt(0).toUpperCase();
+
+  return (
+    <InfoCard>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.md }}>
+        {/* Initials circle */}
+        <View
+          style={{
+            width: 52,
+            height: 52,
+            borderRadius: 26,
+            backgroundColor: colors.primaryMuted,
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+          }}
+        >
+          <Text
+            style={[
+              TYPOGRAPHY.h2,
+              { color: colors.primary, fontWeight: '700' },
+            ]}
+          >
+            {initial}
+          </Text>
+        </View>
+
+        {/* Info */}
+        <View style={{ flex: 1, gap: 2 }}>
+          <Text style={[TYPOGRAPHY.h3, { color: colors.text }]} numberOfLines={1}>
+            {displayName}
+          </Text>
+          <Text
+            style={[TYPOGRAPHY.caption, { color: colors.textSecondary }]}
+            numberOfLines={1}
+          >
+            {email}
+          </Text>
+          <View style={{ marginTop: 4 }}>
+            <View
+              style={{
+                backgroundColor: colors.evidenceMuted,
+                borderRadius: 6,
+                paddingHorizontal: 8,
+                paddingVertical: 3,
+                alignSelf: 'flex-start',
+              }}
+            >
+              <Text style={[TYPOGRAPHY.micro, { color: colors.evidence }]}>
+                Account active
+              </Text>
+            </View>
+          </View>
+        </View>
+      </View>
+    </InfoCard>
+  );
+}
+
+function GuestProfileCard() {
+  const { colors } = useAppTheme();
+  const router = useRouter();
+
+  return (
+    <InfoCard>
+      <View style={{ alignItems: 'center', paddingVertical: SPACING.md, gap: SPACING.md }}>
+        <User size={32} color={colors.textTertiary} />
+        <View style={{ alignItems: 'center', gap: SPACING.xs }}>
+          <Text style={[TYPOGRAPHY.h3, { color: colors.text, textAlign: 'center' }]}>
+            Your ProofLoop account
+          </Text>
+          <Text
+            style={[
+              TYPOGRAPHY.body,
+              { color: colors.textSecondary, textAlign: 'center', maxWidth: 280 },
+            ]}
+          >
+            Sign in or create an account to save reports, manage proof requests, and access your data across devices.
+          </Text>
+        </View>
+        <View style={{ width: '100%', gap: SPACING.sm }}>
+          <PrimaryButton
+            title="Create Account"
+            onPress={() => {
+              console.log('[ProfileScreen] Create Account pressed from guest card');
+              router.push('/(auth)/sign-up');
+            }}
+          />
+          <SecondaryButton
+            title="Sign In"
+            onPress={() => {
+              console.log('[ProfileScreen] Sign In pressed from guest card');
+              router.push('/(auth)/sign-in');
+            }}
+          />
+        </View>
+      </View>
+    </InfoCard>
+  );
+}
+
 export default function ProfileScreen() {
   const { colors, appearanceMode, setAppearanceMode } = useAppTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { user, isGuest, signOut } = useAuth();
   const [appearanceModalVisible, setAppearanceModalVisible] = useState(false);
+
+  const isAuthenticated = !!user;
 
   const handleAppearanceSelect = (mode: AppearanceMode) => {
     console.log('[ProfileScreen] appearance mode selected:', mode);
@@ -128,6 +250,30 @@ export default function ProfileScreen() {
   const handleDoneAppearance = () => {
     console.log('[ProfileScreen] appearance modal closed');
     setAppearanceModalVisible(false);
+  };
+
+  const handleSignOut = () => {
+    console.log('[ProfileScreen] sign out row pressed');
+    Alert.alert(
+      'Sign out of ProofLoop?',
+      'You will need to sign in again to access your account.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Sign Out',
+          style: 'destructive',
+          onPress: async () => {
+            console.log('[ProfileScreen] sign out confirmed');
+            try {
+              await signOut();
+              router.replace('/(auth)/welcome');
+            } catch (err) {
+              console.log('[ProfileScreen] sign out error');
+            }
+          },
+        },
+      ]
+    );
   };
 
   return (
@@ -149,30 +295,29 @@ export default function ProfileScreen() {
           <Text style={[TYPOGRAPHY.h1, { color: colors.text }]}>Profile</Text>
         </View>
 
-        {/* Unauthenticated profile card */}
+        {/* Profile card */}
         <View style={{ paddingHorizontal: SPACING.md, marginBottom: SPACING.xl }}>
-          <InfoCard>
-            <View style={{ alignItems: 'center', paddingVertical: SPACING.md, gap: SPACING.md }}>
-              <User size={32} color={colors.textTertiary} />
-              <View style={{ alignItems: 'center', gap: SPACING.xs }}>
-                <Text style={[TYPOGRAPHY.h3, { color: colors.text, textAlign: 'center' }]}>
-                  Your ProofLoop account
-                </Text>
-                <Text
-                  style={[
-                    TYPOGRAPHY.body,
-                    { color: colors.textSecondary, textAlign: 'center', maxWidth: 280 },
-                  ]}
-                >
-                  Account creation, secure report history, and cross-device access will be added in the authentication phase.
-                </Text>
-              </View>
-            </View>
-          </InfoCard>
+          {isAuthenticated ? <AuthenticatedProfileCard /> : <GuestProfileCard />}
         </View>
 
         {/* Settings sections */}
         <View style={{ paddingHorizontal: SPACING.md }}>
+          {/* Account section — only for authenticated users */}
+          {isAuthenticated ? (
+            <SettingsSection
+              title="Account"
+              rows={[
+                <SettingsRow
+                  key="sign-out"
+                  icon={LogOut}
+                  label="Sign Out"
+                  destructive
+                  onPress={handleSignOut}
+                />,
+              ]}
+            />
+          ) : null}
+
           <SettingsSection
             title="Preferences"
             rows={[
