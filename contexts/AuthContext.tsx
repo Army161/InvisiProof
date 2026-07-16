@@ -13,11 +13,14 @@ import { supabase } from '@/lib/supabase';
 import type { Profile } from '@/lib/supabase';
 
 const GUEST_MODE_KEY = '@proofloop_guest_mode';
+const PROFILE_REFRESH_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 
 interface AuthContextValue {
   user: User | null;
   profile: Profile | null;
   loading: boolean;
+  profileLoading: boolean;
+  profileError: string | null;
   isGuest: boolean;
   sessionExpired: boolean;
   recoveryMode: boolean;
@@ -29,6 +32,8 @@ interface AuthContextValue {
   enterGuestMode: () => Promise<void>;
   exitGuestMode: () => Promise<void>;
   fetchProfile: () => Promise<void>;
+  updateProfile: (displayName: string) => Promise<void>;
+  clearProfileError: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -37,35 +42,107 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(false);
+  const [profileError, setProfileError] = useState<string | null>(null);
   const [isGuest, setIsGuest] = useState(false);
   const [sessionExpired, setSessionExpired] = useState(false);
   const [recoveryMode, setRecoveryMode] = useState(false);
   const previousUserRef = useRef<User | null>(null);
   const isExplicitSignOutRef = useRef(false);
+  const lastProfileFetchRef = useRef<number>(0);
 
   const loadProfile = useCallback(async (userId: string) => {
-    console.log('[AuthContext] fetchProfile for user:', userId);
+    console.log('[AuthContext] loadProfile called');
+    setProfileLoading(true);
     try {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
         .single();
+
       if (error) {
-        console.log('[AuthContext] fetchProfile error:', error.message);
+        // PGRST116 = no rows returned — profile missing, attempt repair
+        if (error.code === 'PGRST116') {
+          console.log('[AuthContext] profile missing, creating...');
+          const { data: userData } = await supabase.auth.getUser();
+          const insertPayload = {
+            id: userId,
+            display_name: (userData?.user?.user_metadata?.display_name as string | undefined) ?? null,
+            email: (userData?.user?.email) ?? null,
+          };
+          const { error: insertError } = await supabase
+            .from('profiles')
+            .insert(insertPayload);
+          if (insertError) {
+            console.log('[AuthContext] profile repair insert failed');
+            setProfileError('Could not load your profile. Please try again.');
+            return;
+          }
+          // Re-fetch after insert
+          const { data: repaired, error: refetchError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', userId)
+            .single();
+          if (refetchError || !repaired) {
+            console.log('[AuthContext] profile repair re-fetch failed');
+            setProfileError('Could not load your profile. Please try again.');
+            return;
+          }
+          setProfile(repaired as Profile);
+          setProfileError(null);
+          lastProfileFetchRef.current = Date.now();
+          return;
+        }
+        console.log('[AuthContext] loadProfile error');
+        setProfileError('Could not load your profile. Please check your connection.');
         return;
       }
-      console.log('[AuthContext] profile loaded for user:', userId);
+
       setProfile(data as Profile);
-    } catch (err) {
-      console.log('[AuthContext] fetchProfile unexpected error');
+      setProfileError(null);
+      lastProfileFetchRef.current = Date.now();
+    } catch {
+      console.log('[AuthContext] loadProfile unexpected error');
+      setProfileError('Something went wrong loading your profile.');
+    } finally {
+      setProfileLoading(false);
     }
   }, []);
 
   const fetchProfile = useCallback(async () => {
     if (!user) return;
+    console.log('[AuthContext] fetchProfile called');
     await loadProfile(user.id);
   }, [user, loadProfile]);
+
+  const updateProfile = useCallback(async (displayName: string) => {
+    if (!user) return;
+    const trimmed = displayName.trim();
+    console.log('[AuthContext] updateProfile called');
+    setProfileLoading(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ display_name: trimmed, updated_at: new Date().toISOString() })
+        .eq('id', user.id);
+      if (error) {
+        console.log('[AuthContext] updateProfile error');
+        throw new Error('Could not save your profile. Please try again.');
+      }
+      // Re-fetch to get the latest data
+      await loadProfile(user.id);
+      console.log('[AuthContext] updateProfile success');
+    } catch (err) {
+      setProfileLoading(false);
+      throw err;
+    }
+  }, [user, loadProfile]);
+
+  const clearProfileError = useCallback(() => {
+    setProfileError(null);
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -83,12 +160,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (!mounted) return;
 
         if (session?.user) {
-          console.log('[AuthContext] session restored for user:', session.user.id);
+          console.log('[AuthContext] session restored');
           setUser(session.user);
           previousUserRef.current = session.user;
           await loadProfile(session.user.id);
         }
-      } catch (err) {
+      } catch {
         console.log('[AuthContext] init error');
       } finally {
         if (mounted) setLoading(false);
@@ -100,6 +177,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const handleAppStateChange = (nextState: string) => {
       if (nextState === 'active') {
         supabase.auth.startAutoRefresh();
+        // Foreground refresh: re-fetch profile if stale (> 5 min)
+        const currentUser = previousUserRef.current;
+        if (currentUser) {
+          const elapsed = Date.now() - lastProfileFetchRef.current;
+          if (elapsed > PROFILE_REFRESH_INTERVAL_MS) {
+            console.log('[AuthContext] foreground refresh: profile stale, re-fetching');
+            loadProfile(currentUser.id);
+          }
+        }
       } else {
         supabase.auth.stopAutoRefresh();
       }
@@ -127,8 +213,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
           setUser(null);
           setProfile(null);
+          setProfileError(null);
           setRecoveryMode(false);
           previousUserRef.current = null;
+          lastProfileFetchRef.current = 0;
         } else if (event === 'TOKEN_REFRESHED' && session?.user) {
           setUser(session.user);
         } else if (event === 'USER_UPDATED' && session?.user) {
@@ -169,7 +257,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithEmail = useCallback(async (email: string, password: string) => {
     const normalizedEmail = email.trim().toLowerCase();
-    console.log('[AuthContext] signInWithEmail attempt for email:', normalizedEmail);
+    console.log('[AuthContext] signInWithEmail attempt');
     const { data, error } = await supabase.auth.signInWithPassword({
       email: normalizedEmail,
       password,
@@ -181,7 +269,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Clear guest mode on successful sign in
     await AsyncStorage.removeItem(GUEST_MODE_KEY);
     setIsGuest(false);
-    console.log('[AuthContext] signInWithEmail success, user:', data.user?.id);
+    console.log('[AuthContext] signInWithEmail success');
+    void data;
   }, []);
 
   const signOut = useCallback(async () => {
@@ -200,7 +289,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     setUser(null);
     setProfile(null);
+    setProfileError(null);
     previousUserRef.current = null;
+    lastProfileFetchRef.current = 0;
     // Clear guest mode too
     await AsyncStorage.removeItem(GUEST_MODE_KEY);
     setIsGuest(false);
@@ -247,6 +338,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     user,
     profile,
     loading,
+    profileLoading,
+    profileError,
     isGuest,
     sessionExpired,
     recoveryMode,
@@ -258,6 +351,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     enterGuestMode,
     exitGuestMode,
     fetchProfile,
+    updateProfile,
+    clearProfileError,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

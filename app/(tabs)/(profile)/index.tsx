@@ -15,6 +15,7 @@ import {
   ChevronRight,
   Check,
   LogOut,
+  UserCog,
 } from 'lucide-react-native';
 import { useAppTheme } from '@/hooks/useAppTheme';
 import { useAuth } from '@/contexts/AuthContext';
@@ -128,11 +129,27 @@ const APPEARANCE_OPTIONS: { key: AppearanceMode; label: string }[] = [
 
 function AuthenticatedProfileCard() {
   const { colors } = useAppTheme();
-  const { user, profile } = useAuth();
+  const router = useRouter();
+  const { user, profile, profileLoading, profileError, fetchProfile } = useAuth();
 
   const displayName = profile?.display_name ?? user?.user_metadata?.display_name ?? 'ProofLoop User';
   const email = profile?.email ?? user?.email ?? '';
-  const initial = displayName.charAt(0).toUpperCase();
+  const initial = String(displayName).charAt(0).toUpperCase();
+
+  const memberSinceDate = profile?.created_at
+    ? new Date(profile.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+    : null;
+  const memberSinceText = memberSinceDate ? `Member since ${memberSinceDate}` : null;
+
+  const handleRetry = () => {
+    console.log('[ProfileScreen] profile error retry pressed');
+    fetchProfile();
+  };
+
+  const handleEditProfile = () => {
+    console.log('[ProfileScreen] Edit Profile button pressed from card');
+    router.push('/(tabs)/(profile)/edit-profile');
+  };
 
   return (
     <InfoCard>
@@ -170,6 +187,24 @@ function AuthenticatedProfileCard() {
           >
             {email}
           </Text>
+
+          {/* Member since */}
+          {profileLoading && !profile ? (
+            <View
+              style={{
+                backgroundColor: colors.surfaceSecondary,
+                borderRadius: RADIUS.md,
+                height: 16,
+                width: 120,
+                marginTop: 4,
+              }}
+            />
+          ) : memberSinceText ? (
+            <Text style={[TYPOGRAPHY.caption, { color: colors.textTertiary, marginTop: 2 }]}>
+              {memberSinceText}
+            </Text>
+          ) : null}
+
           <View style={{ marginTop: 4 }}>
             <View
               style={{
@@ -186,6 +221,52 @@ function AuthenticatedProfileCard() {
             </View>
           </View>
         </View>
+      </View>
+
+      {/* Profile error warning */}
+      {profileError ? (
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginTop: SPACING.md,
+            backgroundColor: colors.warningMuted,
+            borderRadius: RADIUS.sm,
+            paddingHorizontal: SPACING.sm,
+            paddingVertical: SPACING.xs,
+            gap: SPACING.sm,
+          }}
+        >
+          <Text
+            style={[TYPOGRAPHY.caption, { color: colors.warning, flex: 1 }]}
+            numberOfLines={2}
+          >
+            {profileError}
+          </Text>
+          <AnimatedPressable
+            onPress={handleRetry}
+            accessibilityRole="button"
+            accessibilityLabel="Retry loading profile"
+            style={{
+              paddingHorizontal: SPACING.sm,
+              paddingVertical: SPACING.xs,
+              minHeight: 44,
+              justifyContent: 'center',
+            }}
+          >
+            <Text style={[TYPOGRAPHY.caption, { color: colors.warning, fontWeight: '600' }]}>
+              Retry
+            </Text>
+          </AnimatedPressable>
+        </View>
+      ) : null}
+
+      {/* Edit Profile button */}
+      <View style={{ marginTop: SPACING.md }}>
+        <SecondaryButton
+          title="Edit Profile"
+          onPress={handleEditProfile}
+        />
       </View>
     </InfoCard>
   );
@@ -267,7 +348,7 @@ export default function ProfileScreen() {
             try {
               await signOut();
               router.replace('/(auth)/welcome');
-            } catch (err) {
+            } catch {
               console.log('[ProfileScreen] sign out error');
             }
           },
@@ -307,6 +388,12 @@ export default function ProfileScreen() {
             <SettingsSection
               title="Account"
               rows={[
+                <SettingsRow
+                  key="edit-profile"
+                  icon={UserCog}
+                  label="Edit Profile"
+                  onPress={() => router.push('/(tabs)/(profile)/edit-profile')}
+                />,
                 <SettingsRow
                   key="sign-out"
                   icon={LogOut}
