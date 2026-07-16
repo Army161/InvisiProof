@@ -98,9 +98,14 @@ export default function SignUpScreen() {
     }
     setLoading(true);
     try {
-      await signUpWithEmail(email.trim().toLowerCase(), password, displayName.trim());
-      console.log('[SignUpScreen] sign up success, navigating to scan');
-      router.replace('/(tabs)/(scan)');
+      const { requiresConfirmation } = await signUpWithEmail(email.trim().toLowerCase(), password, displayName.trim());
+      if (requiresConfirmation) {
+        console.log('[SignUpScreen] sign up success, email confirmation required');
+        router.replace('/(auth)/verify-email');
+      } else {
+        console.log('[SignUpScreen] sign up success, navigating to scan');
+        router.replace('/(tabs)/(scan)');
+      }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Unknown error';
       console.log('[SignUpScreen] sign up error:', message);

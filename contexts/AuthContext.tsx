@@ -6,6 +6,7 @@ import React, {
   useCallback,
   useRef,
 } from 'react';
+import { AppState } from 'react-native';
 import type { User, AuthChangeEvent, Session } from '@supabase/supabase-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '@/lib/supabase';
@@ -19,10 +20,12 @@ interface AuthContextValue {
   loading: boolean;
   isGuest: boolean;
   sessionExpired: boolean;
-  signUpWithEmail: (email: string, password: string, displayName: string) => Promise<void>;
+  recoveryMode: boolean;
+  signUpWithEmail: (email: string, password: string, displayName: string) => Promise<{ requiresConfirmation: boolean }>;
   signInWithEmail: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   sendPasswordReset: (email: string) => Promise<void>;
+  updatePassword: (newPassword: string) => Promise<void>;
   enterGuestMode: () => Promise<void>;
   exitGuestMode: () => Promise<void>;
   fetchProfile: () => Promise<void>;
@@ -36,7 +39,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [isGuest, setIsGuest] = useState(false);
   const [sessionExpired, setSessionExpired] = useState(false);
+  const [recoveryMode, setRecoveryMode] = useState(false);
   const previousUserRef = useRef<User | null>(null);
+  const isExplicitSignOutRef = useRef(false);
 
   const loadProfile = useCallback(async (userId: string) => {
     console.log('[AuthContext] fetchProfile for user:', userId);
@@ -92,6 +97,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     init();
 
+    const handleAppStateChange = (nextState: string) => {
+      if (nextState === 'active') {
+        supabase.auth.startAutoRefresh();
+      } else {
+        supabase.auth.stopAutoRefresh();
+      }
+    };
+    const appStateSub = AppState.addEventListener('change', handleAppStateChange);
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event: AuthChangeEvent, session: Session | null) => {
         console.log('[AuthContext] auth state change:', event);
@@ -103,13 +117,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setSessionExpired(false);
           previousUserRef.current = session.user;
           await loadProfile(session.user.id);
+        } else if (event === 'PASSWORD_RECOVERY' && session?.user) {
+          setUser(session.user);
+          setRecoveryMode(true);
+          previousUserRef.current = session.user;
         } else if (event === 'SIGNED_OUT') {
-          if (previousUserRef.current !== null) {
-            // Had a user before — session expired or explicit sign-out
-            // sessionExpired is set explicitly in signOut vs here
+          if (!isExplicitSignOutRef.current && previousUserRef.current !== null) {
+            setSessionExpired(true);
           }
           setUser(null);
           setProfile(null);
+          setRecoveryMode(false);
           previousUserRef.current = null;
         } else if (event === 'TOKEN_REFRESHED' && session?.user) {
           setUser(session.user);
@@ -123,13 +141,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       mounted = false;
       subscription.unsubscribe();
+      appStateSub.remove();
     };
   }, [loadProfile]);
 
   const signUpWithEmail = useCallback(
-    async (email: string, password: string, displayName: string) => {
+    async (email: string, password: string, displayName: string): Promise<{ requiresConfirmation: boolean }> => {
       const normalizedEmail = email.trim().toLowerCase();
-      console.log('[AuthContext] signUpWithEmail attempt for email:', normalizedEmail);
+      console.log('[AuthContext] signUpWithEmail attempt');
       const { data, error } = await supabase.auth.signUp({
         email: normalizedEmail,
         password,
@@ -141,7 +160,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.log('[AuthContext] signUpWithEmail error:', error.message);
         throw error;
       }
-      console.log('[AuthContext] signUpWithEmail success, user:', data.user?.id);
+      const requiresConfirmation = !data.session;
+      console.log('[AuthContext] signUpWithEmail success, requiresConfirmation:', requiresConfirmation);
+      return { requiresConfirmation };
     },
     []
   );
@@ -157,16 +178,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log('[AuthContext] signInWithEmail error:', error.message);
       throw error;
     }
+    // Clear guest mode on successful sign in
+    await AsyncStorage.removeItem(GUEST_MODE_KEY);
+    setIsGuest(false);
     console.log('[AuthContext] signInWithEmail success, user:', data.user?.id);
   }, []);
 
   const signOut = useCallback(async () => {
     console.log('[AuthContext] signOut called');
+    isExplicitSignOutRef.current = true;
     setSessionExpired(false);
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      console.log('[AuthContext] signOut error:', error.message);
-      throw error;
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.log('[AuthContext] signOut error:', error.message);
+        isExplicitSignOutRef.current = false;
+        throw error;
+      }
+    } finally {
+      isExplicitSignOutRef.current = false;
     }
     setUser(null);
     setProfile(null);
@@ -179,7 +209,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const sendPasswordReset = useCallback(async (email: string) => {
     const normalizedEmail = email.trim().toLowerCase();
-    console.log('[AuthContext] sendPasswordReset for email:', normalizedEmail);
+    console.log('[AuthContext] sendPasswordReset initiated');
     const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
       redirectTo: 'proofloop://reset-password',
     });
@@ -188,6 +218,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       throw error;
     }
     console.log('[AuthContext] sendPasswordReset email sent');
+  }, []);
+
+  const updatePassword = useCallback(async (newPassword: string) => {
+    console.log('[AuthContext] updatePassword called');
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) {
+      console.log('[AuthContext] updatePassword error:', error.message);
+      throw error;
+    }
+    setRecoveryMode(false);
+    console.log('[AuthContext] updatePassword success');
   }, []);
 
   const enterGuestMode = useCallback(async () => {
@@ -208,10 +249,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loading,
     isGuest,
     sessionExpired,
+    recoveryMode,
     signUpWithEmail,
     signInWithEmail,
     signOut,
     sendPasswordReset,
+    updatePassword,
     enterGuestMode,
     exitGuestMode,
     fetchProfile,
