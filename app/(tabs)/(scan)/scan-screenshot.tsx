@@ -1,44 +1,369 @@
-import React from 'react';
-import { View, Text } from 'react-native';
-import { Stack } from 'expo-router';
-import { ImageIcon } from 'lucide-react-native';
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  Image,
+  Pressable,
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+} from 'react-native';
+import { useRouter } from 'expo-router';
+import * as ImagePicker from 'expo-image-picker';
+import type { ImagePickerAsset } from 'expo-image-picker';
+import { Camera, ImageIcon, X, RefreshCw } from 'lucide-react-native';
 import { useAppTheme } from '@/hooks/useAppTheme';
-import { TYPOGRAPHY, SPACING } from '@/constants/theme';
-import { ScreenContainer } from '@/components/ScreenContainer';
-import { EmptyStateCard } from '@/components/EmptyStateCard';
-import { InfoCard } from '@/components/InfoCard';
+import { TYPOGRAPHY, SPACING, RADIUS, SHADOWS } from '@/constants/theme';
+import { useAuth } from '@/contexts/AuthContext';
+import { AuthRequiredModal } from '@/components/AuthRequiredModal';
+import { useSubmitScan } from '@/hooks/useSubmitScan';
+import { ConsentCheckbox } from '@/components/ConsentCheckbox';
+import { PrimaryButton } from '@/components/PrimaryButton';
+import type { ImageSourcePropType } from 'react-native';
+
+function resolveImageSource(source: string | number | ImageSourcePropType | undefined): ImageSourcePropType {
+  if (!source) return { uri: '' };
+  if (typeof source === 'string') return { uri: source };
+  return source as ImageSourcePropType;
+}
 
 export default function ScanScreenshotScreen() {
   const { colors } = useAppTheme();
+  const router = useRouter();
+  const { user, isGuest } = useAuth();
+  const { stage, stageLabel, error, submitImage, reset } = useSubmitScan();
+
+  const [selectedAsset, setSelectedAsset] = useState<ImagePickerAsset | null>(null);
+  const [consentChecked, setConsentChecked] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [sourceType, setSourceType] = useState<'camera' | 'library'>('library');
+
+  const isGuestOrNoUser = isGuest || !user;
+  const isSubmitting = stage === 'preparing' || stage === 'uploading' || stage === 'saving';
+  const submitDisabled = !selectedAsset || !consentChecked || stage !== 'idle';
+
+  const handlePickLibrary = async () => {
+    console.log('[ScanScreenshot] pick from library pressed');
+    if (isGuestOrNoUser) {
+      setShowAuthModal(true);
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: false,
+      quality: 1,
+    });
+    console.log('[ScanScreenshot] library picker result, cancelled:', result.canceled);
+    if (!result.canceled && result.assets.length > 0) {
+      setSelectedAsset(result.assets[0]);
+      setSourceType('library');
+      setConsentChecked(false);
+      reset();
+    }
+  };
+
+  const handleTakePhoto = async () => {
+    console.log('[ScanScreenshot] take photo pressed');
+    if (isGuestOrNoUser) {
+      setShowAuthModal(true);
+      return;
+    }
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    console.log('[ScanScreenshot] camera permission status:', status);
+    if (status !== 'granted') {
+      Alert.alert(
+        'Camera Permission Required',
+        'Please allow camera access in your device settings to take a photo.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: false,
+      quality: 1,
+    });
+    console.log('[ScanScreenshot] camera result, cancelled:', result.canceled);
+    if (!result.canceled && result.assets.length > 0) {
+      setSelectedAsset(result.assets[0]);
+      setSourceType('camera');
+      setConsentChecked(false);
+      reset();
+    }
+  };
+
+  const handleReplace = async () => {
+    console.log('[ScanScreenshot] replace image pressed, sourceType:', sourceType);
+    if (sourceType === 'camera') {
+      await handleTakePhoto();
+    } else {
+      await handlePickLibrary();
+    }
+  };
+
+  const handleRemove = () => {
+    console.log('[ScanScreenshot] remove image pressed');
+    setSelectedAsset(null);
+    setConsentChecked(false);
+    reset();
+  };
+
+  const handleSubmit = async () => {
+    console.log('[ScanScreenshot] submit pressed');
+    if (!selectedAsset || !user) return;
+    const scan = await submitImage(user.id, selectedAsset, sourceType);
+    if (scan) {
+      console.log('[ScanScreenshot] submit success, navigating to submission-ready, scanId:', scan.id);
+      router.push({
+        pathname: '/(tabs)/(scan)/submission-ready',
+        params: {
+          inputType: scan.input_type,
+          sourceType: scan.source_type,
+          createdAt: scan.created_at,
+        },
+      });
+    }
+  };
+
+  const handleConsentToggle = () => {
+    setConsentChecked(prev => !prev);
+  };
+
+  const imageUri = selectedAsset?.uri ?? '';
 
   return (
     <>
-      <Stack.Screen
-        options={{
-          title: 'Scan Screenshot or Photo',
-          headerShown: true,
-          headerBackTitle: 'Scan',
-        }}
-      />
-      <ScreenContainer>
-        <View style={{ paddingHorizontal: SPACING.md, paddingTop: SPACING.md, gap: SPACING.md }}>
-          <Text style={[TYPOGRAPHY.body, { color: colors.textSecondary }]}>
-            Submit a screenshot, photo, or image of suspicious content for analysis.
-          </Text>
+      <ScrollView
+        style={{ flex: 1, backgroundColor: colors.background }}
+        contentContainerStyle={{ padding: SPACING.md, paddingBottom: 48 }}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Picker buttons */}
+        {!selectedAsset && (
+          <View style={{ gap: SPACING.sm, marginBottom: SPACING.md }}>
+            <Pressable
+              onPress={handlePickLibrary}
+              accessibilityRole="button"
+              accessibilityLabel="Choose from library"
+              style={{
+                backgroundColor: colors.surface,
+                borderRadius: RADIUS.lg,
+                borderWidth: 1,
+                borderColor: colors.border,
+                padding: SPACING.md,
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: SPACING.md,
+                boxShadow: SHADOWS.sm,
+              } as any}
+            >
+              <View
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: RADIUS.md,
+                  backgroundColor: colors.primaryMuted,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <ImageIcon size={22} color={colors.primary} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[TYPOGRAPHY.bodyMedium, { color: colors.text }]}>
+                  Choose from library
+                </Text>
+                <Text style={[TYPOGRAPHY.caption, { color: colors.textSecondary }]}>
+                  Select a screenshot or photo
+                </Text>
+              </View>
+            </Pressable>
 
-          <EmptyStateCard
-            icon={ImageIcon}
-            title="No image selected"
-            subtitle="Image analysis will be available in the next phase. You will be able to submit screenshots, photos, and marketplace listings for review."
+            <Pressable
+              onPress={handleTakePhoto}
+              accessibilityRole="button"
+              accessibilityLabel="Take a photo"
+              style={{
+                backgroundColor: colors.surface,
+                borderRadius: RADIUS.lg,
+                borderWidth: 1,
+                borderColor: colors.border,
+                padding: SPACING.md,
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: SPACING.md,
+                boxShadow: SHADOWS.sm,
+              } as any}
+            >
+              <View
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: RADIUS.md,
+                  backgroundColor: colors.primaryMuted,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Camera size={22} color={colors.primary} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[TYPOGRAPHY.bodyMedium, { color: colors.text }]}>
+                  Take a photo
+                </Text>
+                <Text style={[TYPOGRAPHY.caption, { color: colors.textSecondary }]}>
+                  Use your camera to capture content
+                </Text>
+              </View>
+            </Pressable>
+          </View>
+        )}
+
+        {/* Image preview */}
+        {selectedAsset && (
+          <View style={{ marginBottom: SPACING.md }}>
+            <Image
+              source={resolveImageSource(imageUri)}
+              resizeMode="contain"
+              style={{
+                width: '100%',
+                height: 240,
+                borderRadius: RADIUS.lg,
+                backgroundColor: colors.surface,
+              }}
+            />
+            {/* Replace / Remove row */}
+            <View
+              style={{
+                flexDirection: 'row',
+                gap: SPACING.sm,
+                marginTop: SPACING.sm,
+              }}
+            >
+              <Pressable
+                onPress={handleReplace}
+                accessibilityRole="button"
+                accessibilityLabel="Replace image"
+                style={{
+                  flex: 1,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: SPACING.xs,
+                  paddingVertical: SPACING.sm,
+                  borderRadius: RADIUS.md,
+                  backgroundColor: colors.surfaceSecondary,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                }}
+              >
+                <RefreshCw size={15} color={colors.textSecondary} />
+                <Text style={[TYPOGRAPHY.caption, { color: colors.textSecondary, fontWeight: '500' }]}>
+                  Replace
+                </Text>
+              </Pressable>
+              <Pressable
+                onPress={handleRemove}
+                accessibilityRole="button"
+                accessibilityLabel="Remove image"
+                style={{
+                  flex: 1,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: SPACING.xs,
+                  paddingVertical: SPACING.sm,
+                  borderRadius: RADIUS.md,
+                  backgroundColor: colors.dangerMuted,
+                  borderWidth: 1,
+                  borderColor: colors.danger,
+                }}
+              >
+                <X size={15} color={colors.danger} />
+                <Text style={[TYPOGRAPHY.caption, { color: colors.danger, fontWeight: '500' }]}>
+                  Remove
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        )}
+
+        {/* Consent */}
+        {selectedAsset && (
+          <View style={{ marginBottom: SPACING.md }}>
+            <ConsentCheckbox
+              checked={consentChecked}
+              onToggle={handleConsentToggle}
+              disabled={isSubmitting}
+            />
+          </View>
+        )}
+
+        {/* Submit button */}
+        {selectedAsset && (
+          <PrimaryButton
+            title="Submit for Analysis"
+            onPress={handleSubmit}
+            disabled={submitDisabled}
+            loading={isSubmitting}
           />
+        )}
 
-          <InfoCard>
-            <Text style={[TYPOGRAPHY.body, { color: colors.textSecondary }]}>
-              Secure image analysis will be connected during the analysis phase. This screen establishes the navigation and design foundation.
+        {/* Progress label */}
+        {isSubmitting && stageLabel.length > 0 && (
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: SPACING.sm,
+              marginTop: SPACING.sm,
+            }}
+          >
+            <ActivityIndicator size="small" color={colors.primary} />
+            <Text style={[TYPOGRAPHY.caption, { color: colors.textSecondary }]}>
+              {stageLabel}
             </Text>
-          </InfoCard>
-        </View>
-      </ScreenContainer>
+          </View>
+        )}
+
+        {/* Error display */}
+        {stage === 'error' && error && (
+          <View
+            style={{
+              marginTop: SPACING.sm,
+              padding: SPACING.md,
+              borderRadius: RADIUS.md,
+              backgroundColor: colors.dangerMuted,
+              borderWidth: 1,
+              borderColor: colors.danger,
+              gap: SPACING.xs,
+            }}
+          >
+            <Text style={[TYPOGRAPHY.caption, { color: colors.danger }]}>
+              {error}
+            </Text>
+            <Pressable
+              onPress={() => {
+                console.log('[ScanScreenshot] try again pressed');
+                reset();
+              }}
+              accessibilityRole="button"
+              accessibilityLabel="Try Again"
+            >
+              <Text style={[TYPOGRAPHY.caption, { color: colors.danger, fontWeight: '600', textDecorationLine: 'underline' }]}>
+                Try Again
+              </Text>
+            </Pressable>
+          </View>
+        )}
+      </ScrollView>
+
+      <AuthRequiredModal
+        visible={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+      />
     </>
   );
 }

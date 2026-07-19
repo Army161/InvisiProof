@@ -28,6 +28,13 @@ export default function ScanLayout() {
           headerBackTitle: 'Scan',
         }}
       />
+      <Stack.Screen
+        name="submission-ready"
+        options={{
+          headerShown: false,
+          presentation: 'modal',
+        }}
+      />
     </Stack>
   );
 }
