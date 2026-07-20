@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { File } from 'expo-file-system';
 import type { Scan, ImageMeta } from '@/types/scan';
 
 function generateScanId(): string {
@@ -46,10 +47,17 @@ export async function uploadImageScan(
 
   console.log('[scanService] uploadImageScan start', { sourceType, sizeBytes: image.sizeBytes });
 
-  // 1. Upload image as ArrayBuffer
+  // 1. Read bytes immediately before upload — do not retain in state
+  const uploadFile = new File(image.uri);
+  if (!uploadFile.exists) throw new Error('Could not read the prepared image.');
+  const uploadSize = uploadFile.size;
+  if (uploadSize === 0) throw new Error('The selected image appears to be empty.');
+  if (uploadSize > 8 * 1024 * 1024) throw new Error('The prepared image exceeds the maximum upload size.');
+  const imageBytes = await uploadFile.arrayBuffer();
+
   const { error: uploadError } = await supabase.storage
     .from('scan-uploads')
-    .upload(storagePath, image.arrayBuffer, {
+    .upload(storagePath, imageBytes, {
       contentType: 'image/jpeg',
       upsert: false,
     });

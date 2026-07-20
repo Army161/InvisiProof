@@ -2,12 +2,20 @@ export type InputType = 'image' | 'text' | 'url';
 export type SourceType = 'camera' | 'library' | 'paste';
 export type ScanStatus = 'ready_for_analysis';
 
-export interface ImageMeta {
+export interface PreparedImage {
   uri: string;
-  arrayBuffer: ArrayBuffer;
   width: number;
   height: number;
   sizeBytes: number;
+  mimeType: 'image/jpeg';
+}
+
+export interface ImageMeta {
+  uri: string;
+  width: number;
+  height: number;
+  sizeBytes: number;
+  mimeType: 'image/jpeg';
 }
 
 export interface Scan {
