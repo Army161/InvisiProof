@@ -80,7 +80,7 @@ export default function PasteTextScreen() {
       }
       const scan = await submitText(textValue);
       if (scan) {
-        console.log('[PasteText] text submit success, navigating to submission-ready, scanId:', scan.id);
+        console.log('[PasteText] text submit success, navigating to submission-ready');
         router.push({
           pathname: '/(tabs)/(scan)/submission-ready',
           params: {
@@ -100,7 +100,7 @@ export default function PasteTextScreen() {
       }
       const scan = await submitUrl(normalizedUrl);
       if (scan) {
-        console.log('[PasteText] URL submit success, navigating to submission-ready, scanId:', scan.id);
+        console.log('[PasteText] URL submit success, navigating to submission-ready');
         router.push({
           pathname: '/(tabs)/(scan)/submission-ready',
           params: {

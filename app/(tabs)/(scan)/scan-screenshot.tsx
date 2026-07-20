@@ -173,7 +173,7 @@ export default function ScanScreenshotScreen() {
     if (!selectedAsset) return;
     const scan = await submitImage(selectedAsset, sourceType);
     if (scan) {
-      console.log('[ScanScreenshot] submit success, navigating to submission-ready, scanId:', scan.id);
+      console.log('[ScanScreenshot] submit success, navigating to submission-ready');
       router.push({
         pathname: '/(tabs)/(scan)/submission-ready',
         params: {

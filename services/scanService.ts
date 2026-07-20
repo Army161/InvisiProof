@@ -36,7 +36,7 @@ export async function uploadImageScan(
   const scanId = generateScanId();
   const storagePath = `${userId}/${scanId}/source.jpg`;
 
-  console.log('[scanService] uploadImageScan start', { scanId, sourceType, sizeBytes: image.sizeBytes });
+  console.log('[scanService] uploadImageScan start', { sourceType, sizeBytes: image.sizeBytes });
 
   // 1. Upload image as ArrayBuffer
   const { error: uploadError } = await supabase.storage
@@ -84,7 +84,7 @@ export async function uploadImageScan(
     throw new Error(`Failed to save scan record: ${insertError?.message ?? 'Unknown error'}`);
   }
 
-  console.log('[scanService] uploadImageScan complete, scanId:', scanId);
+  console.log('[scanService] uploadImageScan complete');
   return data as Scan;
 }
 
@@ -121,7 +121,7 @@ export async function submitTextScan(
     throw new Error(`Failed to save text scan: ${error?.message ?? 'Unknown error'}`);
   }
 
-  console.log('[scanService] submitTextScan complete, scanId:', data.id);
+  console.log('[scanService] submitTextScan complete');
   return data as Scan;
 }
 
@@ -158,6 +158,6 @@ export async function submitUrlScan(
     throw new Error(`Failed to save URL scan: ${error?.message ?? 'Unknown error'}`);
   }
 
-  console.log('[scanService] submitUrlScan complete, scanId:', data.id);
+  console.log('[scanService] submitUrlScan complete');
   return data as Scan;
 }

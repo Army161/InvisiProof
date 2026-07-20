@@ -47,6 +47,7 @@ export function useSubmitScan(): UseSubmitScanResult {
     }
     inFlightRef.current = true;
     setError(null);
+    console.log('[useSubmitScan] submitImage start', { sourceType });
     let preparedUri: string | null = null;
     try {
       setStage('preparing');
@@ -57,8 +58,7 @@ export function useSubmitScan(): UseSubmitScanResult {
       setStage('saving');
       const scan = await uploadImageScan(prepared, sourceType, consentAt);
       setStage('done');
-      console.log('[useSubmitScan] submitImage start', { sourceType });
-      console.log('[useSubmitScan] submitImage done, scanId:', scan.id);
+      console.log('[useSubmitScan] submitImage done');
       await deleteTempImage(prepared.uri);
       return scan;
     } catch (err) {
@@ -88,7 +88,7 @@ export function useSubmitScan(): UseSubmitScanResult {
       const consentAt = new Date();
       const scan = await submitTextScan(textContent, consentAt);
       setStage('done');
-      console.log('[useSubmitScan] submitText done, scanId:', scan.id);
+      console.log('[useSubmitScan] submitText done');
       return scan;
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Something went wrong. Please try again.';
@@ -116,7 +116,7 @@ export function useSubmitScan(): UseSubmitScanResult {
       const consentAt = new Date();
       const scan = await submitUrlScan(normalizedUrl, consentAt);
       setStage('done');
-      console.log('[useSubmitScan] submitUrl done, scanId:', scan.id);
+      console.log('[useSubmitScan] submitUrl done');
       return scan;
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Something went wrong. Please try again.';
