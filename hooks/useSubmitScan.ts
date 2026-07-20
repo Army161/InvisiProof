@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import type { ImagePickerAsset } from 'expo-image-picker';
-import { prepareImage } from '@/utils/imagePrep';
+import { prepareImage, deleteTempImage } from '@/utils/imagePrep';
 import { uploadImageScan, submitTextScan, submitUrlScan } from '@/services/scanService';
 import type { Scan } from '@/types/scan';
 
@@ -19,9 +19,9 @@ interface UseSubmitScanResult {
   stage: SubmitStage;
   stageLabel: string;
   error: string | null;
-  submitImage: (userId: string, asset: ImagePickerAsset, sourceType: 'camera' | 'library') => Promise<Scan | null>;
-  submitText: (userId: string, textContent: string) => Promise<Scan | null>;
-  submitUrl: (userId: string, normalizedUrl: string) => Promise<Scan | null>;
+  submitImage: (asset: ImagePickerAsset, sourceType: 'camera' | 'library') => Promise<Scan | null>;
+  submitText: (textContent: string) => Promise<Scan | null>;
+  submitUrl: (normalizedUrl: string) => Promise<Scan | null>;
   reset: () => void;
 }
 
@@ -38,7 +38,6 @@ export function useSubmitScan(): UseSubmitScanResult {
   }, []);
 
   const submitImage = useCallback(async (
-    userId: string,
     asset: ImagePickerAsset,
     sourceType: 'camera' | 'library'
   ): Promise<Scan | null> => {
@@ -48,22 +47,26 @@ export function useSubmitScan(): UseSubmitScanResult {
     }
     inFlightRef.current = true;
     setError(null);
-    console.log('[useSubmitScan] submitImage start', { userId, sourceType });
+    let preparedUri: string | null = null;
     try {
       setStage('preparing');
       const prepared = await prepareImage(asset);
+      preparedUri = prepared.uri;
       setStage('uploading');
       const consentAt = new Date();
       setStage('saving');
-      const scan = await uploadImageScan(userId, prepared, sourceType, consentAt);
+      const scan = await uploadImageScan(prepared, sourceType, consentAt);
       setStage('done');
+      console.log('[useSubmitScan] submitImage start', { sourceType });
       console.log('[useSubmitScan] submitImage done, scanId:', scan.id);
+      await deleteTempImage(prepared.uri);
       return scan;
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Something went wrong. Please try again.';
       console.log('[useSubmitScan] submitImage error:', msg);
       setError(msg);
       setStage('error');
+      if (preparedUri) await deleteTempImage(preparedUri);
       return null;
     } finally {
       inFlightRef.current = false;
@@ -71,7 +74,6 @@ export function useSubmitScan(): UseSubmitScanResult {
   }, []);
 
   const submitText = useCallback(async (
-    userId: string,
     textContent: string
   ): Promise<Scan | null> => {
     if (inFlightRef.current) {
@@ -80,11 +82,11 @@ export function useSubmitScan(): UseSubmitScanResult {
     }
     inFlightRef.current = true;
     setError(null);
-    console.log('[useSubmitScan] submitText start', { userId, textLength: textContent.length });
+    console.log('[useSubmitScan] submitText start', { textLength: textContent.length });
     try {
       setStage('saving');
       const consentAt = new Date();
-      const scan = await submitTextScan(userId, textContent, consentAt);
+      const scan = await submitTextScan(textContent, consentAt);
       setStage('done');
       console.log('[useSubmitScan] submitText done, scanId:', scan.id);
       return scan;
@@ -100,7 +102,6 @@ export function useSubmitScan(): UseSubmitScanResult {
   }, []);
 
   const submitUrl = useCallback(async (
-    userId: string,
     normalizedUrl: string
   ): Promise<Scan | null> => {
     if (inFlightRef.current) {
@@ -109,11 +110,11 @@ export function useSubmitScan(): UseSubmitScanResult {
     }
     inFlightRef.current = true;
     setError(null);
-    console.log('[useSubmitScan] submitUrl start', { userId, normalizedUrl });
+    console.log('[useSubmitScan] submitUrl start', {});
     try {
       setStage('saving');
       const consentAt = new Date();
-      const scan = await submitUrlScan(userId, normalizedUrl, consentAt);
+      const scan = await submitUrlScan(normalizedUrl, consentAt);
       setStage('done');
       console.log('[useSubmitScan] submitUrl done, scanId:', scan.id);
       return scan;

@@ -63,15 +63,12 @@ export default function PasteTextScreen() {
     reset();
   };
 
-  const handleTextFocus = () => {
-    if (isGuestOrNoUser) {
-      console.log('[PasteText] text input focused by guest, showing auth modal');
-      setShowAuthModal(true);
-    }
-  };
-
   const handleSubmit = async () => {
     console.log('[PasteText] submit pressed, mode:', mode);
+    if (isGuestOrNoUser) {
+      setShowAuthModal(true);
+      return;
+    }
     setSubmitAttempted(true);
     if (!user) return;
 
@@ -81,7 +78,7 @@ export default function PasteTextScreen() {
         console.log('[PasteText] text validation failed:', validationError);
         return;
       }
-      const scan = await submitText(user.id, textValue);
+      const scan = await submitText(textValue);
       if (scan) {
         console.log('[PasteText] text submit success, navigating to submission-ready, scanId:', scan.id);
         router.push({
@@ -101,7 +98,7 @@ export default function PasteTextScreen() {
         console.log('[PasteText] URL validation failed:', e instanceof Error ? e.message : e);
         return;
       }
-      const scan = await submitUrl(user.id, normalizedUrl);
+      const scan = await submitUrl(normalizedUrl);
       if (scan) {
         console.log('[PasteText] URL submit success, navigating to submission-ready, scanId:', scan.id);
         router.push({
@@ -189,7 +186,6 @@ export default function PasteTextScreen() {
                   setTextValue(val);
                   if (stage === 'error') reset();
                 }}
-                onFocus={handleTextFocus}
                 placeholder="Paste or type your message, email, or conversation here…"
                 placeholderTextColor={colors.textTertiary}
                 maxLength={10000}
@@ -204,7 +200,7 @@ export default function PasteTextScreen() {
                   ...TYPOGRAPHY.body,
                   color: colors.text,
                 }}
-                editable={!isGuestOrNoUser && !isSubmitting}
+                editable={!isSubmitting}
               />
               <View
                 style={{
@@ -237,7 +233,6 @@ export default function PasteTextScreen() {
                   setLinkValue(val);
                   if (stage === 'error') reset();
                 }}
-                onFocus={handleTextFocus}
                 onBlur={() => setLinkBlurred(true)}
                 placeholder="https://example.com"
                 placeholderTextColor={colors.textTertiary}
@@ -254,7 +249,7 @@ export default function PasteTextScreen() {
                   ...TYPOGRAPHY.body,
                   color: colors.text,
                 }}
-                editable={!isGuestOrNoUser && !isSubmitting}
+                editable={!isSubmitting}
               />
               {showLinkError && (
                 <Text style={[TYPOGRAPHY.caption, { color: colors.danger, marginTop: SPACING.xs }]}>
@@ -275,9 +270,9 @@ export default function PasteTextScreen() {
 
           {/* Submit button */}
           <PrimaryButton
-            title="Submit for Analysis"
-            onPress={isGuestOrNoUser ? () => { console.log('[PasteText] submit pressed by guest'); setShowAuthModal(true); } : handleSubmit}
-            disabled={isGuestOrNoUser ? false : submitDisabled}
+            title="Save Securely"
+            onPress={handleSubmit}
+            disabled={submitDisabled}
             loading={isSubmitting}
           />
 

@@ -10,6 +10,9 @@ export function validateUrl(input: string): string {
   if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
     throw new Error('URL must start with http:// or https://');
   }
+  if (trimmed.length > 2048) {
+    throw new Error('URL must be 2,048 characters or fewer.');
+  }
   try {
     const parsed = new URL(trimmed);
     if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {

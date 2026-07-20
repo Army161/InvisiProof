@@ -11,16 +11,32 @@ function generateScanId(): string {
   });
 }
 
+function isAuthError(message: string): boolean {
+  const lower = message.toLowerCase();
+  return (
+    lower.includes('auth') ||
+    lower.includes('jwt') ||
+    lower.includes('token') ||
+    lower.includes('401') ||
+    lower.includes('unauthorized')
+  );
+}
+
 export async function uploadImageScan(
-  userId: string,
   image: ImageMeta,
   sourceType: 'camera' | 'library',
   consentAt: Date
 ): Promise<Scan> {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) {
+    throw new Error('Your session has expired. Please sign in again.');
+  }
+  const userId = session.user.id;
+
   const scanId = generateScanId();
   const storagePath = `${userId}/${scanId}/source.jpg`;
 
-  console.log('[scanService] uploadImageScan start', { userId, scanId, storagePath, sourceType, sizeBytes: image.sizeBytes });
+  console.log('[scanService] uploadImageScan start', { scanId, sourceType, sizeBytes: image.sizeBytes });
 
   // 1. Upload image as ArrayBuffer
   const { error: uploadError } = await supabase.storage
@@ -32,6 +48,9 @@ export async function uploadImageScan(
 
   if (uploadError) {
     console.log('[scanService] uploadImageScan storage upload failed:', uploadError.message);
+    if (isAuthError(uploadError.message)) {
+      throw new Error('Your session has expired. Please sign in again.');
+    }
     throw new Error(`Upload failed: ${uploadError.message}`);
   }
 
@@ -59,6 +78,9 @@ export async function uploadImageScan(
     console.log('[scanService] uploadImageScan insert failed, rolling back storage:', insertError?.message);
     // Rollback: delete the uploaded file to prevent orphan
     await supabase.storage.from('scan-uploads').remove([storagePath]);
+    if (insertError && isAuthError(insertError.message)) {
+      throw new Error('Your session has expired. Please sign in again.');
+    }
     throw new Error(`Failed to save scan record: ${insertError?.message ?? 'Unknown error'}`);
   }
 
@@ -67,11 +89,16 @@ export async function uploadImageScan(
 }
 
 export async function submitTextScan(
-  userId: string,
   textContent: string,
   consentAt: Date
 ): Promise<Scan> {
-  console.log('[scanService] submitTextScan start', { userId, textLength: textContent.trim().length });
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) {
+    throw new Error('Your session has expired. Please sign in again.');
+  }
+  const userId = session.user.id;
+
+  console.log('[scanService] submitTextScan start', { textLength: textContent.trim().length });
 
   const { data, error } = await supabase
     .from('scans')
@@ -88,6 +115,9 @@ export async function submitTextScan(
 
   if (error || !data) {
     console.log('[scanService] submitTextScan failed:', error?.message);
+    if (error && isAuthError(error.message)) {
+      throw new Error('Your session has expired. Please sign in again.');
+    }
     throw new Error(`Failed to save text scan: ${error?.message ?? 'Unknown error'}`);
   }
 
@@ -96,11 +126,16 @@ export async function submitTextScan(
 }
 
 export async function submitUrlScan(
-  userId: string,
   normalizedUrl: string,
   consentAt: Date
 ): Promise<Scan> {
-  console.log('[scanService] submitUrlScan start', { userId, normalizedUrl });
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) {
+    throw new Error('Your session has expired. Please sign in again.');
+  }
+  const userId = session.user.id;
+
+  console.log('[scanService] submitUrlScan start', {});
 
   const { data, error } = await supabase
     .from('scans')
@@ -117,6 +152,9 @@ export async function submitUrlScan(
 
   if (error || !data) {
     console.log('[scanService] submitUrlScan failed:', error?.message);
+    if (error && isAuthError(error.message)) {
+      throw new Error('Your session has expired. Please sign in again.');
+    }
     throw new Error(`Failed to save URL scan: ${error?.message ?? 'Unknown error'}`);
   }
 

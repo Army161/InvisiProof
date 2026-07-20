@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   Alert,
   ScrollView,
+  Linking,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
@@ -19,6 +20,7 @@ import { AuthRequiredModal } from '@/components/AuthRequiredModal';
 import { useSubmitScan } from '@/hooks/useSubmitScan';
 import { ConsentCheckbox } from '@/components/ConsentCheckbox';
 import { PrimaryButton } from '@/components/PrimaryButton';
+import { deleteTempImage } from '@/utils/imagePrep';
 import type { ImageSourcePropType } from 'react-native';
 
 function resolveImageSource(source: string | number | ImageSourcePropType | undefined): ImageSourcePropType {
@@ -41,6 +43,45 @@ export default function ScanScreenshotScreen() {
   const isGuestOrNoUser = isGuest || !user;
   const isSubmitting = stage === 'preparing' || stage === 'uploading' || stage === 'saving';
   const submitDisabled = !selectedAsset || !consentChecked || stage !== 'idle';
+
+  // Android: recover pending picker result after activity recreation
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const pending = await ImagePicker.getPendingResultAsync();
+        if (cancelled) return;
+        if (
+          pending &&
+          'canceled' in pending &&
+          !pending.canceled &&
+          'assets' in pending &&
+          pending.assets &&
+          pending.assets.length > 0
+        ) {
+          // Only process if we don't already have a selected asset
+          setSelectedAsset(prev => {
+            if (prev) return prev; // already have one, don't overwrite
+            return (pending as ImagePicker.ImagePickerSuccessResult).assets[0];
+          });
+          setSourceType('library');
+          setConsentChecked(false);
+        }
+      } catch {
+        // getPendingResultAsync not supported on this platform — ignore
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []); // run once on mount
+
+  // Cleanup temp file on unmount
+  useEffect(() => {
+    return () => {
+      if (selectedAsset?.uri) {
+        deleteTempImage(selectedAsset.uri).catch(() => {});
+      }
+    };
+  }, [selectedAsset]);
 
   const handlePickLibrary = async () => {
     console.log('[ScanScreenshot] pick from library pressed');
@@ -71,11 +112,25 @@ export default function ScanScreenshotScreen() {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     console.log('[ScanScreenshot] camera permission status:', status);
     if (status !== 'granted') {
-      Alert.alert(
-        'Camera Permission Required',
-        'Please allow camera access in your device settings to take a photo.',
-        [{ text: 'OK' }]
-      );
+      if (status === 'denied') {
+        // Can potentially re-request — just inform
+        Alert.alert(
+          'Camera Access Needed',
+          'Camera permission is required to take a photo.',
+          [{ text: 'OK' }]
+        );
+      } else {
+        // 'blocked' or 'undetermined' after denial — must open Settings
+        Alert.alert(
+          'Camera Access Blocked',
+          'Camera access has been denied. You can enable it in Settings or choose a photo from your library instead.',
+          [
+            { text: 'Open Settings', onPress: () => Linking.openSettings() },
+            { text: 'Choose from Photos', onPress: handlePickLibrary },
+            { text: 'Cancel', style: 'cancel' },
+          ]
+        );
+      }
       return;
     }
     const result = await ImagePicker.launchCameraAsync({
@@ -94,6 +149,8 @@ export default function ScanScreenshotScreen() {
 
   const handleReplace = async () => {
     console.log('[ScanScreenshot] replace image pressed, sourceType:', sourceType);
+    const prevUri = selectedAsset?.uri;
+    if (prevUri) deleteTempImage(prevUri).catch(() => {});
     if (sourceType === 'camera') {
       await handleTakePhoto();
     } else {
@@ -103,6 +160,9 @@ export default function ScanScreenshotScreen() {
 
   const handleRemove = () => {
     console.log('[ScanScreenshot] remove image pressed');
+    if (selectedAsset?.uri) {
+      deleteTempImage(selectedAsset.uri).catch(() => {});
+    }
     setSelectedAsset(null);
     setConsentChecked(false);
     reset();
@@ -110,8 +170,8 @@ export default function ScanScreenshotScreen() {
 
   const handleSubmit = async () => {
     console.log('[ScanScreenshot] submit pressed');
-    if (!selectedAsset || !user) return;
-    const scan = await submitImage(user.id, selectedAsset, sourceType);
+    if (!selectedAsset) return;
+    const scan = await submitImage(selectedAsset, sourceType);
     if (scan) {
       console.log('[ScanScreenshot] submit success, navigating to submission-ready, scanId:', scan.id);
       router.push({
@@ -303,7 +363,7 @@ export default function ScanScreenshotScreen() {
         {/* Submit button */}
         {selectedAsset && (
           <PrimaryButton
-            title="Submit for Analysis"
+            title="Upload Securely"
             onPress={handleSubmit}
             disabled={submitDisabled}
             loading={isSubmitting}
