@@ -22,16 +22,24 @@ function isAuthError(message: string): boolean {
   );
 }
 
+async function requireAuthenticatedUser(): Promise<string> {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) {
+    throw new Error('Your session has expired. Please sign in again.');
+  }
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error || !user) {
+    throw new Error('Your session has expired. Please sign in again.');
+  }
+  return user.id;
+}
+
 export async function uploadImageScan(
   image: ImageMeta,
   sourceType: 'camera' | 'library',
   consentAt: Date
 ): Promise<Scan> {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) {
-    throw new Error('Your session has expired. Please sign in again.');
-  }
-  const userId = session.user.id;
+  const userId = await requireAuthenticatedUser();
 
   const scanId = generateScanId();
   const storagePath = `${userId}/${scanId}/source.jpg`;
@@ -92,11 +100,7 @@ export async function submitTextScan(
   textContent: string,
   consentAt: Date
 ): Promise<Scan> {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) {
-    throw new Error('Your session has expired. Please sign in again.');
-  }
-  const userId = session.user.id;
+  const userId = await requireAuthenticatedUser();
 
   console.log('[scanService] submitTextScan start', { textLength: textContent.trim().length });
 
@@ -129,11 +133,7 @@ export async function submitUrlScan(
   normalizedUrl: string,
   consentAt: Date
 ): Promise<Scan> {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) {
-    throw new Error('Your session has expired. Please sign in again.');
-  }
-  const userId = session.user.id;
+  const userId = await requireAuthenticatedUser();
 
   console.log('[scanService] submitUrlScan start', {});
 
