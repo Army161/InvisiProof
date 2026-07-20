@@ -39,9 +39,9 @@
       [
         "expo-image-picker",
         {
-          "cameraPermission": "ProofLoop needs camera access to photograph content you want to verify.",
-          "microphonePermission": false,
-          "photosPermission": "ProofLoop needs photo library access to select content you want to verify."
+          "photosPermission": "Allow ProofLoop to select screenshots or photos you choose to review.",
+          "cameraPermission": "Allow ProofLoop to take a photo of suspicious content you choose to review.",
+          "microphonePermission": false
         }
       ]
     ],

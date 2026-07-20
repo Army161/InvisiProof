@@ -109,41 +109,53 @@ export default function ScanScreenshotScreen() {
       setShowAuthModal(true);
       return;
     }
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    console.log('[ScanScreenshot] camera permission status:', status);
-    if (status !== 'granted') {
-      if (status === 'denied') {
-        // Can potentially re-request — just inform
+    const { granted, canAskAgain } = await ImagePicker.requestCameraPermissionsAsync();
+    if (!granted) {
+      if (canAskAgain) {
         Alert.alert(
           'Camera Access Needed',
-          'Camera permission is required to take a photo.',
-          [{ text: 'OK' }]
+          'ProofLoop needs camera access to take a photo.',
+          [
+            { text: 'Try Again', onPress: handleTakePhoto },
+            { text: 'Choose from Photos Instead', onPress: handlePickLibrary },
+            { text: 'Cancel', style: 'cancel' },
+          ]
         );
       } else {
-        // 'blocked' or 'undetermined' after denial — must open Settings
         Alert.alert(
-          'Camera Access Blocked',
-          'Camera access has been denied. You can enable it in Settings or choose a photo from your library instead.',
+          'Camera Access Required',
+          'Camera access has been denied. Enable it in Settings or choose a photo from your library instead.',
           [
             { text: 'Open Settings', onPress: () => Linking.openSettings() },
-            { text: 'Choose from Photos', onPress: handlePickLibrary },
+            { text: 'Choose from Photos Instead', onPress: handlePickLibrary },
             { text: 'Cancel', style: 'cancel' },
           ]
         );
       }
       return;
     }
-    const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: false,
-      quality: 1,
-    });
-    console.log('[ScanScreenshot] camera result, cancelled:', result.canceled);
-    if (!result.canceled && result.assets.length > 0) {
-      setSelectedAsset(result.assets[0]);
-      setSourceType('camera');
-      setConsentChecked(false);
-      reset();
+    try {
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: false,
+        quality: 1,
+      });
+      if (!result.canceled && result.assets.length > 0) {
+        setSelectedAsset(result.assets[0]);
+        setSourceType('camera');
+        setConsentChecked(false);
+        reset();
+      }
+      // canceled: return silently
+    } catch {
+      Alert.alert(
+        'Camera Unavailable',
+        'A camera is not available on this device. Choose an existing photo instead.',
+        [
+          { text: 'Choose from Photos Instead', onPress: handlePickLibrary },
+          { text: 'Cancel', style: 'cancel' },
+        ]
+      );
     }
   };
 
