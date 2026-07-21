@@ -1,8 +1,7 @@
 import { useState, useRef, useCallback } from 'react';
-import type { ImagePickerAsset } from 'expo-image-picker';
-import { prepareImage, deleteTempImage } from '@/utils/imagePrep';
+import { deleteTempImage } from '@/utils/imagePrep';
 import { uploadImageScan, submitTextScan, submitUrlScan } from '@/services/scanService';
-import type { Scan } from '@/types/scan';
+import type { PreparedImage, Scan } from '@/types/scan';
 
 export type SubmitStage = 'idle' | 'preparing' | 'uploading' | 'saving' | 'done' | 'error';
 
@@ -19,7 +18,7 @@ interface UseSubmitScanResult {
   stage: SubmitStage;
   stageLabel: string;
   error: string | null;
-  submitImage: (asset: ImagePickerAsset, sourceType: 'camera' | 'library') => Promise<Scan | null>;
+  submitImage: (prepared: PreparedImage, sourceType: 'camera' | 'library') => Promise<Scan | null>;
   submitText: (textContent: string) => Promise<Scan | null>;
   submitUrl: (normalizedUrl: string) => Promise<Scan | null>;
   reset: () => void;
@@ -38,7 +37,7 @@ export function useSubmitScan(): UseSubmitScanResult {
   }, []);
 
   const submitImage = useCallback(async (
-    asset: ImagePickerAsset,
+    prepared: PreparedImage,
     sourceType: 'camera' | 'library'
   ): Promise<Scan | null> => {
     if (inFlightRef.current) {
@@ -47,12 +46,8 @@ export function useSubmitScan(): UseSubmitScanResult {
     }
     inFlightRef.current = true;
     setError(null);
-    console.log('[useSubmitScan] submitImage start', { sourceType });
-    let preparedUri: string | null = null;
+    console.log('[useSubmitScan] submitImage start', { sourceType, uri: prepared.uri });
     try {
-      setStage('preparing');
-      const prepared = await prepareImage(asset);
-      preparedUri = prepared.uri;
       setStage('uploading');
       const consentAt = new Date();
       setStage('saving');
@@ -66,7 +61,7 @@ export function useSubmitScan(): UseSubmitScanResult {
       console.log('[useSubmitScan] submitImage error:', msg);
       setError(msg);
       setStage('error');
-      if (preparedUri) await deleteTempImage(preparedUri);
+      // Do NOT delete temp file on error — screen retains it for retry
       return null;
     } finally {
       inFlightRef.current = false;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,8 +8,9 @@ import {
   Alert,
   ScrollView,
   Linking,
+  Platform,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useNavigation } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import type { ImagePickerAsset } from 'expo-image-picker';
 import { Camera, ImageIcon, X, RefreshCw } from 'lucide-react-native';
@@ -20,32 +21,105 @@ import { AuthRequiredModal } from '@/components/AuthRequiredModal';
 import { useSubmitScan } from '@/hooks/useSubmitScan';
 import { ConsentCheckbox } from '@/components/ConsentCheckbox';
 import { PrimaryButton } from '@/components/PrimaryButton';
-import { deleteTempImage } from '@/utils/imagePrep';
-import type { ImageSourcePropType } from 'react-native';
-
-function resolveImageSource(source: string | number | ImageSourcePropType | undefined): ImageSourcePropType {
-  if (!source) return { uri: '' };
-  if (typeof source === 'string') return { uri: source };
-  return source as ImageSourcePropType;
-}
+import { prepareImage, deleteTempImage } from '@/utils/imagePrep';
+import type { PreparedImage } from '@/types/scan';
 
 export default function ScanScreenshotScreen() {
   const { colors } = useAppTheme();
   const router = useRouter();
+  const navigation = useNavigation();
   const { user, isGuest } = useAuth();
   const { stage, stageLabel, error, submitImage, reset } = useSubmitScan();
 
-  const [selectedAsset, setSelectedAsset] = useState<ImagePickerAsset | null>(null);
+  const [preparedImage, setPreparedImage] = useState<PreparedImage | null>(null);
+  const [isPreparing, setIsPreparing] = useState(false);
+  const [prepError, setPrepError] = useState<string | null>(null);
   const [consentChecked, setConsentChecked] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [sourceType, setSourceType] = useState<'camera' | 'library'>('library');
 
+  const preparedImageRef = useRef<PreparedImage | null>(null);
+  const isSubmittingRef = useRef(false);
+
   const isGuestOrNoUser = isGuest || !user;
-  const isSubmitting = stage === 'preparing' || stage === 'uploading' || stage === 'saving';
-  const submitDisabled = !selectedAsset || !consentChecked || stage !== 'idle';
+  const isSubmitting = stage === 'uploading' || stage === 'saving';
+  const submitDisabled = !preparedImage || !consentChecked || stage !== 'idle' || isPreparing;
+
+  // Unmount cleanup — only runs if not navigating away via beforeRemove
+  useEffect(() => {
+    return () => {
+      if (preparedImageRef.current && !isSubmittingRef.current) {
+        deleteTempImage(preparedImageRef.current.uri).catch(() => {});
+      }
+    };
+  }, []); // empty deps — reads ref, not state
+
+  // Navigation guard
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('beforeRemove', (e: any) => {
+      if (isSubmittingRef.current) {
+        e.preventDefault();
+        Alert.alert(
+          'Upload in progress',
+          'Wait for the secure upload to finish before leaving this screen.',
+          [{ text: 'Continue Upload' }]
+        );
+        return;
+      }
+      if (preparedImageRef.current) {
+        e.preventDefault();
+        Alert.alert(
+          'Discard selected image?',
+          'The prepared image will be removed if you leave this screen.',
+          [
+            { text: 'Keep Editing', style: 'cancel' },
+            {
+              text: 'Discard',
+              style: 'destructive',
+              onPress: async () => {
+                if (preparedImageRef.current) {
+                  await deleteTempImage(preparedImageRef.current.uri);
+                  preparedImageRef.current = null;
+                }
+                navigation.dispatch(e.data.action);
+              },
+            },
+          ]
+        );
+      }
+    });
+    return unsubscribe;
+  }, [navigation]);
+
+  const handlePrepareAndSet = useCallback(async (asset: ImagePickerAsset, src: 'camera' | 'library') => {
+    setIsPreparing(true);
+    setPrepError(null);
+    console.log('[ScanScreenshot] preparing image, sourceType:', src);
+    try {
+      const prepared = await prepareImage(asset);
+      console.log('[ScanScreenshot] image prepared', { width: prepared.width, height: prepared.height, sizeBytes: prepared.sizeBytes });
+      // Delete previous prepared image if any
+      if (preparedImageRef.current) {
+        await deleteTempImage(preparedImageRef.current.uri);
+      }
+      preparedImageRef.current = prepared;
+      setPreparedImage(prepared);
+      setSourceType(src);
+      setConsentChecked(false);
+      reset();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Could not prepare the selected image.';
+      console.log('[ScanScreenshot] image preparation error:', msg);
+      setPrepError(msg);
+      // Do NOT clear existing preparedImage on failure
+    } finally {
+      setIsPreparing(false);
+    }
+  }, [reset]);
 
   // Android: recover pending picker result after activity recreation
   useEffect(() => {
+    if (Platform.OS !== 'android') return;
     let cancelled = false;
     (async () => {
       try {
@@ -53,35 +127,22 @@ export default function ScanScreenshotScreen() {
         if (cancelled) return;
         if (
           pending &&
+          !('code' in pending) &&
           'canceled' in pending &&
           !pending.canceled &&
           'assets' in pending &&
           pending.assets &&
           pending.assets.length > 0
         ) {
-          // Only process if we don't already have a selected asset
-          setSelectedAsset(prev => {
-            if (prev) return prev; // already have one, don't overwrite
-            return (pending as ImagePicker.ImagePickerSuccessResult).assets[0];
-          });
-          setSourceType('library');
-          setConsentChecked(false);
+          if (preparedImageRef.current) return;
+          await handlePrepareAndSet(pending.assets[0], 'library');
         }
       } catch {
-        // getPendingResultAsync not supported on this platform — ignore
+        // getPendingResultAsync not supported — ignore silently
       }
     })();
     return () => { cancelled = true; };
-  }, []); // run once on mount
-
-  // Cleanup temp file on unmount
-  useEffect(() => {
-    return () => {
-      if (selectedAsset?.uri) {
-        deleteTempImage(selectedAsset.uri).catch(() => {});
-      }
-    };
-  }, [selectedAsset]);
+  }, [handlePrepareAndSet]); // handlePrepareAndSet is stable (useCallback)
 
   const handlePickLibrary = async () => {
     console.log('[ScanScreenshot] pick from library pressed');
@@ -96,11 +157,9 @@ export default function ScanScreenshotScreen() {
     });
     console.log('[ScanScreenshot] library picker result, cancelled:', result.canceled);
     if (!result.canceled && result.assets.length > 0) {
-      setSelectedAsset(result.assets[0]);
-      setSourceType('library');
-      setConsentChecked(false);
-      reset();
+      await handlePrepareAndSet(result.assets[0], 'library');
     }
+    // canceled: return silently, preserve existing preparedImage
   };
 
   const handleTakePhoto = async () => {
@@ -140,11 +199,9 @@ export default function ScanScreenshotScreen() {
         allowsEditing: false,
         quality: 1,
       });
+      console.log('[ScanScreenshot] camera result, cancelled:', result.canceled);
       if (!result.canceled && result.assets.length > 0) {
-        setSelectedAsset(result.assets[0]);
-        setSourceType('camera');
-        setConsentChecked(false);
-        reset();
+        await handlePrepareAndSet(result.assets[0], 'camera');
       }
       // canceled: return silently
     } catch {
@@ -161,8 +218,7 @@ export default function ScanScreenshotScreen() {
 
   const handleReplace = async () => {
     console.log('[ScanScreenshot] replace image pressed, sourceType:', sourceType);
-    const prevUri = selectedAsset?.uri;
-    if (prevUri) deleteTempImage(prevUri).catch(() => {});
+    // handlePrepareAndSet deletes the old file before setting the new one
     if (sourceType === 'camera') {
       await handleTakePhoto();
     } else {
@@ -172,20 +228,28 @@ export default function ScanScreenshotScreen() {
 
   const handleRemove = () => {
     console.log('[ScanScreenshot] remove image pressed');
-    if (selectedAsset?.uri) {
-      deleteTempImage(selectedAsset.uri).catch(() => {});
+    if (preparedImageRef.current) {
+      deleteTempImage(preparedImageRef.current.uri).catch(() => {});
+      preparedImageRef.current = null;
     }
-    setSelectedAsset(null);
+    setPreparedImage(null);
+    setSourceType('library');
     setConsentChecked(false);
+    setPrepError(null);
     reset();
   };
 
   const handleSubmit = async () => {
     console.log('[ScanScreenshot] submit pressed');
-    if (!selectedAsset) return;
-    const scan = await submitImage(selectedAsset, sourceType);
+    if (!preparedImage || !consentChecked) return;
+    isSubmittingRef.current = true;
+    const scan = await submitImage(preparedImage, sourceType);
+    isSubmittingRef.current = false;
     if (scan) {
       console.log('[ScanScreenshot] submit success, navigating to submission-ready');
+      preparedImageRef.current = null; // hook already deleted the file on success
+      setPreparedImage(null);
+      setConsentChecked(false);
       router.push({
         pathname: '/(tabs)/(scan)/submission-ready',
         params: {
@@ -195,13 +259,16 @@ export default function ScanScreenshotScreen() {
         },
       });
     }
+    // On error: preparedImage retained for retry (hook does NOT delete on error)
   };
 
   const handleConsentToggle = () => {
     setConsentChecked(prev => !prev);
   };
 
-  const imageUri = selectedAsset?.uri ?? '';
+  const sizeKB = preparedImage ? (preparedImage.sizeBytes / 1024).toFixed(0) : '0';
+  const dimensionsText = preparedImage ? `${preparedImage.width} × ${preparedImage.height}` : '';
+  const sourceLabel = sourceType === 'camera' ? 'Camera' : 'Photo Library';
 
   return (
     <>
@@ -211,8 +278,8 @@ export default function ScanScreenshotScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* Picker buttons */}
-        {!selectedAsset && (
+        {/* Picker buttons — shown when no image and not preparing */}
+        {!preparedImage && !isPreparing && (
           <View style={{ gap: SPACING.sm, marginBottom: SPACING.md }}>
             <Pressable
               onPress={handlePickLibrary}
@@ -292,11 +359,66 @@ export default function ScanScreenshotScreen() {
           </View>
         )}
 
+        {/* Preparation loading state */}
+        {isPreparing && (
+          <View
+            style={{
+              height: 240,
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: colors.surface,
+              borderRadius: RADIUS.lg,
+              marginBottom: SPACING.md,
+            }}
+          >
+            <ActivityIndicator size="large" color={colors.primary} />
+            <Text style={[TYPOGRAPHY.caption, { color: colors.textSecondary, marginTop: SPACING.sm }]}>
+              Preparing image…
+            </Text>
+          </View>
+        )}
+
+        {/* Preparation error state */}
+        {prepError && !isPreparing && !preparedImage && (
+          <View
+            style={{
+              marginBottom: SPACING.md,
+              padding: SPACING.md,
+              borderRadius: RADIUS.md,
+              backgroundColor: colors.dangerMuted,
+              borderWidth: 1,
+              borderColor: colors.danger,
+            }}
+          >
+            <Text style={[TYPOGRAPHY.caption, { color: colors.danger }]}>
+              {prepError}
+            </Text>
+            <Pressable
+              onPress={() => setPrepError(null)}
+              accessibilityRole="button"
+            >
+              <Text
+                style={[
+                  TYPOGRAPHY.caption,
+                  {
+                    color: colors.danger,
+                    fontWeight: '600',
+                    textDecorationLine: 'underline',
+                    marginTop: SPACING.xs,
+                  },
+                ]}
+              >
+                Dismiss
+              </Text>
+            </Pressable>
+          </View>
+        )}
+
         {/* Image preview */}
-        {selectedAsset && (
+        {preparedImage && (
           <View style={{ marginBottom: SPACING.md }}>
             <Image
-              source={resolveImageSource(imageUri)}
+              source={{ uri: preparedImage.uri }}
               resizeMode="contain"
               style={{
                 width: '100%',
@@ -305,6 +427,26 @@ export default function ScanScreenshotScreen() {
                 backgroundColor: colors.surface,
               }}
             />
+            {/* Metadata row */}
+            <View
+              style={{
+                flexDirection: 'row',
+                gap: SPACING.sm,
+                marginTop: SPACING.xs,
+                flexWrap: 'wrap',
+              }}
+            >
+              <Text style={[TYPOGRAPHY.caption, { color: colors.textSecondary }]}>
+                {dimensionsText}
+              </Text>
+              <Text style={[TYPOGRAPHY.caption, { color: colors.textSecondary }]}>
+                {sizeKB}
+                {' KB'}
+              </Text>
+              <Text style={[TYPOGRAPHY.caption, { color: colors.textSecondary }]}>
+                {sourceLabel}
+              </Text>
+            </View>
             {/* Replace / Remove row */}
             <View
               style={{
@@ -362,7 +504,7 @@ export default function ScanScreenshotScreen() {
         )}
 
         {/* Consent */}
-        {selectedAsset && (
+        {preparedImage && (
           <View style={{ marginBottom: SPACING.md }}>
             <ConsentCheckbox
               checked={consentChecked}
@@ -373,7 +515,7 @@ export default function ScanScreenshotScreen() {
         )}
 
         {/* Submit button */}
-        {selectedAsset && (
+        {preparedImage && (
           <PrimaryButton
             title="Upload Securely"
             onPress={handleSubmit}
