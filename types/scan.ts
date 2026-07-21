@@ -1,6 +1,6 @@
 export type InputType = 'image' | 'text' | 'url';
 export type SourceType = 'camera' | 'library' | 'paste';
-export type ScanStatus = 'ready_for_analysis';
+export type ScanStatus = 'ready_for_analysis' | 'processing' | 'completed' | 'failed';
 
 export interface PreparedImage {
   uri: string;
@@ -24,13 +24,15 @@ export interface Scan {
   input_type: InputType;
   source_type: SourceType;
   status: ScanStatus;
+  storage_bucket: string | null;
   storage_path: string | null;
-  image_size_bytes: number | null;
+  mime_type: string | null;
+  file_size_bytes: number | null;
   image_width: number | null;
   image_height: number | null;
   text_content: string | null;
   normalized_url: string | null;
-  consent_at: string;
+  consent_confirmed_at: string;
   created_at: string;
   updated_at: string;
 }

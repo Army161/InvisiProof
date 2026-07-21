@@ -81,11 +81,13 @@ export async function uploadImageScan(
       input_type: 'image',
       source_type: sourceType,
       status: 'ready_for_analysis',
+      storage_bucket: 'scan-uploads',
       storage_path: storagePath,
-      image_size_bytes: image.sizeBytes,
+      mime_type: 'image/jpeg',
+      file_size_bytes: image.sizeBytes,
       image_width: image.width,
       image_height: image.height,
-      consent_at: consentAt.toISOString(),
+      consent_confirmed_at: consentAt.toISOString(),
     })
     .select()
     .single();
@@ -119,8 +121,10 @@ export async function submitTextScan(
       input_type: 'text',
       source_type: 'paste',
       status: 'ready_for_analysis',
+      storage_bucket: null,
+      mime_type: null,
       text_content: textContent.trim(),
-      consent_at: consentAt.toISOString(),
+      consent_confirmed_at: consentAt.toISOString(),
     })
     .select()
     .single();
@@ -152,8 +156,10 @@ export async function submitUrlScan(
       input_type: 'url',
       source_type: 'paste',
       status: 'ready_for_analysis',
+      storage_bucket: null,
+      mime_type: null,
       normalized_url: normalizedUrl,
-      consent_at: consentAt.toISOString(),
+      consent_confirmed_at: consentAt.toISOString(),
     })
     .select()
     .single();
