@@ -16,6 +16,7 @@ import {
   Check,
   LogOut,
   UserCog,
+  Trash2,
 } from 'lucide-react-native';
 import { useAppTheme } from '@/hooks/useAppTheme';
 import { useAuth } from '@/contexts/AuthContext';
@@ -320,6 +321,7 @@ export default function ProfileScreen() {
   const router = useRouter();
   const { user, isGuest, signOut } = useAuth();
   const [appearanceModalVisible, setAppearanceModalVisible] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
 
   const isAuthenticated = !!user;
 
@@ -350,6 +352,43 @@ export default function ProfileScreen() {
               router.replace('/(auth)/welcome');
             } catch {
               console.log('[ProfileScreen] sign out error');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleDeleteAccount = () => {
+    console.log('[ProfileScreen] delete account row pressed');
+    Alert.alert(
+      'Delete your ProofLoop account?',
+      'This will permanently delete your account, profile, and all submitted scans. This cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete Account',
+          style: 'destructive',
+          onPress: async () => {
+            console.log('[ProfileScreen] delete account confirmed');
+            if (!user) return;
+            setDeletingAccount(true);
+            try {
+              const { supabase: supabaseClient } = await import('@/lib/supabase');
+              const { error: profileError } = await supabaseClient
+                .from('profiles')
+                .delete()
+                .eq('id', user.id);
+              if (profileError) {
+                console.log('[ProfileScreen] profile delete error');
+              }
+              await signOut();
+              router.replace('/(auth)/welcome');
+            } catch {
+              console.log('[ProfileScreen] delete account error');
+              Alert.alert('Error', 'Could not delete your account. Please try again.');
+            } finally {
+              setDeletingAccount(false);
             }
           },
         },
@@ -400,6 +439,13 @@ export default function ProfileScreen() {
                   label="Sign Out"
                   destructive
                   onPress={handleSignOut}
+                />,
+                <SettingsRow
+                  key="delete-account"
+                  icon={Trash2}
+                  label={deletingAccount ? 'Deleting…' : 'Delete Account'}
+                  destructive
+                  onPress={deletingAccount ? undefined : handleDeleteAccount}
                 />,
               ]}
             />

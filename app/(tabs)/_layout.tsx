@@ -47,7 +47,10 @@ export default function TabLayout() {
     !pathname.includes('/safety-disclaimer') &&
     !pathname.includes('/help-support') &&
     !pathname.includes('/privacy-policy') &&
-    !pathname.includes('/terms-of-use');
+    !pathname.includes('/terms-of-use') &&
+    !pathname.includes('/create-request') &&
+    !pathname.includes('/respond-to-request') &&
+    !/\/\(history\)\/[^/]+$/.test(pathname);
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
