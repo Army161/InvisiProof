@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "ProofLoop",
-    "slug": "proofloop-verify",
+    "slug": "proofloop",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
