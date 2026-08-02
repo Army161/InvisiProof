@@ -62,6 +62,7 @@ export interface Scan {
   image_height: number | null;
   text_content: string | null;
   normalized_url: string | null;
+  original_filename?: string | null;
   consent_confirmed_at: string;
   created_at: string;
   updated_at: string;

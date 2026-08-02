@@ -50,8 +50,8 @@ export function useSubmitScan(): UseSubmitScanResult {
     try {
       setStage('uploading');
       const consentAt = new Date();
-      setStage('saving');
       const scan = await uploadImageScan(prepared, sourceType, consentAt);
+      setStage('saving');
       setStage('done');
       console.log('[useSubmitScan] submitImage done');
       await deleteTempImage(prepared.uri);

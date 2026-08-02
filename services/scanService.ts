@@ -63,7 +63,7 @@ export async function uploadImageScan(
     });
 
   if (uploadError) {
-    console.log('[scanService] uploadImageScan storage upload failed:', uploadError.message);
+    console.error('[scanService] Upload failed');
     if (isAuthError(uploadError.message)) {
       throw new Error('Your session has expired. Please sign in again.');
     }
@@ -93,7 +93,7 @@ export async function uploadImageScan(
     .single();
 
   if (insertError || !data) {
-    console.log('[scanService] uploadImageScan insert failed, rolling back storage:', insertError?.message);
+    console.error('[scanService] Upload failed');
     // Rollback: delete the uploaded file to prevent orphan
     await supabase.storage.from('scan-uploads').remove([storagePath]);
     if (insertError && isAuthError(insertError.message)) {
@@ -130,7 +130,7 @@ export async function submitTextScan(
     .single();
 
   if (error || !data) {
-    console.log('[scanService] submitTextScan failed:', error?.message);
+    console.error('[scanService] Upload failed');
     if (error && isAuthError(error.message)) {
       throw new Error('Your session has expired. Please sign in again.');
     }
@@ -165,7 +165,7 @@ export async function submitUrlScan(
     .single();
 
   if (error || !data) {
-    console.log('[scanService] submitUrlScan failed:', error?.message);
+    console.error('[scanService] Upload failed');
     if (error && isAuthError(error.message)) {
       throw new Error('Your session has expired. Please sign in again.');
     }
