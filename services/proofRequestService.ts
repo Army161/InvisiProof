@@ -1,15 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import type { ProofRequest } from '@/types/scan';
 
-function generateShareCode(): string {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  let code = '';
-  for (let i = 0; i < 12; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return code;
-}
-
 export async function createProofRequest(
   challenge: string,
   expiresInHours: number
@@ -18,20 +9,11 @@ export async function createProofRequest(
   if (!session) throw new Error('Your session has expired. Please sign in again.');
 
   console.log('[proofRequestService] createProofRequest called');
-  const shareCode = generateShareCode();
-  const expiresAt = new Date(Date.now() + expiresInHours * 60 * 60 * 1000).toISOString();
-
   const { data, error } = await supabase
-    .from('proof_requests')
-    .insert({
-      requester_id: session.user.id,
-      share_code: shareCode,
-      challenge: challenge.trim(),
-      expires_at: expiresAt,
-      status: 'pending',
-    })
-    .select()
-    .single();
+    .rpc('generate_proof_request', {
+      p_challenge: challenge.trim(),
+      p_expires_in_hours: expiresInHours,
+    });
 
   if (error || !data) {
     console.log('[proofRequestService] createProofRequest failed');
@@ -79,7 +61,6 @@ export async function lookupProofRequestByCode(code: string): Promise<{
   challenge: string;
   expires_at: string;
   status: string;
-  requester_id: string;
 } | null> {
   console.log('[proofRequestService] lookupProofRequestByCode called');
   const { data, error } = await supabase

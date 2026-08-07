@@ -4,15 +4,15 @@ export interface AssessmentResult {
   id: string;
   scan_id: string;
   user_id: string;
-  risk_level: 'low' | 'medium' | 'high' | 'critical';
+  risk_level: 'low' | 'moderate' | 'high' | 'critical' | 'inconclusive';
   risk_score: number;
   summary: string;
   warning_signals: string[];
   recommended_actions: string[];
-  limitations: string | null;
-  input_type: InputType;
+  limitations: string[] | null;
   provider: string;
   model: string;
+  analysis_version: string;
   completed_at: string;
   created_at: string;
 }
@@ -23,12 +23,16 @@ export interface ProofRequest {
   share_code: string;
   challenge: string;
   expires_at: string;
-  status: 'pending' | 'completed' | 'expired' | 'cancelled';
+  status: 'pending' | 'completed' | 'expired' | 'cancelled' | 'responded' | 'failed';
   response_scan_id: string | null;
   respondent_id: string | null;
+  responded_at?: string | null;
+  completed_at?: string | null;
+  cancelled_at?: string | null;
   created_at: string;
   updated_at: string;
 }
+
 export type SourceType = 'camera' | 'library' | 'paste';
 export type ScanStatus = 'ready_for_analysis' | 'processing' | 'completed' | 'failed';
 
@@ -64,6 +68,10 @@ export interface Scan {
   normalized_url: string | null;
   original_filename?: string | null;
   consent_confirmed_at: string;
+  analysis_started_at?: string | null;
+  analysis_completed_at?: string | null;
+  analysis_error_code?: string | null;
+  analysis_attempt_count?: number;
   created_at: string;
   updated_at: string;
 }

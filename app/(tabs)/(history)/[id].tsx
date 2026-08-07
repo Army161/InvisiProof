@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -21,11 +21,13 @@ import {
   Image as ImageIcon,
   Type,
   Link,
+  Trash2,
 } from 'lucide-react-native';
 import { useAppTheme } from '@/hooks/useAppTheme';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { triggerAnalysis, fetchAssessmentResult } from '@/services/assessmentService';
+import { deleteScan } from '@/services/deleteScanService';
 import { TYPOGRAPHY, SPACING, RADIUS, SHADOWS } from '@/constants/theme';
 import { InfoCard } from '@/components/InfoCard';
 import { RiskLevelBadge } from '@/components/RiskLevelBadge';
@@ -66,6 +68,9 @@ function formatScore(score: number): string {
   return String(Math.round(Number(score)));
 }
 
+const POLL_INTERVAL_MS = 5000;
+const POLL_MAX_COUNT = 12;
+
 export default function ScanDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { colors } = useAppTheme();
@@ -81,6 +86,17 @@ export default function ScanDetailScreen() {
   const [signedUrlExpired, setSignedUrlExpired] = useState(false);
   const [triggerLoading, setTriggerLoading] = useState(false);
   const [triggerError, setTriggerError] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const pollCountRef = useRef(0);
+  const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const stopPolling = useCallback(() => {
+    if (pollIntervalRef.current) {
+      clearInterval(pollIntervalRef.current);
+      pollIntervalRef.current = null;
+    }
+  }, []);
 
   const loadData = useCallback(async () => {
     if (!id || !user) return;
@@ -95,11 +111,17 @@ export default function ScanDetailScreen() {
       if (scanError || !scanData) {
         console.log('[ScanDetailScreen] scan not found or access denied');
         setError('This scan could not be found or you do not have access to it.');
+        stopPolling();
         return;
       }
 
       const s = scanData as Scan;
       setScan(s);
+
+      // Stop polling if no longer processing
+      if (s.status !== 'processing') {
+        stopPolling();
+      }
 
       // Load signed URL for image scans
       if (s.input_type === 'image' && s.storage_path) {
@@ -120,13 +142,45 @@ export default function ScanDetailScreen() {
     } catch {
       console.log('[ScanDetailScreen] loadData unexpected error');
       setError('Could not load scan details. Please check your connection.');
+      stopPolling();
     }
-  }, [id, user]);
+  }, [id, user, stopPolling]);
 
   useEffect(() => {
     setLoading(true);
     loadData().finally(() => setLoading(false));
   }, [loadData]);
+
+  // Polling for processing scans
+  useEffect(() => {
+    if (!scan || scan.status !== 'processing') return;
+
+    pollCountRef.current = 0;
+    stopPolling();
+
+    pollIntervalRef.current = setInterval(async () => {
+      pollCountRef.current += 1;
+      console.log('[ScanDetailScreen] polling tick', pollCountRef.current);
+      if (pollCountRef.current >= POLL_MAX_COUNT) {
+        console.log('[ScanDetailScreen] polling max count reached, stopping');
+        stopPolling();
+        return;
+      }
+      await loadData();
+    }, POLL_INTERVAL_MS);
+
+    return () => {
+      stopPolling();
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scan?.status, stopPolling, loadData]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      stopPolling();
+    };
+  }, [stopPolling]);
 
   const handleRefreshSignedUrl = async () => {
     if (!scan?.storage_path) return;
@@ -160,6 +214,35 @@ export default function ScanDetailScreen() {
     setLoading(true);
     setError(null);
     loadData().finally(() => setLoading(false));
+  };
+
+  const handleDeleteScan = () => {
+    if (!id) return;
+    console.log('[ScanDetailScreen] delete scan pressed');
+    Alert.alert(
+      'Delete this scan?',
+      'This will permanently delete the scan, image, and analysis results.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            console.log('[ScanDetailScreen] delete scan confirmed');
+            setDeleting(true);
+            const result = await deleteScan(id);
+            setDeleting(false);
+            if (!result.success) {
+              console.log('[ScanDetailScreen] delete scan failed');
+              Alert.alert('Error', result.error ?? 'Could not delete this scan. Please try again.');
+            } else {
+              console.log('[ScanDetailScreen] delete scan success, navigating back');
+              router.back();
+            }
+          },
+        },
+      ]
+    );
   };
 
   if (loading) {
@@ -196,9 +279,16 @@ export default function ScanDetailScreen() {
   const sourceLabel = SOURCE_LABELS[scan.source_type] ?? scan.source_type;
   const submittedDate = formatDate(scan.created_at);
 
-  const riskLevelForBadge = assessment?.risk_level === 'critical'
-    ? 'high'
-    : (assessment?.risk_level as 'low' | 'medium' | 'high' | undefined) ?? 'unknown';
+  const riskLevelForBadge = (() => {
+    const level = assessment?.risk_level;
+    if (!level) return 'unknown' as const;
+    if (level === 'low') return 'low' as const;
+    if (level === 'moderate') return 'moderate' as const;
+    if (level === 'high') return 'high' as const;
+    if (level === 'critical') return 'critical' as const;
+    if (level === 'inconclusive') return 'inconclusive' as const;
+    return 'unknown' as const;
+  })();
 
   const scoreDisplay = assessment ? formatScore(assessment.risk_score) : null;
 
@@ -452,15 +542,29 @@ export default function ScanDetailScreen() {
           ) : null}
 
           {/* Limitations */}
-          {assessment.limitations ? (
+          {assessment.limitations && assessment.limitations.length > 0 ? (
             <InfoCard>
-              <View style={{ gap: SPACING.xs }}>
+              <View style={{ gap: SPACING.sm }}>
                 <Text style={[TYPOGRAPHY.label, { color: colors.textSecondary, textTransform: 'uppercase' }]}>
                   Limitations
                 </Text>
-                <Text style={[TYPOGRAPHY.body, { color: colors.textSecondary }]}>
-                  {assessment.limitations}
-                </Text>
+                {assessment.limitations.map((limitation, i) => (
+                  <View key={i} style={{ flexDirection: 'row', gap: SPACING.sm, alignItems: 'flex-start' }}>
+                    <View
+                      style={{
+                        width: 6,
+                        height: 6,
+                        borderRadius: 3,
+                        backgroundColor: colors.textTertiary,
+                        marginTop: 8,
+                        flexShrink: 0,
+                      }}
+                    />
+                    <Text style={[TYPOGRAPHY.body, { color: colors.textSecondary, flex: 1 }]}>
+                      {limitation}
+                    </Text>
+                  </View>
+                ))}
               </View>
             </InfoCard>
           ) : null}
@@ -478,6 +582,30 @@ export default function ScanDetailScreen() {
           </View>
         </InfoCard>
       ) : null}
+
+      {/* Delete Scan */}
+      <AnimatedPressable
+        onPress={deleting ? undefined : handleDeleteScan}
+        accessibilityRole="button"
+        accessibilityLabel="Delete this scan"
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: SPACING.sm,
+          paddingVertical: SPACING.md,
+          opacity: deleting ? 0.5 : 1,
+        }}
+      >
+        {deleting ? (
+          <ActivityIndicator size="small" color={colors.danger} />
+        ) : (
+          <Trash2 size={16} color={colors.danger} />
+        )}
+        <Text style={[TYPOGRAPHY.body, { color: colors.danger }]}>
+          {deleting ? 'Deleting…' : 'Delete Scan'}
+        </Text>
+      </AnimatedPressable>
 
       {/* Legal disclaimer */}
       <LegalDisclaimerCard text="ProofLoop identifies observable patterns only. Results do not guarantee safety, identify criminals, or replace professional advice." />

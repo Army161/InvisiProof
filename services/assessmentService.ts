@@ -38,6 +38,11 @@ export async function triggerAnalysis(scanId: string): Promise<{ success: boolea
 // Fetch assessment result for a scan
 export async function fetchAssessmentResult(scanId: string): Promise<AssessmentResult | null> {
   console.log('[assessmentService] fetchAssessmentResult called');
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) {
+    console.log('[assessmentService] fetchAssessmentResult — no session');
+    return null;
+  }
   const { data, error } = await supabase
     .from('assessment_results')
     .select('*')

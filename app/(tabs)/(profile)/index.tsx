@@ -362,8 +362,8 @@ export default function ProfileScreen() {
   const handleDeleteAccount = () => {
     console.log('[ProfileScreen] delete account row pressed');
     Alert.alert(
-      'Delete your ProofLoop account?',
-      'This will permanently delete your account, profile, and all submitted scans. This cannot be undone.',
+      'Delete your account?',
+      'This will permanently delete your account, all scans, images, and assessment results. This cannot be undone.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -374,18 +374,18 @@ export default function ProfileScreen() {
             if (!user) return;
             setDeletingAccount(true);
             try {
-              const { supabase: supabaseClient } = await import('@/lib/supabase');
-              const { error: profileError } = await supabaseClient
-                .from('profiles')
-                .delete()
-                .eq('id', user.id);
-              if (profileError) {
-                console.log('[ProfileScreen] profile delete error');
+              const { deleteAccount } = await import('@/services/deleteAccountService');
+              const result = await deleteAccount();
+              if (!result.success) {
+                console.log('[ProfileScreen] delete account failed');
+                Alert.alert('Error', result.error ?? 'Could not delete your account. Please try again.');
+                return;
               }
+              console.log('[ProfileScreen] delete account success');
               await signOut();
               router.replace('/(auth)/welcome');
             } catch {
-              console.log('[ProfileScreen] delete account error');
+              console.log('[ProfileScreen] delete account unexpected error');
               Alert.alert('Error', 'Could not delete your account. Please try again.');
             } finally {
               setDeletingAccount(false);

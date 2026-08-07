@@ -26,7 +26,6 @@ interface LookedUpRequest {
   challenge: string;
   expires_at: string;
   status: string;
-  requester_id: string;
 }
 
 function formatExpiry(iso: string): string {
@@ -84,12 +83,6 @@ export default function EnterProofCodeScreen() {
 
     if (!result) {
       setLookupError('No request found with that code. Please check and try again.');
-      return;
-    }
-
-    // Check if user is trying to respond to their own request
-    if (result.requester_id === user?.id) {
-      setLookupError('You cannot respond to your own proof request.');
       return;
     }
 
