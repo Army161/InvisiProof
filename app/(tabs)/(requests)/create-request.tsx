@@ -12,13 +12,14 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Copy, Share2, CheckCircle } from 'lucide-react-native';
+import { Copy, Share2, CheckCircle, Check } from 'lucide-react-native';
 import { useAppTheme } from '@/hooks/useAppTheme';
 import { createProofRequest } from '@/services/proofRequestService';
 import { TYPOGRAPHY, SPACING, RADIUS } from '@/constants/theme';
 import { InfoCard } from '@/components/InfoCard';
 import { PrimaryButton, SecondaryButton } from '@/components/PrimaryButton';
 import { AnimatedPressable } from '@/components/AnimatedPressable';
+import type { ProofRequest } from '@/types/scan';
 
 const EXPIRY_OPTIONS: { label: string; hours: number }[] = [
   { label: '1h', hours: 1 },
@@ -29,6 +30,21 @@ const EXPIRY_OPTIONS: { label: string; hours: number }[] = [
   { label: '7d', hours: 168 },
 ];
 
+type AnalysisRequirement = ProofRequest['analysis_requirement'];
+
+const ANALYSIS_REQUIREMENT_OPTIONS: { key: AnalysisRequirement; label: string; description: string }[] = [
+  {
+    key: 'local_or_cloud',
+    label: 'Any provider',
+    description: 'Respondent can use any AI provider, including local.',
+  },
+  {
+    key: 'server_verified_cloud',
+    label: 'Server-verified only',
+    description: 'Analysis must be verified by ProofLoop servers.',
+  },
+];
+
 export default function CreateRequestScreen() {
   const { colors } = useAppTheme();
   const insets = useSafeAreaInsets();
@@ -36,6 +52,7 @@ export default function CreateRequestScreen() {
 
   const [challenge, setChallenge] = useState('');
   const [selectedHours, setSelectedHours] = useState(24);
+  const [analysisRequirement, setAnalysisRequirement] = useState<AnalysisRequirement>('local_or_cloud');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [createdCode, setCreatedCode] = useState<string | null>(null);
@@ -289,6 +306,73 @@ export default function CreateRequestScreen() {
               );
             })}
           </View>
+        </View>
+
+        {/* Analysis requirement */}
+        <View style={{ gap: SPACING.sm }}>
+          <Text style={[TYPOGRAPHY.label, { color: colors.textSecondary, textTransform: 'uppercase' }]}>
+            Analysis requirement
+          </Text>
+          <InfoCard style={{ padding: 0, paddingHorizontal: SPACING.md }}>
+            {ANALYSIS_REQUIREMENT_OPTIONS.map((opt, i) => {
+              const isSelected = analysisRequirement === opt.key;
+              return (
+                <View key={opt.key}>
+                  <AnimatedPressable
+                    onPress={() => {
+                      console.log('[CreateRequestScreen] analysis requirement selected:', opt.key);
+                      setAnalysisRequirement(opt.key);
+                    }}
+                    accessibilityRole="radio"
+                    accessibilityLabel={opt.label}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      minHeight: 56,
+                      gap: SPACING.md,
+                      paddingVertical: SPACING.sm,
+                    }}
+                  >
+                    <View style={{ flex: 1, gap: 2 }}>
+                      <Text style={[TYPOGRAPHY.bodyMedium, { color: colors.text, fontWeight: '600' }]}>
+                        {opt.label}
+                      </Text>
+                      <Text style={[TYPOGRAPHY.caption, { color: colors.textSecondary }]}>
+                        {opt.description}
+                      </Text>
+                    </View>
+                    {isSelected ? (
+                      <View
+                        style={{
+                          width: 24,
+                          height: 24,
+                          borderRadius: 12,
+                          backgroundColor: colors.primary,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <Check size={14} color="#FFFFFF" />
+                      </View>
+                    ) : (
+                      <View
+                        style={{
+                          width: 24,
+                          height: 24,
+                          borderRadius: 12,
+                          borderWidth: 2,
+                          borderColor: colors.border,
+                        }}
+                      />
+                    )}
+                  </AnimatedPressable>
+                  {i < ANALYSIS_REQUIREMENT_OPTIONS.length - 1 ? (
+                    <View style={{ height: 1, backgroundColor: colors.border, marginLeft: 0 }} />
+                  ) : null}
+                </View>
+              );
+            })}
+          </InfoCard>
         </View>
 
         {/* Error */}

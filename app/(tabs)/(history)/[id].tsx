@@ -22,6 +22,9 @@ import {
   Type,
   Link,
   Trash2,
+  Shield,
+  Cpu,
+  Cloud,
 } from 'lucide-react-native';
 import { useAppTheme } from '@/hooks/useAppTheme';
 import { useAuth } from '@/contexts/AuthContext';
@@ -202,7 +205,30 @@ export default function ScanDetailScreen() {
     const result = await triggerAnalysis(id);
     setTriggerLoading(false);
     if (!result.success) {
-      setTriggerError(result.error ?? 'Analysis could not be started.');
+      const errMsg = result.error ?? 'Analysis could not be started.';
+      const isProviderError =
+        errMsg.includes('No API key configured') ||
+        errMsg.includes('Local analysis is not yet available') ||
+        errMsg.includes('Local analysis is coming soon');
+      if (isProviderError) {
+        console.log('[ScanDetailScreen] provider not configured, showing alert');
+        Alert.alert(
+          'Provider not configured',
+          errMsg,
+          [
+            { text: 'Cancel', style: 'cancel' },
+            {
+              text: 'Configure Provider',
+              onPress: () => {
+                console.log('[ScanDetailScreen] navigate to ai-provider from alert');
+                router.push('/(tabs)/(profile)/ai-provider');
+              },
+            },
+          ]
+        );
+      } else {
+        setTriggerError(errMsg);
+      }
     } else {
       // Reload to pick up new status
       await loadData();
@@ -291,6 +317,23 @@ export default function ScanDetailScreen() {
   })();
 
   const scoreDisplay = assessment ? formatScore(assessment.risk_score) : null;
+
+  const providerLabel = (() => {
+    if (!assessment?.provider) return null;
+    const map: Record<string, string> = {
+      openai: 'OpenAI',
+      anthropic: 'Anthropic',
+      gemini: 'Google Gemini',
+      grok: 'xAI Grok',
+      custom: 'Custom',
+      local: 'ProofLoop Local',
+    };
+    return map[assessment.provider] ?? assessment.provider;
+  })();
+
+  const trustLevelLabel = assessment?.trust_level === 'server_verified' ? 'Server-verified' : 'Device-generated';
+  const analysisModeLabel = assessment?.analysis_mode === 'cloud_byok' ? 'Cloud BYOK' : 'Local';
+  const isTrustVerified = assessment?.trust_level === 'server_verified';
 
   return (
     <ScrollView
@@ -466,6 +509,65 @@ export default function ScanDetailScreen() {
                   </View>
                 ) : null}
               </View>
+
+              {/* Trust / provider metadata row */}
+              {providerLabel ? (
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: SPACING.sm,
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                    {assessment.analysis_mode === 'local' ? (
+                      <Cpu size={13} color={colors.textTertiary} />
+                    ) : (
+                      <Cloud size={13} color={colors.textTertiary} />
+                    )}
+                    <Text style={[TYPOGRAPHY.caption, { color: colors.textSecondary }]}>
+                      {providerLabel}
+                    </Text>
+                  </View>
+                  <Text style={[TYPOGRAPHY.caption, { color: colors.textTertiary }]}>
+                    •
+                  </Text>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 4,
+                      backgroundColor: isTrustVerified ? colors.evidenceMuted : colors.surfaceSecondary,
+                      borderRadius: RADIUS.sm,
+                      paddingHorizontal: 7,
+                      paddingVertical: 3,
+                    }}
+                  >
+                    <Shield size={11} color={isTrustVerified ? colors.evidence : colors.textTertiary} />
+                    <Text
+                      style={[
+                        TYPOGRAPHY.micro,
+                        { color: isTrustVerified ? colors.evidence : colors.textTertiary },
+                      ]}
+                    >
+                      {trustLevelLabel}
+                    </Text>
+                  </View>
+                  <View
+                    style={{
+                      backgroundColor: colors.surfaceSecondary,
+                      borderRadius: RADIUS.sm,
+                      paddingHorizontal: 7,
+                      paddingVertical: 3,
+                    }}
+                  >
+                    <Text style={[TYPOGRAPHY.micro, { color: colors.textTertiary }]}>
+                      {analysisModeLabel}
+                    </Text>
+                  </View>
+                </View>
+              ) : null}
 
               <Text style={[TYPOGRAPHY.body, { color: colors.text, lineHeight: 22 }]}>
                 {assessment.summary}

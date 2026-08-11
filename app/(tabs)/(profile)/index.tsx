@@ -17,6 +17,7 @@ import {
   LogOut,
   UserCog,
   Trash2,
+  Cpu,
 } from 'lucide-react-native';
 import { useAppTheme } from '@/hooks/useAppTheme';
 import { useAuth } from '@/contexts/AuthContext';
@@ -462,6 +463,12 @@ export default function ProfileScreen() {
                   console.log('[ProfileScreen] open appearance modal');
                   setAppearanceModalVisible(true);
                 }}
+              />,
+              <SettingsRow
+                key="ai-provider"
+                icon={Cpu}
+                label="AI Provider"
+                onPress={() => router.push('/(tabs)/(profile)/ai-provider')}
               />,
               <SettingsRow
                 key="notifications"

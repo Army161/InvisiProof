@@ -12,6 +12,8 @@ export interface AssessmentResult {
   limitations: string[] | null;
   provider: string;
   model: string;
+  analysis_mode: 'local' | 'cloud_byok';
+  trust_level: 'device_generated' | 'server_verified';
   analysis_version: string;
   completed_at: string;
   created_at: string;
@@ -29,6 +31,7 @@ export interface ProofRequest {
   responded_at?: string | null;
   completed_at?: string | null;
   cancelled_at?: string | null;
+  analysis_requirement?: 'local_or_cloud' | 'server_verified_cloud';
   created_at: string;
   updated_at: string;
 }
