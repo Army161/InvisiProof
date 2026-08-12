@@ -31,6 +31,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { triggerAnalysis, fetchAssessmentResult } from '@/services/assessmentService';
 import { deleteScan } from '@/services/deleteScanService';
+import {
+  trackEvidenceReportViewed,
+  trackScanDeleted,
+  trackAnalysisCompleted,
+} from '@/services/analytics';
 import { TYPOGRAPHY, SPACING, RADIUS, SHADOWS } from '@/constants/theme';
 import { InfoCard } from '@/components/InfoCard';
 import { RiskLevelBadge } from '@/components/RiskLevelBadge';
@@ -142,6 +147,17 @@ export default function ScanDetailScreen() {
       const result = await fetchAssessmentResult(id);
       setAssessment(result);
       setError(null);
+
+      // Track evidence report viewed when completed
+      if (s.status === 'completed' && result) {
+        const providerType = result.analysis_mode === 'local' ? 'local' : 'byok';
+        trackEvidenceReportViewed({ risk_level: result.risk_level, provider_type: providerType });
+        trackAnalysisCompleted({
+          risk_level: result.risk_level,
+          provider_type: providerType,
+          analysis_mode: result.analysis_mode ?? 'unknown',
+        });
+      }
     } catch {
       console.log('[ScanDetailScreen] loadData unexpected error');
       setError('Could not load scan details. Please check your connection.');
@@ -263,6 +279,7 @@ export default function ScanDetailScreen() {
               Alert.alert('Error', result.error ?? 'Could not delete this scan. Please try again.');
             } else {
               console.log('[ScanDetailScreen] delete scan success, navigating back');
+              trackScanDeleted();
               router.back();
             }
           },

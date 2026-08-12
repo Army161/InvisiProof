@@ -16,6 +16,7 @@ import { ThemeProvider, useAppTheme } from '@/contexts/ThemeContext';
 import { WidgetProvider } from '@/contexts/WidgetContext';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { initAnalytics } from '@/services/analytics';
 
 const DevErrorBoundary = __DEV__
   ? ErrorBoundary
@@ -32,6 +33,10 @@ function RootLayoutInner() {
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
+
+  useEffect(() => {
+    initAnalytics();
+  }, []);
 
   useEffect(() => {
     if (loaded) {

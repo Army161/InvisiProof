@@ -5,9 +5,9 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
-    "icon": "./assets/images/newly.png",
+    "icon": "./assets/images/app-icon-aoa.png",
     "splash": {
-      "image": "./assets/images/newly.png",
+      "image": "./assets/images/app-icon-aoa.png",
       "resizeMode": "contain",
       "backgroundColor": "#0B1220"
     },
@@ -21,14 +21,14 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/newly.png",
+        "foregroundImage": "./assets/images/app-icon-aoa.png",
         "backgroundColor": "#0B1220"
       },
       "package": "com.northstarrevenue.proofloopverify",
       "versionCode": 1
     },
     "web": {
-      "favicon": "./assets/images/newly.png",
+      "favicon": "./assets/images/app-icon-aoa.png",
       "bundler": "metro"
     },
     "plugins": [

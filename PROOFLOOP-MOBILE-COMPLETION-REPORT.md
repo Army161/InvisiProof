@@ -8,7 +8,7 @@
 
 ## Canonical Implementation
 
-Newly.ai ProofLoop is the canonical Web, Android, and iOS implementation.
+ProofLoop is the canonical Web, Android, and iOS implementation.
 There is no separate required Kimi web application and no required Kimi/Moonshot runtime.
 
 ---
@@ -127,3 +127,49 @@ Profile → AI Provider
 
 - Local inference runtime (blocked on cross-platform LLM runtime availability)
 - MOONSHOT_API_KEY: NOT required, NOT used
+
+---
+
+## PROOFLOOP LAUNCH BLOCKER STATUS
+
+| Item | Status | Notes |
+|---|---|---|
+| Brand assets | PASS | app-icon-aoa.png used for icon/splash/favicon; newly.png removed from app.json |
+| Newly branding removed | PASS | No Newly references in app code, config, or README |
+| README | PASS | Professional ProofLoop README |
+| Package name | PASS | proofloop-mobile |
+| Bundle ID locations audited | PASS | See below |
+| Permanent bundle ID | PENDING BRAND CLEARANCE | Do not submit to stores until approved |
+| Analytics implemented | PASS | PostHog — privacy-safe events only |
+| Privacy review | PASS | No evidence content, keys, or tokens in analytics |
+| TypeScript | PASS | Zero errors in ProofLoop code (2 pre-existing template errors in ListItem.tsx) |
+| Lint | PASS | ESLint exit 0 |
+| Build | NOT SUBMITTED | Pending permanent bundle ID clearance |
+
+### Bundle ID Locations
+
+Every location where the bundle identifier must be updated when the permanent brand/domain is approved:
+
+| File | Field | Current Value |
+|---|---|---|
+| `app.json` | `expo.ios.bundleIdentifier` | `com.northstarrevenue.proofloopverify` |
+| `app.json` | `expo.android.package` | `com.northstarrevenue.proofloopverify` |
+| `eas.json` | (inherits from app.json) | No override needed |
+
+**Action required before store submission:** Replace both values in `app.json` with the approved reverse-domain identifier. No other files require changes.
+
+### Analytics Privacy Audit
+
+Events recorded: app_opened, account_created, signed_in, scan_started, scan_completed, scan_failed, analysis_completed, proof_request_created, proof_request_opened, proof_response_submitted, proof_request_completed, evidence_report_viewed, scan_deleted, account_deleted
+
+Properties recorded: scan_type (image/text/url), source_type (camera/library/paste), risk_level (enum), provider_type (local/byok), analysis_mode (enum), analysis_requirement (enum), reason (generic error category)
+
+Never recorded: API keys, image content, text content, URLs, storage paths, auth tokens, passwords, email addresses, personally sensitive evidence.
+
+### Do Not Call Store-Ready Until
+
+- [ ] Permanent brand/domain approved
+- [ ] Bundle identifiers updated to approved reverse-domain
+- [ ] ProofLoop Local inference runtime available (or explicitly deferred)
+- [ ] PostHog API key replaced with production key
+- [ ] App Store / Google Play developer accounts configured

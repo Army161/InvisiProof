@@ -2,6 +2,11 @@ import { useState, useRef, useCallback } from 'react';
 import { deleteTempImage } from '@/utils/imagePrep';
 import { uploadImageScan, submitTextScan, submitUrlScan } from '@/services/scanService';
 import type { PreparedImage, Scan } from '@/types/scan';
+import {
+  trackScanStarted,
+  trackScanCompleted,
+  trackScanFailed,
+} from '@/services/analytics';
 
 export type SubmitStage = 'idle' | 'preparing' | 'uploading' | 'saving' | 'done' | 'error';
 
@@ -47,6 +52,7 @@ export function useSubmitScan(): UseSubmitScanResult {
     inFlightRef.current = true;
     setError(null);
     console.log('[useSubmitScan] submitImage start', { sourceType, uri: prepared.uri });
+    trackScanStarted({ scan_type: 'image', source_type: sourceType });
     try {
       setStage('uploading');
       const consentAt = new Date();
@@ -54,11 +60,13 @@ export function useSubmitScan(): UseSubmitScanResult {
       setStage('saving');
       setStage('done');
       console.log('[useSubmitScan] submitImage done');
+      trackScanCompleted({ scan_type: 'image' });
       await deleteTempImage(prepared.uri);
       return scan;
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Something went wrong. Please try again.';
       console.log('[useSubmitScan] submitImage error:', msg);
+      trackScanFailed({ scan_type: 'image', reason: 'upload_error' });
       setError(msg);
       setStage('error');
       // Do NOT delete temp file on error — screen retains it for retry
@@ -78,16 +86,19 @@ export function useSubmitScan(): UseSubmitScanResult {
     inFlightRef.current = true;
     setError(null);
     console.log('[useSubmitScan] submitText start', { textLength: textContent.length });
+    trackScanStarted({ scan_type: 'text', source_type: 'paste' });
     try {
       setStage('saving');
       const consentAt = new Date();
       const scan = await submitTextScan(textContent, consentAt);
       setStage('done');
       console.log('[useSubmitScan] submitText done');
+      trackScanCompleted({ scan_type: 'text' });
       return scan;
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Something went wrong. Please try again.';
       console.log('[useSubmitScan] submitText error:', msg);
+      trackScanFailed({ scan_type: 'text', reason: 'save_error' });
       setError(msg);
       setStage('error');
       return null;
@@ -106,16 +117,19 @@ export function useSubmitScan(): UseSubmitScanResult {
     inFlightRef.current = true;
     setError(null);
     console.log('[useSubmitScan] submitUrl start', {});
+    trackScanStarted({ scan_type: 'url', source_type: 'paste' });
     try {
       setStage('saving');
       const consentAt = new Date();
       const scan = await submitUrlScan(normalizedUrl, consentAt);
       setStage('done');
       console.log('[useSubmitScan] submitUrl done');
+      trackScanCompleted({ scan_type: 'url' });
       return scan;
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Something went wrong. Please try again.';
       console.log('[useSubmitScan] submitUrl error:', msg);
+      trackScanFailed({ scan_type: 'url', reason: 'save_error' });
       setError(msg);
       setStage('error');
       return null;

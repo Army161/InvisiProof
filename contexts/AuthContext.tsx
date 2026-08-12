@@ -11,6 +11,12 @@ import type { User, AuthChangeEvent, Session } from '@supabase/supabase-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '@/lib/supabase';
 import type { Profile } from '@/lib/supabase';
+import {
+  identifyUser,
+  resetAnalyticsUser,
+  trackAccountCreated,
+  trackSignedIn,
+} from '@/services/analytics';
 
 const GUEST_MODE_KEY = '@proofloop_guest_mode';
 const PROFILE_REFRESH_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
@@ -202,6 +208,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(session.user);
           setSessionExpired(false);
           previousUserRef.current = session.user;
+          identifyUser(session.user.id);
           await loadProfile(session.user.id);
         } else if (event === 'PASSWORD_RECOVERY' && session?.user) {
           setUser(session.user);
@@ -211,6 +218,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (!isExplicitSignOutRef.current && previousUserRef.current !== null) {
             setSessionExpired(true);
           }
+          resetAnalyticsUser();
           setUser(null);
           setProfile(null);
           setProfileError(null);
@@ -250,6 +258,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       const requiresConfirmation = !data.session;
       console.log('[AuthContext] signUpWithEmail success, requiresConfirmation:', requiresConfirmation);
+      trackAccountCreated();
       return { requiresConfirmation };
     },
     []
@@ -270,6 +279,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await AsyncStorage.removeItem(GUEST_MODE_KEY);
     setIsGuest(false);
     console.log('[AuthContext] signInWithEmail success');
+    trackSignedIn();
     void data;
   }, []);
 

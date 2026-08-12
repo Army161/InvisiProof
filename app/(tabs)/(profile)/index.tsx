@@ -22,6 +22,7 @@ import {
 import { useAppTheme } from '@/hooks/useAppTheme';
 import { useAuth } from '@/contexts/AuthContext';
 import type { AppearanceMode } from '@/contexts/ThemeContext';
+import { trackAccountDeleted } from '@/services/analytics';
 import { TYPOGRAPHY, SPACING, RADIUS, SHADOWS } from '@/constants/theme';
 import { InfoCard } from '@/components/InfoCard';
 import { Divider } from '@/components/Divider';
@@ -383,6 +384,7 @@ export default function ProfileScreen() {
                 return;
               }
               console.log('[ProfileScreen] delete account success');
+              trackAccountDeleted();
               await signOut();
               router.replace('/(auth)/welcome');
             } catch {

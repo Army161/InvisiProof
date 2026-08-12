@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Copy, Share2, CheckCircle, Check } from 'lucide-react-native';
 import { useAppTheme } from '@/hooks/useAppTheme';
 import { createProofRequest } from '@/services/proofRequestService';
+import { trackProofRequestCreated } from '@/services/analytics';
 import { TYPOGRAPHY, SPACING, RADIUS } from '@/constants/theme';
 import { InfoCard } from '@/components/InfoCard';
 import { PrimaryButton, SecondaryButton } from '@/components/PrimaryButton';
@@ -68,6 +69,7 @@ export default function CreateRequestScreen() {
     try {
       const result = await createProofRequest(challenge, selectedHours);
       console.log('[CreateRequestScreen] request created successfully');
+      trackProofRequestCreated({ analysis_requirement: analysisRequirement ?? 'local_or_cloud' });
       setCreatedCode(result.share_code);
     } catch (e: any) {
       console.log('[CreateRequestScreen] create request failed');

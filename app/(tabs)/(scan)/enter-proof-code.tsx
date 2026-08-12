@@ -15,6 +15,7 @@ import { KeyRound, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react
 import { useAppTheme } from '@/hooks/useAppTheme';
 import { useAuth } from '@/contexts/AuthContext';
 import { lookupProofRequestByCode } from '@/services/proofRequestService';
+import { trackProofRequestOpened } from '@/services/analytics';
 import { TYPOGRAPHY, SPACING, RADIUS } from '@/constants/theme';
 import { InfoCard } from '@/components/InfoCard';
 import { PrimaryButton, SecondaryButton } from '@/components/PrimaryButton';
@@ -87,6 +88,7 @@ export default function EnterProofCodeScreen() {
     }
 
     console.log('[EnterProofCodeScreen] request found, status:', result.status);
+    trackProofRequestOpened();
     setFoundRequest(result);
   };
 
