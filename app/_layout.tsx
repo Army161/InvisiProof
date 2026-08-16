@@ -52,6 +52,7 @@ function RootLayoutInner() {
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="(marketing)" options={{ headerShown: false }} />
       </Stack>
       <SystemBars style="auto" />
       <StatusBar style="auto" animated />

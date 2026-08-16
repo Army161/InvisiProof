@@ -1,0 +1,49 @@
+---
+title: Data Flow
+description: How your data moves through InvisiProof
+---
+
+# Data Flow
+
+This page explains how data moves through InvisiProof from submission to result.
+
+## Direct assessment flow
+
+1. **You submit content** — image, text, or URL — through the app
+2. **Content is stored** — privately in your account, scoped to your user ID
+3. **Analysis is requested** — you tap "Request Analysis Now"
+4. **AI model processes the content** — observable signals are extracted
+5. **Result is normalized** — into a standard risk assessment format
+6. **Result is stored** — in your account history
+7. **You see the result** — risk level, score, summary, indicators, actions
+
+## Proof Request flow
+
+1. **You create a request** — purpose and instructions are stored
+2. **Respondent opens the link** — they see the purpose and consent notice
+3. **Respondent submits evidence** — stored privately, scoped to the request
+4. **AI model processes the evidence** — same analysis pipeline as direct assessments
+5. **Result is stored** — linked to your request, not to the raw evidence
+6. **You see the result** — risk assessment only; raw evidence is not surfaced to you
+
+## What leaves your device
+
+- Submitted content (image, text, URL) is transmitted to InvisiProof's servers over an encrypted connection
+- Account credentials are transmitted securely for authentication
+- App usage analytics are collected (see [Analytics](/privacy/analytics) for what is and is not collected)
+
+## What stays on your device
+
+- Your session token (stored securely in device storage)
+- Cached assessment results for offline viewing
+
+## Third-party services
+
+InvisiProof uses the following categories of third-party services:
+
+- **Cloud storage**: for private evidence storage
+- **AI providers**: for assessment processing (default: InvisiProof's server infrastructure; optional: your own API key via BYOK)
+- **Authentication**: for account management
+- **Analytics**: for app usage metrics (content is never included)
+
+Specific third-party providers are listed in the [Privacy Policy](/legal/privacy-policy).

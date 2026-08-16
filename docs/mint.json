@@ -1,0 +1,92 @@
+{
+  "$schema": "https://mintlify.com/schema.json",
+  "name": "InvisiProof",
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
+  },
+  "favicon": "/favicon.ico",
+  "colors": {
+    "primary": "#14B8A6",
+    "light": "#2DD4BF",
+    "dark": "#0D9488"
+  },
+  "topbarLinks": [
+    { "name": "Support", "url": "mailto:support@invisiproof.com" }
+  ],
+  "topbarCtaButton": {
+    "name": "Start Free",
+    "url": "https://invisiproof.com"
+  },
+  "tabs": [],
+  "anchors": [],
+  "navigation": [
+    {
+      "group": "Start Here",
+      "pages": ["introduction", "quickstart", "what-invisiproof-can-determine", "how-risk-assessments-work"]
+    },
+    {
+      "group": "Direct Assessments",
+      "pages": [
+        "assessments/analyze-image",
+        "assessments/analyze-text",
+        "assessments/analyze-url",
+        "assessments/risk-levels",
+        "assessments/warning-indicators",
+        "assessments/trust-levels"
+      ]
+    },
+    {
+      "group": "Proof Requests",
+      "pages": [
+        "proof-requests/overview",
+        "proof-requests/requester-guide",
+        "proof-requests/respondent-guide",
+        "proof-requests/expiration-and-status",
+        "proof-requests/privacy-boundaries"
+      ]
+    },
+    {
+      "group": "Privacy and Security",
+      "pages": [
+        "privacy/data-flow",
+        "privacy/evidence-storage",
+        "privacy/result-disclosure",
+        "privacy/data-retention",
+        "privacy/byok",
+        "privacy/analytics",
+        "privacy/security-reporting"
+      ]
+    },
+    {
+      "group": "Account and Billing",
+      "pages": [
+        "account/create-account",
+        "account/sign-in-options",
+        "account/reset-password",
+        "account/plans",
+        "account/manage-subscription",
+        "account/usage-limits",
+        "account/delete-account"
+      ]
+    },
+    {
+      "group": "Help and Legal",
+      "pages": [
+        "help/troubleshooting",
+        "help/faq",
+        "help/contact",
+        "legal/privacy-policy",
+        "legal/terms",
+        "legal/acceptable-use",
+        "legal/ai-disclaimer",
+        "legal/subscription-refunds",
+        "legal/changelog"
+      ]
+    }
+  ],
+  "footerSocials": {},
+  "seo": {
+    "indexHiddenPages": false
+  }
+}

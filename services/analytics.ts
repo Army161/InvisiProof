@@ -128,6 +128,26 @@ export function trackAccountDeleted(): void {
   track('account_deleted');
 }
 
+export function trackPaywallViewed(params: { source: string }): void {
+  track('paywall_viewed', params);
+}
+
+export function trackPurchaseStarted(params: { plan: string; period: 'monthly' | 'annual' }): void {
+  track('purchase_started', params);
+}
+
+export function trackPurchaseCompleted(params: { plan: string; period: 'monthly' | 'annual' }): void {
+  track('purchase_completed', params);
+}
+
+export function trackPurchaseFailed(params: { plan: string; reason: string }): void {
+  track('purchase_failed', params);
+}
+
+export function trackRestoreCompleted(params: { restored: boolean }): void {
+  track('restore_completed', params);
+}
+
 // ─── Internal ─────────────────────────────────────────────────────────────────
 
 function track(event: string, properties?: Record<string, string | boolean | number>): void {

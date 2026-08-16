@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { View, Text, ScrollView, Animated } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -8,14 +8,20 @@ import {
   Link,
   KeyRound,
   ChevronRight,
+  AlertCircle,
 } from 'lucide-react-native';
 import { useAppTheme } from '@/hooks/useAppTheme';
+import { useAuth } from '@/contexts/AuthContext';
+import { useSubscription } from '@/hooks/useSubscription';
+import { supabase } from '@/lib/supabase';
 import { TYPOGRAPHY, SPACING, RADIUS, SHADOWS } from '@/constants/theme';
 import { InfoCard } from '@/components/InfoCard';
 import { SectionHeader } from '@/components/SectionHeader';
 import { LegalDisclaimerCard } from '@/components/LegalDisclaimerCard';
 import { AnimatedPressable } from '@/components/AnimatedPressable';
 import { APP_CONFIG } from '@/config/app';
+
+const FREE_ASSESSMENT_LIMIT = 2;
 
 function AnimatedListItem({ index, children }: { index: number; children: React.ReactNode }) {
   const opacity = useRef(new Animated.Value(0)).current;
@@ -101,6 +107,33 @@ export default function ScanScreen() {
   const { colors } = useAppTheme();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { user } = useAuth();
+  const { entitlement, loading: subLoading } = useSubscription();
+  const [assessmentsUsed, setAssessmentsUsed] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!user || subLoading) return;
+    if (entitlement !== 'free') return;
+    // Only check quota for free users
+    const now = new Date();
+    const periodStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+    supabase
+      .from('usage_counters')
+      .select('direct_assessments_used')
+      .eq('user_id', user.id)
+      .gte('period_start', periodStart)
+      .single()
+      .then(({ data }) => {
+        if (data) {
+          console.log('[ScanScreen] usage_counters loaded, assessments used:', data.direct_assessments_used);
+          setAssessmentsUsed(data.direct_assessments_used ?? 0);
+        } else {
+          setAssessmentsUsed(0);
+        }
+      });
+  }, [user, entitlement, subLoading]);
+
+  const isQuotaExhausted = entitlement === 'free' && assessmentsUsed !== null && assessmentsUsed >= FREE_ASSESSMENT_LIMIT;
 
   const handleScanScreenshot = () => {
     console.log('[ScanScreen] navigate to scan-screenshot');
@@ -140,6 +173,52 @@ export default function ScanScreen() {
           {APP_CONFIG.tagline}
         </Text>
       </View>
+
+      {/* Quota exhausted banner */}
+      {isQuotaExhausted ? (
+        <View style={{ paddingHorizontal: SPACING.md, marginBottom: SPACING.sm }}>
+          <View
+            style={{
+              backgroundColor: colors.warningMuted,
+              borderRadius: RADIUS.md,
+              padding: SPACING.md,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: SPACING.sm,
+              borderWidth: 1,
+              borderColor: colors.warning,
+            }}
+          >
+            <AlertCircle size={18} color={colors.warning} />
+            <View style={{ flex: 1 }}>
+              <Text style={[TYPOGRAPHY.bodyMedium, { color: colors.text }]}>
+                Free limit reached
+              </Text>
+              <Text style={[TYPOGRAPHY.caption, { color: colors.textSecondary }]}>
+                You've used your 2 free assessments this month. Upgrade to continue.
+              </Text>
+            </View>
+            <AnimatedPressable
+              onPress={() => {
+                console.log('[ScanScreen] upgrade banner pressed');
+                router.push('/(tabs)/(profile)/subscription');
+              }}
+              accessibilityRole="button"
+              accessibilityLabel="Upgrade plan"
+              style={{
+                backgroundColor: colors.primary,
+                borderRadius: RADIUS.sm,
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+              }}
+            >
+              <Text style={[TYPOGRAPHY.label, { color: '#FFFFFF' }]}>
+                Upgrade
+              </Text>
+            </AnimatedPressable>
+          </View>
+        </View>
+      ) : null}
 
       {/* Hero */}
       <View style={{ paddingHorizontal: SPACING.md, paddingBottom: SPACING.lg }}>

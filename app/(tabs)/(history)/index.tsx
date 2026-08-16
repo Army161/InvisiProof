@@ -9,10 +9,11 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { FileSearch, Image, Type, Link, AlertCircle } from 'lucide-react-native';
+import { FileSearch, Image, Type, Link, AlertCircle, Lock } from 'lucide-react-native';
 import { useAppTheme } from '@/hooks/useAppTheme';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
+import { useSubscription, type Entitlement } from '@/hooks/useSubscription';
 import { TYPOGRAPHY, SPACING, RADIUS, SHADOWS } from '@/constants/theme';
 import { EmptyStateCard } from '@/components/EmptyStateCard';
 import { AnimatedPressable } from '@/components/AnimatedPressable';
@@ -20,6 +21,20 @@ import { RiskLevelBadge } from '@/components/RiskLevelBadge';
 import { InfoCard } from '@/components/InfoCard';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import type { Scan, InputType } from '@/types/scan';
+
+function getHistoryDaysLimit(entitlement: Entitlement): number | null {
+  if (entitlement === 'free') return 7;
+  if (entitlement === 'plus') return 90;
+  return null; // pro/max = unlimited
+}
+
+function getHistoryCutoffDate(entitlement: Entitlement): string | null {
+  const days = getHistoryDaysLimit(entitlement);
+  if (days === null) return null;
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - days);
+  return cutoff.toISOString();
+}
 
 type FilterType = 'all' | InputType;
 
@@ -222,6 +237,7 @@ export default function HistoryScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { user } = useAuth();
+  const { entitlement, loading: subLoading } = useSubscription();
 
   const [scans, setScans] = useState<Scan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -230,16 +246,26 @@ export default function HistoryScreen() {
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
 
   const isAuthenticated = !!user;
+  const historyDaysLimit = getHistoryDaysLimit(entitlement);
+  const isTruncated = historyDaysLimit !== null;
 
   const loadScans = useCallback(async () => {
     if (!user) return;
-    console.log('[HistoryScreen] loadScans called');
+    console.log('[HistoryScreen] loadScans called, entitlement:', entitlement);
     try {
-      const { data, error: fetchError } = await supabase
+      let query = supabase
         .from('scans')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
+
+      const cutoff = getHistoryCutoffDate(entitlement);
+      if (cutoff) {
+        console.log('[HistoryScreen] applying history cutoff:', cutoff);
+        query = query.gte('created_at', cutoff);
+      }
+
+      const { data, error: fetchError } = await query;
 
       if (fetchError) {
         console.log('[HistoryScreen] loadScans error');
@@ -252,16 +278,17 @@ export default function HistoryScreen() {
       console.log('[HistoryScreen] loadScans unexpected error');
       setError('Could not load your scan history. Please check your connection.');
     }
-  }, [user]);
+  }, [user, entitlement]);
 
   useEffect(() => {
     if (!isAuthenticated) {
       setLoading(false);
       return;
     }
+    if (subLoading) return;
     setLoading(true);
     loadScans().finally(() => setLoading(false));
-  }, [isAuthenticated, loadScans]);
+  }, [isAuthenticated, loadScans, subLoading]);
 
   const handleRefresh = useCallback(async () => {
     console.log('[HistoryScreen] pull-to-refresh triggered');
@@ -308,6 +335,43 @@ export default function HistoryScreen() {
           Your submitted scans and analysis results.
         </Text>
       </View>
+
+      {/* History truncation banner */}
+      {isTruncated && !subLoading ? (
+        <View style={{ paddingHorizontal: SPACING.md, marginBottom: SPACING.sm }}>
+          <AnimatedPressable
+            onPress={() => {
+              console.log('[HistoryScreen] history truncation banner pressed');
+              router.push('/(tabs)/(profile)/subscription');
+            }}
+            accessibilityRole="button"
+            accessibilityLabel="Upgrade to see full history"
+          >
+            <View
+              style={{
+                backgroundColor: colors.surfaceSecondary,
+                borderRadius: RADIUS.md,
+                padding: SPACING.sm,
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: SPACING.sm,
+                borderWidth: 1,
+                borderColor: colors.border,
+              }}
+            >
+              <Lock size={14} color={colors.textSecondary} />
+              <Text style={[TYPOGRAPHY.caption, { color: colors.textSecondary, flex: 1 }]}>
+                {entitlement === 'free'
+                  ? 'Showing last 7 days. Upgrade to Plus for 90 days or Pro/Max for full history.'
+                  : 'Showing last 90 days. Upgrade to Pro or Max for unlimited history.'}
+              </Text>
+              <Text style={[TYPOGRAPHY.caption, { color: colors.primary }]}>
+                Upgrade
+              </Text>
+            </View>
+          </AnimatedPressable>
+        </View>
+      ) : null}
 
       {/* Filter buttons */}
       <View

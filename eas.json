@@ -1,37 +1,46 @@
 {
   "cli": {
-    "version": ">= 16.0.0"
+    "version": ">= 16.0.0",
+    "appVersionSource": "remote"
   },
   "build": {
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      "android": {
-        "buildType": "apk"
-      },
       "ios": {
         "simulator": true
       }
     },
     "preview": {
       "distribution": "internal",
+      "ios": {
+        "simulator": false
+      },
       "android": {
         "buildType": "apk"
-      },
-      "ios": {
-        "resourceClass": "m-medium"
       }
     },
     "production": {
-      "android": {
-        "buildType": "app-bundle"
-      },
+      "autoIncrement": true,
       "ios": {
         "resourceClass": "m-medium"
+      },
+      "android": {
+        "buildType": "app-bundle"
       }
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "ios": {
+        "appleId": "BLOCKED_EXTERNAL_APPLE_ID",
+        "ascAppId": "BLOCKED_EXTERNAL_ASC_APP_ID",
+        "appleTeamId": "BLOCKED_EXTERNAL_TEAM_ID"
+      },
+      "android": {
+        "serviceAccountKeyPath": "./google-play-service-account.json",
+        "track": "internal"
+      }
+    }
   }
 }

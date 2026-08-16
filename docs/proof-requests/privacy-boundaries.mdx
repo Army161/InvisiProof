@@ -1,0 +1,40 @@
+---
+title: Privacy Boundaries
+description: What requesters can and cannot see in a Proof Request
+---
+
+# Privacy Boundaries
+
+Proof Requests are designed with a clear separation between the evidence and the result.
+
+## What the requester can see
+
+- The risk assessment result (risk level, score, summary, warning indicators, recommended actions)
+- The status of the request (pending, completed, expired, cancelled)
+- The purpose and instructions they set when creating the request
+
+## What the requester cannot see
+
+- The raw evidence submitted by the respondent (images, text, files)
+- The respondent's identity (unless the respondent chooses to share it)
+- Any personal information contained in the submitted evidence
+
+## What the respondent controls
+
+- What they choose to submit
+- Whether to submit at all
+- Deletion of their submission at any time
+
+## Storage and access
+
+Submitted evidence is stored with scoped access controls. The storage architecture is designed so that requesters cannot read the raw evidence directly. The assessment result is produced server-side and returned to the requester separately from the evidence.
+
+<Note>
+InvisiProof's privacy boundaries are enforced at the application and storage layer. They are designed to protect respondents from having to expose more than the risk assessment result. However, no system is perfect — see the [Privacy Policy](/legal/privacy-policy) for full details.
+</Note>
+
+## Limitations
+
+- InvisiProof cannot prevent a requester from sharing the assessment result with others
+- InvisiProof cannot prevent a respondent from voluntarily sharing their own submission
+- The privacy boundaries apply to InvisiProof's systems — they do not govern what happens outside the platform

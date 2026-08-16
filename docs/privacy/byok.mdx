@@ -1,0 +1,49 @@
+---
+title: Bring Your Own Key (BYOK)
+description: How to use your own AI provider API key with InvisiProof
+---
+
+# Bring Your Own Key (BYOK)
+
+InvisiProof supports BYOK — you can configure your own AI provider API key to run assessments through a provider you control.
+
+## Why use BYOK
+
+- You want assessments processed through a specific AI provider
+- You have an existing API key and want to use your own quota
+- You prefer to control which AI model processes your content
+
+## How to configure BYOK
+
+1. Go to **Profile → AI Provider**
+2. Select your provider
+3. Enter your API key
+4. Tap **Save**
+
+Your API key is stored securely on your device and used only for assessment requests.
+
+## Supported providers
+
+InvisiProof supports BYOK for select AI providers. The list of supported providers is shown in the AI Provider settings screen.
+
+## How your key is used
+
+When BYOK is configured:
+
+- Assessment requests are sent to your configured provider using your API key
+- InvisiProof's server infrastructure does not process the content for that assessment
+- The assessment result is returned to InvisiProof and stored in your account history
+
+## Trust level with BYOK
+
+Assessments run through BYOK are labeled `device_generated`. This indicates the result came from a provider you configured, not from InvisiProof's verified server infrastructure. See [Trust Levels](/assessments/trust-levels) for details.
+
+## Key security
+
+- Your API key is stored locally on your device
+- It is not transmitted to InvisiProof's servers
+- It is used only to make requests to your configured provider
+
+## Removing BYOK
+
+To remove your configured key, go to **Profile → AI Provider** and tap **Remove Key**. After removal, assessments will use InvisiProof's default server infrastructure.

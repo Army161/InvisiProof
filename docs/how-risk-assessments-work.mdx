@@ -1,0 +1,45 @@
+---
+title: How Risk Assessments Work
+description: The technical process behind InvisiProof assessments
+---
+
+# How Risk Assessments Work
+
+## The assessment process
+
+1. You submit content (image, text, or URL)
+2. The content is stored privately in your account
+3. An AI model analyzes the observable signals
+4. The result is normalized into a standard format
+5. You see the risk level, score, summary, and recommended actions
+
+## Assessment fields
+
+| Field | Description |
+|-------|-------------|
+| Risk Level | Low, Medium, High, or Critical |
+| Risk Score | 0–100 (higher = more risk signals) |
+| Summary | Plain-language description of findings |
+| Warning Signals | Specific observable indicators found |
+| Recommended Actions | Suggested next steps |
+| Limitations | What this assessment cannot determine |
+| Trust Level | device_generated or server_verified |
+
+## Trust levels
+
+**Device Generated** — The assessment was produced on your device or through a provider you configured. Results are not independently verified by InvisiProof servers.
+
+**Server Verified** — The assessment was produced by InvisiProof's trusted server infrastructure. The trust label is assigned only after authenticated server-side processing.
+
+## AI providers
+
+InvisiProof supports multiple AI providers. The default uses InvisiProof's server infrastructure. You can also configure your own API key (BYOK) for supported providers. See [BYOK](/privacy/byok) for details.
+
+## Result storage
+
+Assessment results are stored in your account history. You can view, share, or delete them at any time. History retention depends on your plan:
+
+- **Free**: 7 days
+- **Plus**: 90 days
+- **Pro**: Unlimited
+- **Max**: Unlimited

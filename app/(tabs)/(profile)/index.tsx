@@ -18,6 +18,7 @@ import {
   UserCog,
   Trash2,
   Cpu,
+  CreditCard,
 } from 'lucide-react-native';
 import { useAppTheme } from '@/hooks/useAppTheme';
 import { useAuth } from '@/contexts/AuthContext';
@@ -435,6 +436,12 @@ export default function ProfileScreen() {
                   icon={UserCog}
                   label="Edit Profile"
                   onPress={() => router.push('/(tabs)/(profile)/edit-profile')}
+                />,
+                <SettingsRow
+                  key="subscription"
+                  icon={CreditCard}
+                  label="Subscription & Billing"
+                  onPress={() => router.push('/(tabs)/(profile)/subscription')}
                 />,
                 <SettingsRow
                   key="sign-out"
