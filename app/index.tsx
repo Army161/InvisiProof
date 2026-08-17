@@ -27,7 +27,7 @@ export default function AuthGate() {
             letterSpacing: -0.5,
           }}
         >
-          ProofLoop
+          InvisiProof
         </Text>
         <ActivityIndicator color="#14B8A6" size="large" />
       </View>

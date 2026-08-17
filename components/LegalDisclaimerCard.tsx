@@ -6,7 +6,7 @@ import { useAppTheme } from '@/hooks/useAppTheme';
 import { TYPOGRAPHY, SPACING } from '@/constants/theme';
 
 const DEFAULT_DISCLAIMER =
-  'ProofLoop evaluates observable signals and available evidence. It does not guarantee identity, safety, payment, delivery, legality, or recovery of funds.';
+  'InvisiProof evaluates observable signals and available evidence. It does not guarantee identity, safety, payment, delivery, legality, or recovery of funds.';
 
 interface LegalDisclaimerCardProps {
   text?: string;

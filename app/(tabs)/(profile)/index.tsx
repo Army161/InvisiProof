@@ -136,7 +136,7 @@ function AuthenticatedProfileCard() {
   const router = useRouter();
   const { user, profile, profileLoading, profileError, fetchProfile } = useAuth();
 
-  const displayName = profile?.display_name ?? user?.user_metadata?.display_name ?? 'ProofLoop User';
+  const displayName = profile?.display_name ?? user?.user_metadata?.display_name ?? 'InvisiProof User';
   const email = profile?.email ?? user?.email ?? '';
   const initial = String(displayName).charAt(0).toUpperCase();
 
@@ -286,7 +286,7 @@ function GuestProfileCard() {
         <User size={32} color={colors.textTertiary} />
         <View style={{ alignItems: 'center', gap: SPACING.xs }}>
           <Text style={[TYPOGRAPHY.h3, { color: colors.text, textAlign: 'center' }]}>
-            Your ProofLoop account
+            Your InvisiProof account
           </Text>
           <Text
             style={[
@@ -341,7 +341,7 @@ export default function ProfileScreen() {
   const handleSignOut = () => {
     console.log('[ProfileScreen] sign out row pressed');
     Alert.alert(
-      'Sign out of ProofLoop?',
+      'Sign out of InvisiProof?',
       'You will need to sign in again to access your account.',
       [
         { text: 'Cancel', style: 'cancel' },

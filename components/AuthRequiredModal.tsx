@@ -97,7 +97,7 @@ export function AuthRequiredModal({ visible, onClose }: AuthRequiredModalProps) 
                 },
               ]}
             >
-              A ProofLoop account is required to securely save this information and access it across devices.
+              An InvisiProof account is required to securely save this information and access it across devices.
             </Text>
           </View>
 

@@ -26,7 +26,7 @@ export default function HelpSupportScreen() {
               Contact support
             </Text>
             <Text style={[TYPOGRAPHY.body, { color: colors.textSecondary, marginBottom: SPACING.md }]}>
-              For questions, feedback, or assistance, contact the ProofLoop support team.
+              For questions, feedback, or assistance, contact the InvisiProof support team.
             </Text>
             <Text
               selectable

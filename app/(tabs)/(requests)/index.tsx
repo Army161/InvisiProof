@@ -132,7 +132,7 @@ function RequestRow({ request, userId, index, onCancel }: RequestRowProps) {
     console.log('[RequestsScreen] share code pressed');
     try {
       await Share.share({
-        message: `Use this ProofLoop code to submit evidence: ${request.share_code}\n\nChallenge: ${request.challenge}`,
+        message: `Use this InvisiProof code to submit evidence: ${request.share_code}\n\nChallenge: ${request.challenge}`,
       });
     } catch {
       console.log('[RequestsScreen] share failed');

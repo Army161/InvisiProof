@@ -1,4 +1,6 @@
-export type ProofLoopProvider = 'local' | 'openai' | 'anthropic' | 'gemini' | 'grok' | 'custom';
+export type InvisiProofProvider = 'local' | 'openai' | 'anthropic' | 'gemini' | 'grok' | 'custom';
+/** @deprecated Use InvisiProofProvider */
+export type InvisiProofProviderLegacy = InvisiProofProvider;
 
 export type AnalysisMode = 'local' | 'cloud_byok';
 export type TrustLevel = 'device_generated' | 'server_verified';
@@ -10,7 +12,7 @@ export interface NormalizedAssessment {
   warning_signals: string[];
   recommended_actions: string[];
   limitations: string[];
-  provider: ProofLoopProvider;
+  provider: InvisiProofProvider;
   model: string;
   analysis_mode: AnalysisMode;
   trust_level: TrustLevel;
@@ -18,7 +20,7 @@ export interface NormalizedAssessment {
 }
 
 export interface ProviderCredential {
-  provider: ProofLoopProvider;
+  provider: InvisiProofProvider;
   apiKey: string;
   customBaseUrl?: string;
   model?: string;
@@ -39,11 +41,11 @@ export interface ModelManifestEntry {
 export const MODEL_MANIFEST: ModelManifestEntry[] = [
   // Placeholder — real model entries added when local inference runtime is available
   // {
-  //   id: 'proofloop-local-v1',
-  //   name: 'ProofLoop Local v1',
+  //   id: 'invisiproof-local-v1',
+  //   name: 'InvisiProof Local v1',
   //   version: '1.0.0',
   //   license: 'Apache-2.0',
-  //   downloadUrl: 'https://models.proofloop.app/v1/proofloop-local-v1.bin',
+  //   downloadUrl: 'https://models.invisiproof.app/v1/invisiproof-local-v1.bin',
   //   fileSizeBytes: 150_000_000,
   //   sha256: 'placeholder',
   //   minStorageBytes: 300_000_000,

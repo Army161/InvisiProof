@@ -27,10 +27,10 @@ import {
   isLocalAvailable,
   getLocalUnavailableReason,
 } from '@/services/ai';
-import type { ProofLoopProvider, ProviderCredential } from '@/services/ai';
+import type { InvisiProofProvider, ProviderCredential } from '@/services/ai';
 
 interface ProviderMeta {
-  id: ProofLoopProvider;
+  id: InvisiProofProvider;
   name: string;
   description: string;
   isByok: boolean;
@@ -41,7 +41,7 @@ interface ProviderMeta {
 const PROVIDERS: ProviderMeta[] = [
   {
     id: 'local',
-    name: 'ProofLoop Local',
+    name: 'InvisiProof Local',
     description: 'On-device analysis. No API key required. Coming soon.',
     isByok: false,
     showCustomUrl: false,
@@ -100,7 +100,7 @@ export default function AIProviderScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
-  const [activeProvider, setActiveProvider] = useState<ProofLoopProvider>('local');
+  const [activeProvider, setActiveProvider] = useState<InvisiProofProvider>('local');
   const [configuredState, setConfiguredState] = useState<ConfiguredState>({});
   const [loadingInit, setLoadingInit] = useState(true);
 
@@ -252,7 +252,7 @@ export default function AIProviderScreen() {
       >
         {/* Subtitle */}
         <Text style={[TYPOGRAPHY.body, { color: colors.textSecondary }]}>
-          Choose how ProofLoop analyzes your submissions.
+          Choose how InvisiProof analyzes your submissions.
         </Text>
 
         {/* Free section */}
@@ -324,7 +324,7 @@ export default function AIProviderScreen() {
         {/* Footer disclaimer */}
         <InfoCard style={{ backgroundColor: colors.surfaceSecondary }}>
           <Text style={[TYPOGRAPHY.caption, { color: colors.textSecondary, lineHeight: 18 }]}>
-            Your API key is transmitted securely to ProofLoop's backend for the duration of the analysis request only. It is never stored on our servers.
+            Your API key is transmitted securely to InvisiProof's backend for the duration of the analysis request only. It is never stored on our servers.
           </Text>
         </InfoCard>
       </ScrollView>

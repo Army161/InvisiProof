@@ -143,7 +143,7 @@ export default function EnterProofCodeScreen() {
         >
           {/* Description */}
           <Text style={[TYPOGRAPHY.body, { color: colors.textSecondary }]}>
-            Enter a 12-character proof code to respond to a verification request from another ProofLoop user.
+            Enter a 12-character proof code to respond to a verification request from another InvisiProof user.
           </Text>
 
           {/* Code input */}

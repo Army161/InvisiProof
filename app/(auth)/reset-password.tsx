@@ -59,7 +59,7 @@ export default function ResetPasswordScreen() {
 
   useEffect(() => {
     if (!url || processedRef.current) return;
-    // Parse hash fragment: proofloop://reset-password#access_token=X&refresh_token=Y&type=recovery
+    // Parse hash fragment: invisiproof://reset-password#access_token=X&refresh_token=Y&type=recovery
     const hash = url.includes('#') ? url.split('#')[1] : '';
     const params = new URLSearchParams(hash);
     const accessToken = params.get('access_token');

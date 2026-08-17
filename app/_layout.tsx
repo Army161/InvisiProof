@@ -1,5 +1,6 @@
 import 'react-native-reanimated';
 import React, { useEffect } from 'react';
+import { Platform } from 'react-native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -17,6 +18,7 @@ import { WidgetProvider } from '@/contexts/WidgetContext';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { initAnalytics } from '@/services/analytics';
+import Constants from 'expo-constants';
 
 const DevErrorBoundary = __DEV__
   ? ErrorBoundary
@@ -36,6 +38,18 @@ function RootLayoutInner() {
 
   useEffect(() => {
     initAnalytics();
+    // Android-only RC init (react-native-purchases does not support web)
+    if (Platform.OS === 'android') {
+      const key = (Constants.expoConfig?.extra?.RC_ANDROID_KEY ?? '') as string;
+      if (key) {
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-var-requires
+          const { default: Purchases, LOG_LEVEL } = require('react-native-purchases') as typeof import('react-native-purchases');
+          Purchases.setLogLevel(__DEV__ ? LOG_LEVEL.VERBOSE : LOG_LEVEL.ERROR);
+          Purchases.configure({ apiKey: key });
+        } catch {}
+      }
+    }
   }, []);
 
   useEffect(() => {

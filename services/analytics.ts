@@ -1,5 +1,5 @@
 /**
- * ProofLoop Analytics
+ * InvisiProof Analytics
  *
  * Privacy rules (NEVER record):
  * - API keys or provider credentials

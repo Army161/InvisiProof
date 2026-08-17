@@ -16,7 +16,7 @@ export default function PrivacyScreen() {
         <View style={{ paddingHorizontal: SPACING.md, paddingTop: SPACING.md }}>
           <InfoCard>
             <Text style={[TYPOGRAPHY.body, { color: colors.textSecondary }]}>
-              Privacy controls will be available in a future phase. ProofLoop does not currently collect or store personal data.
+              Privacy controls will be available in a future phase. InvisiProof does not currently collect or store personal data.
             </Text>
           </InfoCard>
         </View>

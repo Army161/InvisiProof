@@ -173,7 +173,7 @@ export default function SignUpScreen() {
             { color: colors.textSecondary, marginBottom: SPACING.xl },
           ]}
         >
-          Join ProofLoop to securely save and manage your verification history.
+          Join InvisiProof to securely save and manage your verification history.
         </Text>
 
         {/* Global error */}

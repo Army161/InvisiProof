@@ -34,26 +34,26 @@ export default function TermsOfUseScreen() {
             }}
           >
             <Text style={[TYPOGRAPHY.body, { color: colors.warning }]}>
-              This is a development draft. This document is not the final Terms of Use and does not constitute a legal agreement. The final Terms of Use will be published before the public release of ProofLoop.
+              This is a development draft. This document is not the final Terms of Use and does not constitute a legal agreement. The final Terms of Use will be published before the public release of InvisiProof.
             </Text>
           </InfoCard>
 
           <InfoCard>
             <TermsSection
               title="Acceptance of terms"
-              body="This section will describe the conditions under which users may access and use the ProofLoop service, and what constitutes acceptance of these terms."
+              body="This section will describe the conditions under which users may access and use the InvisiProof service, and what constitutes acceptance of these terms."
             />
             <TermsSection
               title="Use of the service"
-              body="This section will outline the permitted and prohibited uses of the ProofLoop service, including restrictions on misuse, abuse, and unauthorized access."
+              body="This section will outline the permitted and prohibited uses of the InvisiProof service, including restrictions on misuse, abuse, and unauthorized access."
             />
             <TermsSection
               title="Limitations of liability"
-              body="This section will describe the limitations on ProofLoop's liability to users, including disclaimers regarding the accuracy of analysis results and the outcomes of user decisions."
+              body="This section will describe the limitations on InvisiProof's liability to users, including disclaimers regarding the accuracy of analysis results and the outcomes of user decisions."
             />
             <TermsSection
               title="Governing law"
-              body="This section will specify the jurisdiction and governing law that applies to these terms and any disputes arising from the use of the ProofLoop service."
+              body="This section will specify the jurisdiction and governing law that applies to these terms and any disputes arising from the use of the InvisiProof service."
             />
             <View>
               <Text style={[TYPOGRAPHY.h3, { color: colors.text, marginBottom: SPACING.xs }]}>

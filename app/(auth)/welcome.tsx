@@ -63,7 +63,7 @@ export default function WelcomeScreen() {
         <ShieldCheck size={64} color={TEAL} />
         <View style={{ alignItems: 'center', gap: SPACING.sm }}>
           <Text style={[TYPOGRAPHY.display, { color: WHITE, textAlign: 'center' }]}>
-            ProofLoop
+            InvisiProof
           </Text>
           <Text
             style={[

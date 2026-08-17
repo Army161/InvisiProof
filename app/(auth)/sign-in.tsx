@@ -150,7 +150,7 @@ export default function SignInScreen() {
             { color: colors.textSecondary, marginBottom: SPACING.xl },
           ]}
         >
-          Welcome back to ProofLoop.
+          Welcome back to InvisiProof.
         </Text>
 
         {/* Session expired banner */}
@@ -318,11 +318,11 @@ export default function SignInScreen() {
             router.replace('/(auth)/sign-up');
           }}
           accessibilityRole="button"
-          accessibilityLabel="New to ProofLoop? Create an account"
+          accessibilityLabel="New to InvisiProof? Create an account"
           style={{ alignItems: 'center', minHeight: 44, justifyContent: 'center' }}
         >
           <Text style={[TYPOGRAPHY.body, { color: colors.textSecondary }]}>
-            {'New to ProofLoop? '}
+            {'New to InvisiProof? '}
             <Text style={{ color: colors.primary, fontWeight: '600' }}>Create an account</Text>
           </Text>
         </TouchableOpacity>

@@ -81,12 +81,12 @@ These items require owner action outside the Newly platform.
 - **Task**: Update app.json with InvisiProof bundle identifiers and scheme
 - **Owner**: Jeremy (or platform agent)
 - **Required changes**:
-  - `name`: "ProofLoop" → "InvisiProof"
-  - `slug`: "proofloop" → "invisiproof"
-  - `ios.bundleIdentifier`: "com.northstarrevenue.proofloopverify" → "com.northstarrevenue.invisiproof"
-  - `android.package`: "com.northstarrevenue.proofloopverify" → "com.northstarrevenue.invisiproof"
-  - `scheme`: "proofloop" → "invisiproof"
-  - `expo-image-picker` permissions: update "ProofLoop" → "InvisiProof" in permission strings
+  - `name`: "InvisiProof"
+  - `slug`: "invisiproof"
+  - `ios.bundleIdentifier`: "com.northstarrevenue.invisiproof"
+  - `android.package`: "com.northstarrevenue.invisiproof"
+  - `scheme`: "invisiproof"
+  - `expo-image-picker` permissions: update to "InvisiProof" in permission strings
 - **Impact**: EAS build will use wrong bundle ID until this is updated
 
 ---

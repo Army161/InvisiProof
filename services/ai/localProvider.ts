@@ -2,7 +2,7 @@ import { Platform } from 'react-native';
 import type { NormalizedAssessment } from './types';
 
 /**
- * ProofLoop Local Provider
+ * InvisiProof Local Provider
  *
  * STATUS: Architecture ready. Runtime not yet available.
  *

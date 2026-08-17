@@ -17,16 +17,16 @@ export default function SafetyDisclaimerScreen() {
         <View style={{ paddingHorizontal: SPACING.md, paddingTop: SPACING.md, gap: SPACING.md }}>
           <InfoCard>
             <Text style={[TYPOGRAPHY.h3, { color: colors.text, marginBottom: SPACING.md }]}>
-              About ProofLoop's analysis
+              About InvisiProof's analysis
             </Text>
             <Text style={[TYPOGRAPHY.body, { color: colors.textSecondary, marginBottom: SPACING.md }]}>
-              ProofLoop evaluates observable signals and available evidence in the content you submit. It identifies patterns commonly associated with fraud, scams, impersonation, and deceptive practices.
+              InvisiProof evaluates observable signals and available evidence in the content you submit. It identifies patterns commonly associated with fraud, scams, impersonation, and deceptive practices.
             </Text>
             <Text style={[TYPOGRAPHY.body, { color: colors.textSecondary, marginBottom: SPACING.md }]}>
-              ProofLoop does not guarantee the identity of any person or organization. It does not guarantee the safety of any transaction, meeting, or interaction. It does not guarantee payment, delivery, legality, or the recovery of funds.
+              InvisiProof does not guarantee the identity of any person or organization. It does not guarantee the safety of any transaction, meeting, or interaction. It does not guarantee payment, delivery, legality, or the recovery of funds.
             </Text>
             <Text style={[TYPOGRAPHY.body, { color: colors.textSecondary }]}>
-              ProofLoop is a decision-support tool. You are responsible for your own decisions. Always exercise independent judgment before trusting, meeting, or paying anyone.
+              InvisiProof is a decision-support tool. You are responsible for your own decisions. Always exercise independent judgment before trusting, meeting, or paying anyone.
             </Text>
           </InfoCard>
 

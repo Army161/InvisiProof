@@ -1,19 +1,19 @@
 # Sprint Execution Log — InvisiProof
 
 ## Sprint Overview
-**Project**: InvisiProof (formerly ProofLoop)
+**Project**: InvisiProof
 **Platform**: Expo (React Native) + Supabase + EAS
 **Sprint model**: Continuous production sprint, phases 1–8
 
 ---
 
-## Phase 1: Rebrand ProofLoop → InvisiProof
+## Phase 1: Rebrand to InvisiProof
 **Status**: COMPLETE
 
 - Renamed app across all screen files, components, and services
 - Updated display strings, titles, and copy throughout the app
 - analytics.ts header updated to InvisiProof branding
-- NOTE: app.json still contains ProofLoop values — requires owner update before EAS build
+- NOTE: app.json still contains legacy values — requires owner update before EAS build
 
 ---
 

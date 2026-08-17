@@ -1,4 +1,4 @@
-// Initialize ProofLoop console log capture before anything else
+// Initialize InvisiProof console log capture before anything else
 import './utils/errorLogger';
 
 // Polyfills

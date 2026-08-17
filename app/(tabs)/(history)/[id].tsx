@@ -343,7 +343,7 @@ export default function ScanDetailScreen() {
       gemini: 'Google Gemini',
       grok: 'xAI Grok',
       custom: 'Custom',
-      local: 'ProofLoop Local',
+      local: 'InvisiProof Local',
     };
     return map[assessment.provider] ?? assessment.provider;
   })();
@@ -727,7 +727,7 @@ export default function ScanDetailScreen() {
       </AnimatedPressable>
 
       {/* Legal disclaimer */}
-      <LegalDisclaimerCard text="ProofLoop identifies observable patterns only. Results do not guarantee safety, identify criminals, or replace professional advice." />
+      <LegalDisclaimerCard text="InvisiProof identifies observable patterns only. Results do not guarantee safety, identify criminals, or replace professional advice." />
     </ScrollView>
   );
 }

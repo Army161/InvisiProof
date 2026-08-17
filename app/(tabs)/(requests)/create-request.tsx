@@ -42,7 +42,7 @@ const ANALYSIS_REQUIREMENT_OPTIONS: { key: AnalysisRequirement; label: string; d
   {
     key: 'server_verified_cloud',
     label: 'Server-verified only',
-    description: 'Analysis must be verified by ProofLoop servers.',
+    description: 'Analysis must be verified by InvisiProof servers.',
   },
 ];
 
@@ -91,7 +91,7 @@ export default function CreateRequestScreen() {
     console.log('[CreateRequestScreen] share code pressed');
     try {
       await Share.share({
-        message: `Use this ProofLoop code to submit evidence: ${createdCode}\n\nChallenge: ${challenge}`,
+        message: `Use this InvisiProof code to submit evidence: ${createdCode}\n\nChallenge: ${challenge}`,
       });
     } catch {
       console.log('[CreateRequestScreen] share failed');

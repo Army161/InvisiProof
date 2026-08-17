@@ -1,5 +1,5 @@
 export const APP_CONFIG = {
-  name: 'ProofLoop',
+  name: 'InvisiProof',
   tagline: 'Verify before you trust, meet, or pay.',
   supportEmail: 'northstarrevenue@outlook.com',
   websiteUrl: '',

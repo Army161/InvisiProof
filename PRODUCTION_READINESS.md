@@ -16,7 +16,7 @@ Seven external blockers require owner action before the app can be submitted to 
 
 | Phase | Description | Status |
 |-------|-------------|--------|
-| 1 | Rebrand ProofLoop → InvisiProof | COMPLETE |
+| 1 | Rebrand to InvisiProof | COMPLETE |
 | 2 | Auth screens (sign-in, sign-up, forgot-password, reset, verify) | COMPLETE |
 | 3 | Core screens (scan, history, requests, profile) | COMPLETE |
 | 4 | Supabase backend (RLS, subscriptions, usage_counters, webhook_events) | COMPLETE |
@@ -34,17 +34,17 @@ Seven external blockers require owner action before the app can be submitted to 
 
 | Field | Value | Status |
 |-------|-------|--------|
-| name | ProofLoop | NEEDS UPDATE → InvisiProof |
-| slug | proofloop | NEEDS UPDATE → invisiproof |
-| ios.bundleIdentifier | com.northstarrevenue.proofloopverify | NEEDS UPDATE → com.northstarrevenue.invisiproof |
-| android.package | com.northstarrevenue.proofloopverify | NEEDS UPDATE → com.northstarrevenue.invisiproof |
-| scheme | proofloop | NEEDS UPDATE → invisiproof |
+| name | InvisiProof | NEEDS UPDATE (app.json) |
+| slug | invisiproof | NEEDS UPDATE (app.json) |
+| ios.bundleIdentifier | com.northstarrevenue.invisiproof | NEEDS UPDATE (app.json) |
+| android.package | com.northstarrevenue.invisiproof | NEEDS UPDATE (app.json) |
+| scheme | invisiproof | NEEDS UPDATE (app.json) |
 | ios.buildNumber | 1 | OK |
 | android.versionCode | 1 | OK |
 | ITSAppUsesNonExemptEncryption | false | OK |
-| image-picker permissions | ProofLoop branding | NEEDS UPDATE → InvisiProof |
+| image-picker permissions | InvisiProof branding | NEEDS UPDATE (app.json) |
 
-> NOTE: app.json still contains ProofLoop branding from the original template. The rebrand
+> NOTE: app.json still contains legacy branding from the original template. The rebrand
 > was applied to screen content and services but app.json requires a manual update before
 > EAS build. See action items below.
 

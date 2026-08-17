@@ -249,7 +249,7 @@ export default function ScanScreen() {
         <ScanActionCard
           icon={KeyRound}
           title="Enter proof code"
-          description="Respond to a verification request sent by another ProofLoop user."
+          description="Respond to a verification request sent by another InvisiProof user."
           onPress={handleEnterProofCode}
           index={2}
         />
@@ -257,7 +257,7 @@ export default function ScanScreen() {
 
       {/* How it works */}
       <View style={{ paddingHorizontal: SPACING.md, marginBottom: SPACING.xl }}>
-        <SectionHeader title="How ProofLoop works" />
+        <SectionHeader title="How InvisiProof works" />
         <InfoCard>
           {[
             {
@@ -268,7 +268,7 @@ export default function ScanScreen() {
             {
               num: '2',
               title: 'Review observable risk signals',
-              desc: 'ProofLoop identifies patterns associated with fraud, scams, and deception.',
+              desc: 'InvisiProof identifies patterns associated with fraud, scams, and deception.',
             },
             {
               num: '3',

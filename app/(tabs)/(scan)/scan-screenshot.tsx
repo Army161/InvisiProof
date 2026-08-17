@@ -173,7 +173,7 @@ export default function ScanScreenshotScreen() {
       if (canAskAgain) {
         Alert.alert(
           'Camera Access Needed',
-          'ProofLoop needs camera access to take a photo.',
+          'InvisiProof needs camera access to take a photo.',
           [
             { text: 'Try Again', onPress: handleTakePhoto },
             { text: 'Choose from Photos Instead', onPress: handlePickLibrary },

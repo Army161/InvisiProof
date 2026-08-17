@@ -18,7 +18,7 @@ import {
   trackSignedIn,
 } from '@/services/analytics';
 
-const GUEST_MODE_KEY = '@proofloop_guest_mode';
+const GUEST_MODE_KEY = '@invisiproof_guest_mode';
 const PROFILE_REFRESH_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 
 interface AuthContextValue {
@@ -312,7 +312,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const normalizedEmail = email.trim().toLowerCase();
     console.log('[AuthContext] sendPasswordReset initiated');
     const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
-      redirectTo: 'proofloop://reset-password',
+      redirectTo: 'invisiproof://reset-password',
     });
     if (error) {
       console.log('[AuthContext] sendPasswordReset error:', error.message);
