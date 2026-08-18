@@ -327,7 +327,7 @@ export default function SubscriptionScreen() {
 
   const handleManageSubscription = () => {
     console.log('[SubscriptionScreen] manage subscription pressed');
-    Linking.openURL('https://apps.apple.com/account/subscriptions');
+    Linking.openURL('https://play.google.com/store/account/subscriptions');
   };
 
   const handlePrivacyPolicy = () => {
@@ -465,7 +465,7 @@ export default function SubscriptionScreen() {
       <InfoCard>
         <View style={{ gap: SPACING.sm }}>
           <Text style={[TYPOGRAPHY.caption, { color: colors.textSecondary, textAlign: 'center', lineHeight: 18 }]}>
-            Subscriptions automatically renew unless cancelled at least 24 hours before the end of the current period. Manage or cancel your subscription in your App Store account settings.
+            Subscriptions automatically renew unless cancelled at least 24 hours before the end of the current period. Manage or cancel your subscription in your Google Play account settings.
           </Text>
           <View style={{ flexDirection: 'row', justifyContent: 'center', gap: SPACING.md }}>
             <AnimatedPressable
