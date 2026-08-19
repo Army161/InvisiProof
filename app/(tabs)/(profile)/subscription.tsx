@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   Alert,
   Linking,
+  Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -16,6 +17,7 @@ import { useSubscription } from '@/hooks/useSubscription';
 import {
   trackPaywallViewed,
   trackPurchaseStarted,
+  trackPurchaseCompleted,
   trackPurchaseFailed,
   trackRestoreCompleted,
 } from '@/services/analytics';
@@ -273,7 +275,7 @@ export default function SubscriptionScreen() {
       console.log('[SubscriptionScreen] subscribe pressed but not authenticated');
       Alert.alert(
         'Sign in required',
-        'Please sign in or create an account to subscribe.',
+        'Please sign in to subscribe.',
         [
           { text: 'Cancel', style: 'cancel' },
           { text: 'Sign In', onPress: () => router.push('/(auth)/sign-in') },
@@ -283,26 +285,39 @@ export default function SubscriptionScreen() {
     }
 
     const productId = period === 'annual' ? plan.annualProductId : plan.monthlyProductId;
-    console.log('[SubscriptionScreen] initiating purchase:', productId);
+    console.log('[SubscriptionScreen] initiating purchase:', { plan: plan.id, period, productId });
     trackPurchaseStarted({ plan: plan.id, period });
-
     setSubscribing(true);
+
     try {
-      // RevenueCat purchase — Purchases SDK not yet connected
-      // When RevenueCat is connected, replace this with:
-      // const { customerInfo } = await Purchases.purchaseProduct(productId);
-      Alert.alert(
-        'Subscription',
-        'In-app purchases will be available once the app is published to the App Store. Your plan will be updated automatically after purchase.',
-        [{ text: 'OK' }]
-      );
-      trackPurchaseFailed({ plan: plan.id, reason: 'store_not_available' });
+      if (Platform.OS === 'android') {
+        const Purchases = require('react-native-purchases').default;
+        console.log('[SubscriptionScreen] calling Purchases.purchaseProduct:', productId);
+        const { customerInfo } = await Purchases.purchaseProduct(productId);
+        const isActive = customerInfo.activeSubscriptions.includes(productId);
+        console.log('[SubscriptionScreen] purchase result — isActive:', isActive, 'activeSubscriptions:', customerInfo.activeSubscriptions);
+        if (isActive) {
+          trackPurchaseCompleted({ plan: plan.id, period });
+          Alert.alert('Subscribed!', `You are now on the ${plan.name} plan.`);
+        }
+      } else {
+        // Web — Stripe checkout (coming soon)
+        console.log('[SubscriptionScreen] web purchase attempted — not yet supported');
+        Alert.alert(
+          'Web Billing',
+          'Web subscriptions are coming soon. Download the Android app to subscribe now.',
+          [{ text: 'OK' }]
+        );
+        trackPurchaseFailed({ plan: plan.id, reason: 'web_not_supported' });
+      }
     } catch (err: any) {
-      const reason = err?.message ?? 'unknown';
-      console.log('[SubscriptionScreen] purchase failed:', reason);
-      trackPurchaseFailed({ plan: plan.id, reason });
       if (!err?.userCancelled) {
+        const reason = err?.message ?? 'unknown';
+        console.log('[SubscriptionScreen] purchase failed:', reason);
+        trackPurchaseFailed({ plan: plan.id, reason });
         Alert.alert('Purchase failed', 'Could not complete the purchase. Please try again.');
+      } else {
+        console.log('[SubscriptionScreen] purchase cancelled by user');
       }
     } finally {
       setSubscribing(false);
@@ -313,13 +328,27 @@ export default function SubscriptionScreen() {
     console.log('[SubscriptionScreen] restore purchases pressed');
     setSubscribing(true);
     try {
-      // When RevenueCat is connected:
-      // const customerInfo = await Purchases.restorePurchases();
-      Alert.alert('Restore Purchases', 'Purchases will be restored once the app is published to the App Store.');
-      trackRestoreCompleted({ restored: false });
+      if (Platform.OS === 'android') {
+        const Purchases = require('react-native-purchases').default;
+        console.log('[SubscriptionScreen] calling Purchases.restorePurchases');
+        const customerInfo = await Purchases.restorePurchases();
+        const hasActive = customerInfo.activeSubscriptions.length > 0;
+        console.log('[SubscriptionScreen] restore result — hasActive:', hasActive, 'activeSubscriptions:', customerInfo.activeSubscriptions);
+        trackRestoreCompleted({ restored: hasActive });
+        Alert.alert(
+          hasActive ? 'Purchases Restored' : 'Nothing to Restore',
+          hasActive
+            ? 'Your subscription has been restored.'
+            : 'No active purchases found on this account.'
+        );
+      } else {
+        console.log('[SubscriptionScreen] restore attempted on web — not supported');
+        Alert.alert('Restore', 'Restore is only available on Android. Web billing coming soon.');
+        trackRestoreCompleted({ restored: false });
+      }
     } catch (err: any) {
       console.log('[SubscriptionScreen] restore failed:', err?.message);
-      Alert.alert('Restore failed', 'Could not restore purchases. Please try again.');
+      Alert.alert('Restore Failed', 'Could not restore purchases. Please try again.');
     } finally {
       setSubscribing(false);
     }

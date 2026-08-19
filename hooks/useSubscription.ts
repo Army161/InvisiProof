@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Platform } from 'react-native';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 
@@ -26,6 +27,7 @@ export function useSubscription(): SubscriptionState {
     loading: true,
   });
 
+  // Supabase source of truth
   useEffect(() => {
     if (!user) {
       setState({ entitlement: 'free', status: 'active', expiresAt: null, loading: false });
@@ -49,6 +51,34 @@ export function useSubscription(): SubscriptionState {
         }
       });
   }, [user]);
+
+  // Android: listen to RC CustomerInfo for real-time updates after a purchase,
+  // without waiting for the Supabase webhook to fire.
+  useEffect(() => {
+    if (Platform.OS !== 'android') return;
+    let listener: { remove: () => void } | null = null;
+    try {
+      const Purchases = require('react-native-purchases').default;
+      listener = Purchases.addCustomerInfoUpdateListener((info: any) => {
+        const subs = info.activeSubscriptions as string[];
+        console.log('[useSubscription] RC CustomerInfo update — activeSubscriptions:', subs);
+        if (subs.length > 0) {
+          const sub = subs[0];
+          let entitlement: Entitlement = 'free';
+          if (sub.includes('max')) entitlement = 'max';
+          else if (sub.includes('pro')) entitlement = 'pro';
+          else if (sub.includes('plus')) entitlement = 'plus';
+          console.log('[useSubscription] RC entitlement resolved:', entitlement);
+          setState(prev => ({ ...prev, entitlement, status: 'active', loading: false }));
+        }
+      });
+    } catch {
+      // RC not available on this platform/build
+    }
+    return () => {
+      listener?.remove();
+    };
+  }, []);
 
   return state;
 }
