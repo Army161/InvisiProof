@@ -13,6 +13,7 @@ import {
 import { useAppTheme } from '@/hooks/useAppTheme';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSubscription } from '@/hooks/useSubscription';
+import { usePaywall } from '@/contexts/PaywallContext';
 import { supabase } from '@/lib/supabase';
 import { TYPOGRAPHY, SPACING, RADIUS, SHADOWS } from '@/constants/theme';
 import { InfoCard } from '@/components/InfoCard';
@@ -109,6 +110,7 @@ export default function ScanScreen() {
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const { entitlement, loading: subLoading } = useSubscription();
+  const { showPaywall } = usePaywall();
   const [assessmentsUsed, setAssessmentsUsed] = useState<number | null>(null);
 
   useEffect(() => {
@@ -136,11 +138,21 @@ export default function ScanScreen() {
   const isQuotaExhausted = entitlement === 'free' && assessmentsUsed !== null && assessmentsUsed >= FREE_ASSESSMENT_LIMIT;
 
   const handleScanScreenshot = () => {
+    if (isQuotaExhausted) {
+      console.log('[ScanScreen] quota exhausted — showing paywall from scan screenshot');
+      showPaywall('quota_exhausted');
+      return;
+    }
     console.log('[ScanScreen] navigate to scan-screenshot');
     router.push('/(tabs)/(scan)/scan-screenshot');
   };
 
   const handlePasteText = () => {
+    if (isQuotaExhausted) {
+      console.log('[ScanScreen] quota exhausted — showing paywall from paste text');
+      showPaywall('quota_exhausted');
+      return;
+    }
     console.log('[ScanScreen] navigate to paste-text');
     router.push('/(tabs)/(scan)/paste-text');
   };
@@ -201,7 +213,7 @@ export default function ScanScreen() {
             <AnimatedPressable
               onPress={() => {
                 console.log('[ScanScreen] upgrade banner pressed');
-                router.push('/(tabs)/(profile)/subscription');
+                showPaywall('quota_exhausted');
               }}
               accessibilityRole="button"
               accessibilityLabel="Upgrade plan"

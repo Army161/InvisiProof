@@ -16,6 +16,7 @@ import {
 import { ThemeProvider, useAppTheme } from '@/contexts/ThemeContext';
 import { WidgetProvider } from '@/contexts/WidgetContext';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { PaywallProvider } from '@/contexts/PaywallContext';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { initAnalytics } from '@/services/analytics';
 import Constants from 'expo-constants';
@@ -81,9 +82,11 @@ export default function RootLayout() {
         <ThemeProvider>
           <AuthProvider>
             <WidgetProvider>
-              <GestureHandlerRootView style={{ flex: 1 }}>
-                <RootLayoutInner />
-              </GestureHandlerRootView>
+              <PaywallProvider>
+                <GestureHandlerRootView style={{ flex: 1 }}>
+                  <RootLayoutInner />
+                </GestureHandlerRootView>
+              </PaywallProvider>
             </WidgetProvider>
           </AuthProvider>
         </ThemeProvider>

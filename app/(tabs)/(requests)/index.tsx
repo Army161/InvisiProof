@@ -24,6 +24,8 @@ import {
 } from 'lucide-react-native';
 import { useAppTheme } from '@/hooks/useAppTheme';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSubscription } from '@/hooks/useSubscription';
+import { usePaywall } from '@/contexts/PaywallContext';
 import { fetchMyRequests, cancelProofRequest } from '@/services/proofRequestService';
 import { TYPOGRAPHY, SPACING, RADIUS, SHADOWS } from '@/constants/theme';
 import { EmptyStateCard } from '@/components/EmptyStateCard';
@@ -287,6 +289,8 @@ export default function RequestsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { user } = useAuth();
+  const { entitlement } = useSubscription();
+  const { showPaywall } = usePaywall();
 
   const [requests, setRequests] = useState<ProofRequest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -348,7 +352,11 @@ export default function RequestsScreen() {
   };
 
   const handleCreateRequest = () => {
-    console.log('[RequestsScreen] create request pressed');
+    console.log('[RequestsScreen] create request pressed, entitlement:', entitlement);
+    if (entitlement === 'free') {
+      showPaywall('proof_requests');
+      return;
+    }
     router.push('/(tabs)/(requests)/create-request');
   };
 
