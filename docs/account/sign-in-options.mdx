@@ -1,45 +1,105 @@
 ---
 title: Sign-In Options
-description: Email, Google, and Apple sign-in for InvisiProof
+description: How to sign in to InvisiProof on Android and web
 ---
 
 # Sign-In Options
 
-InvisiProof supports three ways to sign in.
+InvisiProof supports two sign-in methods on Android and web.
 
 ## Email and password
 
 Sign in with the email address and password you used when creating your account.
 
-1. Open InvisiProof
-2. Tap **Sign In**
-3. Enter your email and password
-4. Tap **Sign In**
+<Steps>
+  <Step title="Open InvisiProof">
+    Open the app or visit the web app.
+  </Step>
+  <Step title="Tap Sign In">
+    Tap **Sign In** on the welcome screen.
+  </Step>
+  <Step title="Enter your credentials">
+    Enter your email address and password.
+  </Step>
+  <Step title="Tap Sign In">
+    Tap **Sign In**. If your credentials are correct, you are signed in.
+  </Step>
+</Steps>
 
-If you forgot your password, tap **Forgot Password** to reset it. See [Reset Password](/account/reset-password).
+## Google Sign-In
 
-## Google
+Sign in with your Google account for a faster, password-free experience.
 
-Sign in with your Google account.
+<Steps>
+  <Step title="Tap Continue with Google">
+    On the sign-in screen, tap **Continue with Google**.
+  </Step>
+  <Step title="Select your account">
+    Choose the Google account associated with your InvisiProof account.
+  </Step>
+  <Step title="Grant permissions">
+    Grant the requested permissions (email address and basic profile).
+  </Step>
+</Steps>
 
-1. Open InvisiProof
-2. Tap **Continue with Google**
-3. Select your Google account and authorize InvisiProof
+<Note>
+Apple Sign-In is not available on Android. If you previously signed in with Apple on another platform, use email/password or Google to sign in on Android.
+</Note>
 
-## Apple
+## Troubleshooting sign-in issues
 
-Sign in with your Apple ID.
+<AccordionGroup>
+  <Accordion title="Forgot your password">
+    Tap **Forgot Password** on the sign-in screen. Enter your email address and tap **Send Reset Link**. Check your email for a password reset link.
 
-1. Open InvisiProof
-2. Tap **Continue with Apple**
-3. Authenticate with Face ID, Touch ID, or your Apple ID password
+    See [Reset Password](/account/reset-password) for full instructions.
+  </Accordion>
 
-Apple Sign In may use a private relay email address. This is normal and does not affect your account.
+  <Accordion title="Email not recognized">
+    If you see "No account found with this email address":
+    - Check for typos in your email address
+    - Try the email address you used when signing up (you may have used a different one)
+    - If you signed up with Google, use **Continue with Google** instead of email/password
+    - If you still can't find your account, contact support@invisiproof.com
+  </Accordion>
 
-## Switching sign-in methods
+  <Accordion title="Incorrect password">
+    If you see "Incorrect password":
+    - Check that Caps Lock is not on
+    - Try the **Forgot Password** flow to reset your password
+    - If you signed up with Google, you may not have a password — use **Continue with Google**
+  </Accordion>
 
-If you created your account with email and want to use Google or Apple (or vice versa), contact support at support@invisiproof.com. We can help link your accounts.
+  <Accordion title="Email not verified">
+    If you see "Please verify your email address":
+    - Check your inbox for the verification email
+    - Check your spam folder
+    - Tap **Resend Verification Email** on the sign-in screen
+    - If the email still doesn't arrive, contact support@invisiproof.com
+  </Accordion>
 
-## Security
+  <Accordion title="Google Sign-In fails">
+    If Google Sign-In fails:
+    - Ensure you have a Google account configured on your device
+    - Check that you have an internet connection
+    - Try signing out of Google on your device and signing back in
+    - If the issue persists, try email/password sign-in instead
+  </Accordion>
 
-InvisiProof uses secure authentication. Passwords are never stored in plain text. Session tokens are stored securely on your device.
+  <Accordion title="Account locked or suspended">
+    If your account has been suspended for a policy violation, you will see a message explaining the reason. Contact support@invisiproof.com to appeal.
+  </Accordion>
+</AccordionGroup>
+
+## Staying signed in
+
+InvisiProof keeps you signed in using a secure session token stored on your device. You will remain signed in until you:
+- Tap **Sign Out** in Profile settings
+- Delete the app
+- Your session expires (after extended inactivity)
+
+## Signing out
+
+To sign out: tap **Profile** → **Sign Out** → confirm.
+
+Signing out does not delete your data. Your scan history and account remain intact.

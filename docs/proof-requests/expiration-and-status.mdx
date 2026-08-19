@@ -1,39 +1,109 @@
 ---
 title: Expiration and Status
-description: Understanding Proof Request status definitions
+description: Proof Request statuses, expiry options, and what happens when a request expires
 ---
 
 # Expiration and Status
 
-Every Proof Request has a status that tells you where it is in the workflow.
+Every Proof Request has a status that reflects where it is in the workflow, and an expiry time after which the respondent can no longer submit evidence.
 
-## Status definitions
+## Request statuses
 
-### Pending
+<AccordionGroup>
+  <Accordion title="Pending">
+    **What it means:** The request has been created and the code has been generated, but the respondent has not yet submitted evidence.
 
-The request has been created and shared, but the respondent has not yet submitted evidence. The link is active and the respondent can still submit.
+    **What you can do:** Share the code with the respondent. Wait for them to submit. The request will remain in Pending status until the respondent submits or the request expires.
 
-### Completed
+    **How long it lasts:** Until the respondent submits evidence or the request expires.
+  </Accordion>
 
-The respondent submitted evidence and the assessment is ready. You can view the risk assessment result in your Requests tab.
+  <Accordion title="Submitted">
+    **What it means:** The respondent has submitted their evidence. The evidence has been received and stored. Analysis has been queued but has not yet started.
 
-### Expired
+    **What you can do:** Wait. Analysis typically begins within seconds of submission.
 
-The request was not completed before its expiration time. The respondent's link no longer works. Expired requests cannot be reopened.
+    **How long it lasts:** Usually a few seconds before transitioning to Analyzing.
+  </Accordion>
 
-### Cancelled
+  <Accordion title="Analyzing">
+    **What it means:** The AI analysis is in progress. The evidence is being evaluated and the risk assessment is being generated.
 
-You cancelled the request before it was completed. The respondent's link no longer works. Cancelled requests cannot be reopened.
+    **What you can do:** Wait. Analysis typically completes within 10–30 seconds.
 
-## Expiration
+    **How long it lasts:** Usually 10–30 seconds. If a request stays in Analyzing for more than 5 minutes, see [Troubleshooting](/help/troubleshooting).
+  </Accordion>
 
-Proof Requests expire after a set period if not completed. The expiration time is shown when you create the request and in the request detail view.
+  <Accordion title="Completed">
+    **What it means:** Analysis is complete. The risk assessment result is available for the requester to view.
 
-When a request expires:
-- The respondent's link stops working
-- The request status changes to **Expired**
-- No assessment is generated
+    **What you can do:** Tap the request to view the full result including risk level, score, warning indicators, and recommended actions.
+
+    **How long it lasts:** Indefinitely, until the request is deleted or the history retention period expires.
+  </Accordion>
+
+  <Accordion title="Expired">
+    **What it means:** The request reached its expiry time before the respondent submitted evidence. The request is now closed.
+
+    **What you can do:** Create a new Proof Request with a new code and share it with the respondent again.
+
+    **How long it lasts:** Expired requests remain visible in your history until you delete them.
+  </Accordion>
+</AccordionGroup>
+
+## Status flow diagram
+
+```
+Created
+   │
+   ▼
+Pending ──── (expiry reached) ──► Expired
+   │
+   │ (respondent submits)
+   ▼
+Submitted
+   │
+   ▼
+Analyzing
+   │
+   ▼
+Completed
+```
+
+## Expiry options
+
+When creating a Proof Request, you choose how long it stays open:
+
+| Option | Best for |
+|--------|----------|
+| 24 hours | Urgent situations where you need a quick response |
+| 48 hours | Standard requests with a reasonable response window |
+| 7 days | When the respondent may need time to gather evidence or is in a different time zone |
+
+<Note>
+Choose the shortest expiry that gives the respondent enough time to respond. Shorter expiry windows reduce the risk of the code being used by an unintended recipient.
+</Note>
+
+## What happens when a request expires
+
+When a Proof Request expires:
+
+1. The status changes to **Expired**
+2. The 6-digit code becomes invalid — the respondent can no longer use it to submit evidence
+3. No evidence was submitted, so there is no risk assessment result
+4. The expired request remains in your history until you delete it
+5. You can create a new request with a new code if you still need the assessment
 
 ## What happens to submitted evidence after completion
 
-After a request is completed, the submitted evidence remains in private storage. The respondent can delete their submission at any time. See [Data Retention](/privacy/data-retention) for details on how long data is kept.
+Once a request reaches **Completed** status:
+
+- The evidence remains stored in Supabase Storage, scoped to the proof request
+- The requester still cannot read the evidence — the RLS policy remains in effect
+- The evidence is retained according to your plan's history retention policy
+- You (the requester) can delete the request at any time, which also deletes the evidence
+- The respondent can request deletion by contacting support@invisiproof.com
+
+## Notifications
+
+You can enable push notifications to be alerted when a Proof Request you created reaches **Completed** status. Configure notifications in Profile → Notification Preferences.

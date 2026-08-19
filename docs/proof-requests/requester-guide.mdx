@@ -1,48 +1,103 @@
 ---
 title: Requester Guide
-description: How to create, share, monitor, and cancel a Proof Request
+description: How to create a Proof Request and receive a risk assessment
 ---
 
 # Requester Guide
 
-This guide covers everything you need to do as the person creating a Proof Request.
+As the requester, you create the Proof Request, share the code with the respondent, and receive the risk assessment result. You never receive the raw evidence.
 
-## Creating a request
+## Creating a Proof Request
 
-1. Tap the **Requests** tab at the bottom of the screen
-2. Tap **Create Request**
-3. Fill in the **Purpose** — a short description of what you are asking for (this is shown to the respondent)
-4. Add **Instructions** if needed — specific guidance for what the respondent should submit
-5. Tap **Create**
+<Steps>
+  <Step title="Open the Requests tab">
+    Tap the **Requests** tab at the bottom of the screen.
+  </Step>
 
-InvisiProof generates a unique request code and a shareable link.
+  <Step title="Tap Create Request">
+    Tap the **Create Request** button (or the + icon in the top right).
+  </Step>
 
-## Sharing the request
+  <Step title="Set the purpose and challenge">
+    Enter a clear description of what you are asking the respondent to submit and why.
 
-Share the code or link with the person you want to submit evidence. You can:
+    **Good challenge examples:**
+    - "Please submit the invoice you received from the vendor so I can assess whether it shows signs of manipulation."
+    - "Please submit the message you received claiming to be from our IT department."
+    - "Please submit the URL you want me to visit before I click it."
 
-- Copy the link and send it via any messaging app
-- Share the code verbally or in writing
+    Be specific. The respondent will read this challenge before submitting their evidence.
+  </Step>
 
-The respondent does not need an InvisiProof account to submit evidence.
+  <Step title="Set the expiry">
+    Choose how long the request stays open:
+    - **24 hours** — for urgent situations
+    - **48 hours** — standard
+    - **7 days** — when the respondent may need time to respond
 
-## Monitoring the request
+    After expiry, the request closes and the respondent can no longer submit evidence. See [Expiration and Status](/proof-requests/expiration-and-status) for details.
+  </Step>
 
-Open the **Requests** tab to see the status of your requests:
+  <Step title="Create the request">
+    Tap **Create Request**. A 6-digit code is generated.
+  </Step>
 
-- **Pending** — Waiting for the respondent to submit
-- **Completed** — The respondent submitted and the assessment is ready
-- **Expired** — The request was not completed before it expired
-- **Cancelled** — You cancelled the request
+  <Step title="Share the code">
+    Share the 6-digit code with the respondent through any channel — message, email, phone call, or in person.
 
-When a request is completed, tap it to view the risk assessment result.
+    You can also share the direct link, which opens InvisiProof with the code pre-filled.
 
-## Cancelling a request
+    <Note>
+    The code is not secret — it only allows someone to submit evidence to this specific request. It does not grant access to your account or any other data.
+    </Note>
+  </Step>
 
-To cancel a pending request, open it and tap **Cancel Request**. Cancelled requests cannot be reopened. The respondent's link will no longer work.
+  <Step title="Wait for the response">
+    The request status changes as the respondent acts:
+    - **Pending** — waiting for the respondent to submit evidence
+    - **Submitted** — evidence received, analysis queued
+    - **Analyzing** — AI analysis in progress
+    - **Completed** — result ready
 
-## What you can see
+    You will see the status update in the Requests tab. You can also enable notifications to be alerted when the result is ready.
+  </Step>
 
-You receive the risk assessment result (risk level, score, summary, warning indicators, recommended actions). You do not automatically receive the raw evidence submitted by the respondent.
+  <Step title="View the result">
+    When the status is **Completed**, tap the request to view the risk assessment result.
 
-See [Privacy Boundaries](/proof-requests/privacy-boundaries) for details on what requesters can and cannot access.
+    You will see:
+    - Risk level and score
+    - Summary of observable signals
+    - Warning indicators
+    - Recommended actions
+    - Trust level
+
+    You will **not** see the raw evidence submitted by the respondent.
+  </Step>
+</Steps>
+
+## What you can and cannot see
+
+| You CAN see | You CANNOT see |
+|-------------|----------------|
+| Risk level (Low/Medium/High/Critical) | The image, text, or URL submitted |
+| Risk score (0–100) | The respondent's personal information |
+| Warning indicators | The raw AI prompt or response |
+| Recommended actions | Any other requests the respondent has responded to |
+| Trust level | |
+| Request status | |
+
+This boundary is enforced at the database level and cannot be bypassed through the API.
+
+## Managing your requests
+
+- **View all requests** — the Requests tab shows all your active and completed requests
+- **Delete a request** — tap the request and select Delete. This removes the request and all associated data, including the evidence (if submitted)
+- **Expired requests** — expired requests are shown with an Expired status. You cannot reopen an expired request, but you can create a new one
+
+## Tips for effective Proof Requests
+
+- **Be specific in your challenge** — vague challenges lead to vague evidence submissions
+- **Set an appropriate expiry** — don't set 24 hours if the respondent is in a different time zone
+- **Follow up** — if the request expires without a response, you can create a new one
+- **Interpret results in context** — a Low Risk result on a submitted document means the observable signals don't indicate manipulation, not that the document is definitely authentic

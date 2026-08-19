@@ -1,36 +1,59 @@
 ---
 title: Trust Levels
-description: Understanding device_generated vs server_verified assessments
+description: What trust levels mean and how they differ from risk levels
 ---
 
 # Trust Levels
 
-Every InvisiProof assessment includes a **trust level** that indicates how the assessment was produced.
+Every InvisiProof assessment carries a trust level that describes how the analysis was produced — not how risky the content is. Trust levels and risk levels are independent.
 
-## device_generated
+## The two trust levels
 
-The assessment was produced using a provider you configured yourself (BYOK — Bring Your Own Key), or through a process that was not independently verified by InvisiProof's server infrastructure.
+<CardGroup cols={2}>
+  <Card title="Server Verified" icon="server">
+    The assessment was produced by InvisiProof's trusted server infrastructure. Analysis ran through InvisiProof's managed AI pipeline after authenticated server-side processing.
+  </Card>
+  <Card title="Device Generated" icon="mobile">
+    The assessment was produced through a provider you configured (BYOK). Analysis ran through your own API key and provider account, not InvisiProof's server infrastructure.
+  </Card>
+</CardGroup>
 
-**What this means**:
-- The result reflects the output of the AI provider you configured
-- InvisiProof did not independently verify the assessment
-- The result is still useful, but carries the limitations of your chosen provider and configuration
+## What trust levels describe
 
-## server_verified
+Trust levels describe the **analysis path** — where the AI processing happened and who controls the AI provider account used.
 
-The assessment was produced by InvisiProof's server infrastructure using authenticated, server-side processing.
+| Trust Level | Analysis ran through | API key used |
+|-------------|---------------------|--------------|
+| Server Verified | InvisiProof's server infrastructure | InvisiProof's managed key |
+| Device Generated | User-configured BYOK provider | Your own API key |
 
-**What this means**:
-- The result was produced through InvisiProof's standard pipeline
-- The trust label is assigned only after the server confirms the assessment was completed through the verified process
-- This is the default trust level for assessments run without BYOK
+## What trust levels do NOT describe
 
-## Why trust levels matter
+Trust levels do **not** indicate:
+- Whether the risk assessment is accurate
+- Whether the content is safe or dangerous
+- Whether the AI model used is better or worse
+- Whether you should trust the result more or less
 
-Trust levels help you understand the provenance of an assessment result. If you share a result with someone else, the trust level tells them whether the assessment came from InvisiProof's infrastructure or from a provider you configured.
+<Note>
+A Device Generated assessment is not less reliable than a Server Verified one. The trust level simply tells you which analysis path was used. Both paths use capable AI models and the same structured analysis prompt.
+</Note>
 
-Neither trust level guarantees accuracy. Both are risk assessments based on observable signals. See [What InvisiProof Can and Cannot Determine](/what-invisiproof-can-determine) for full details.
+## When trust levels are shown
 
-## BYOK and trust levels
+Trust levels are shown on every completed assessment result. They appear alongside the risk level and risk score in the assessment detail view.
 
-When you configure your own API key, assessments run through that provider will be labeled `device_generated`. To receive `server_verified` assessments, use the default InvisiProof provider. See [BYOK](/privacy/byok) for details.
+## Trust levels and Proof Requests
+
+For [Proof Requests](/proof-requests/overview), the trust level reflects how the respondent's evidence was analyzed:
+
+- If the respondent submitted evidence through InvisiProof's standard flow, the result is **Server Verified**
+- If the respondent used a BYOK-configured account, the result is **Device Generated**
+
+The requester sees the trust level as part of the result, giving them context about how the analysis was produced.
+
+## Relationship to BYOK
+
+The Device Generated trust level is assigned when you have configured a [BYOK (Bring Your Own Key)](/privacy/byok) provider and that key was used for the analysis. This gives you full control over which AI provider processes your content, at the cost of the Server Verified label.
+
+If you want Server Verified assessments, remove your BYOK key from the app settings and assessments will route through InvisiProof's server infrastructure.

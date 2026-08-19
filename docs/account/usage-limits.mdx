@@ -1,41 +1,84 @@
 ---
 title: Usage Limits
-description: Monthly limits and how they reset
+description: What counts as an assessment, monthly reset, and what happens when you hit the limit
 ---
 
 # Usage Limits
 
-## What counts toward your limit
+Each InvisiProof plan includes a monthly assessment quota. This page explains what counts toward the quota, when it resets, and what happens when you reach the limit.
 
-- **Assessments**: each time you request analysis of an image, text, or URL
-- **Proof Requests**: each time you create a new Proof Request
+## What counts as an assessment
 
-Viewing existing results, browsing history, and managing your account do not count toward limits.
+Each of the following counts as **one assessment** against your monthly quota:
 
-## Monthly limits by plan
+| Action | Counts as |
+|--------|-----------|
+| Analyze an image | 1 assessment |
+| Analyze text | 1 assessment |
+| Analyze a URL | 1 assessment |
+| Proof Request (respondent submits evidence) | 1 assessment against the **requester's** quota |
 
-| Plan | Assessments/month | Proof Requests/month |
-|------|-------------------|----------------------|
-| Free | 2 | 1 |
-| Plus | 25 | 8 |
-| Pro | 150 | 50 |
-| Max | Fair-use unlimited | 250 |
+**What does NOT count:**
+- Viewing a completed assessment result (no charge)
+- Viewing your scan history (no charge)
+- Creating a Proof Request (no charge — only the analysis when evidence is submitted counts)
+- Failed analyses (if analysis fails due to a server error, it does not count against your quota)
 
-## When limits reset
+## Monthly quota by plan
 
-Usage limits reset at the start of each billing period. For monthly plans, this is the same day each month as your subscription start date. For annual plans, limits reset monthly on the same day.
+| Plan | Assessments per month |
+|------|----------------------|
+| Free | 2 |
+| Plus | 25 |
+| Pro | 150 |
+| Max | Unlimited |
 
-## What happens when you reach your limit
+## When the quota resets
 
-When you reach your monthly assessment or Proof Request limit, you will see a message explaining that you have used your allocation for the month. You can:
+Your quota resets on the same day each month as your subscription start date.
 
-- Wait for the limit to reset at the start of your next billing period
-- Upgrade to a higher plan for more capacity
+**Example:** If you subscribed on March 15, your quota resets on April 15, May 15, and so on.
 
-## Fair-use unlimited (Max plan)
+For Free plan users, the quota resets on the same day each month as your account creation date.
 
-The Max plan includes fair-use unlimited assessments. This means there is no hard monthly cap, but usage that significantly exceeds normal patterns may be reviewed. InvisiProof reserves the right to contact Max plan users whose usage appears automated or abusive.
+<Note>
+The reset is based on calendar date, not a rolling 30-day window. If you use all 25 Plus assessments on the 1st of the month, you wait until your reset date — not 30 days later.
+</Note>
 
-## Checking your usage
+## How to check remaining assessments
 
-Go to **Profile → Subscription** to see how many assessments and Proof Requests you have used this month and how many remain.
+Your remaining assessments are shown in:
+- **Profile** → **Usage** — shows current usage and quota
+- The **Scan** tab — a usage indicator shows how many assessments you have left this month
+- The assessment quota banner (shown when you are close to or at the limit)
+
+## What happens when you hit the limit
+
+When you reach your monthly quota:
+
+1. A **quota banner** appears at the top of the Scan tab
+2. Tapping **Analyze Image**, **Analyze Text**, or **Analyze URL** shows an upgrade prompt
+3. You cannot run new assessments until your quota resets or you upgrade
+
+You can still:
+- View your existing scan history
+- View completed assessment results
+- Respond to Proof Requests (as a respondent — this counts against the requester's quota, not yours)
+- Create Proof Requests (the assessment runs when the respondent submits, which counts against your quota at that time)
+
+## Upgrading when at the limit
+
+If you hit your limit and need to run more assessments immediately:
+
+1. Tap the upgrade prompt or go to **Profile** → **Upgrade Plan**
+2. Select a higher plan
+3. After purchase confirmation, your new quota takes effect immediately
+4. You can run assessments right away
+
+## Unused assessments
+
+Unused assessments do not roll over to the next month. If you use 10 of your 25 Plus assessments in a month, the remaining 15 do not carry forward.
+
+## Assessment failures
+
+If an assessment fails due to a server error (not a user error), it does not count against your quota. You will see an error message and can retry the assessment. If you are charged for a failed assessment, contact support@invisiproof.com.

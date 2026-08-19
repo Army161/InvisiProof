@@ -1,40 +1,84 @@
 ---
 title: Result Disclosure
-description: How assessment results are disclosed and what is shared
+description: Who can see assessment results and how RLS enforces access
 ---
 
 # Result Disclosure
 
-InvisiProof is designed around a result-only disclosure model: you receive the risk assessment, not automatically the raw evidence.
+Assessment results are private to the user who owns them. This page explains who can see results, how access is enforced, and what is logged.
 
-## Direct assessments
+## Who can see assessment results
 
-For content you submit yourself, you receive the full assessment result:
+### Direct assessments (image, text, URL)
 
-- Risk level and score
-- Summary of observable signals
-- Warning indicators
-- Recommended actions
-- Limitations
+Only the authenticated user who created the scan can see the assessment result. No other user can access it through the API.
 
-The raw content (your image, text, or URL) remains in your private storage. You can view it in your history, but it is not shared with anyone else.
+### Proof Request results
 
-## Proof Requests
+- **The requester** can see the risk assessment result for their proof request
+- **The respondent** cannot see the risk assessment result — only the requester sees it
+- **No other user** can see either party's data
 
-For Proof Requests, the result-only model is the core privacy protection:
+This boundary is enforced by RLS policies at the database level. See [Privacy Boundaries](/proof-requests/privacy-boundaries) for details.
 
-- **Requesters** receive the risk assessment result
-- **Requesters do not automatically receive** the raw evidence submitted by the respondent
-- **Respondents** control what they submit and can delete it at any time
+## RLS policies that enforce access
 
-This separation means a respondent can provide evidence for assessment without handing over their private documents, messages, or images to the requester.
+The following RLS policies govern result access:
+
+**`scan_results` table:**
+```sql
+-- Only the scan owner can read their results
+CREATE POLICY "Users can read own scan results"
+ON scan_results FOR SELECT
+USING (auth.uid() = user_id);
+```
+
+**`proof_request_results` table:**
+```sql
+-- Only the requester can read the result
+CREATE POLICY "Requester can read proof request result"
+ON proof_request_results FOR SELECT
+USING (auth.uid() = requester_user_id);
+
+-- Respondent explicitly cannot read the result
+-- (no policy grants respondent SELECT access)
+```
+
+These policies are enforced by PostgreSQL before any data reaches the application. They cannot be bypassed by modifying the client application.
+
+## What is logged vs what is private
+
+### What is logged (analytics)
+
+InvisiProof logs the following non-sensitive events to PostHog:
+
+| Event | Properties logged |
+|-------|------------------|
+| `scan_completed` | risk_level, scan_type, trust_level |
+| `proof_request_completed` | risk_level |
+| `scan_started` | scan_type |
+
+**What is never logged:** The actual content of scans (images, text, URLs), the full assessment text, warning indicator descriptions, or any personally identifiable information beyond your anonymous PostHog user ID.
+
+### What is stored in the database
+
+The full assessment result — including risk score, summary, warning indicators, and recommended actions — is stored in the Supabase database, accessible only to the scan owner.
+
+### What InvisiProof staff can see
+
+InvisiProof staff do not have routine access to individual assessment results. Database access by staff is:
+- Logged and audited
+- Limited to aggregate analytics and support investigations with user consent
+- Subject to the privacy policy
 
 ## Sharing results
 
-You can choose to share an assessment result with others (for example, by taking a screenshot or copying the result text). InvisiProof does not prevent you from sharing results you have received.
+You can share an assessment result with others by:
+- Taking a screenshot of the result screen
+- Using the **Share** button on the result screen (shares a formatted summary, not the raw evidence)
 
-## What InvisiProof does not share
+Sharing is always initiated by you. InvisiProof does not automatically share results with anyone.
 
-- Your submitted content with other users
-- Your assessment results with third parties (except as required by law or described in the Privacy Policy)
-- Your identity with respondents in a Proof Request (unless you include it in the purpose or instructions)
+## Result deletion
+
+When you delete a scan, the assessment result is deleted along with it. Deletion is permanent. See [Evidence Storage](/privacy/evidence-storage) for deletion instructions.

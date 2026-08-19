@@ -1,48 +1,95 @@
 ---
 title: Security Reporting
-description: How to report security vulnerabilities to InvisiProof
+description: How to report a security vulnerability in InvisiProof
 ---
 
 # Security Reporting
 
-If you discover a security vulnerability in InvisiProof, please report it responsibly.
+If you discover a security vulnerability in InvisiProof, please report it responsibly. We take security seriously and will respond promptly.
+
+<Warning>
+Do NOT open a public GitHub issue for security vulnerabilities. Public disclosure before a fix is available puts all users at risk.
+</Warning>
 
 ## How to report
 
-Email: **security@invisiproof.com**
+**Email:** security@invisiproof.com
 
-Include:
-- A description of the vulnerability
-- Steps to reproduce it
-- The potential impact
-- Any supporting evidence (screenshots, logs, proof-of-concept)
+Include the following in your report:
+- **Description** — what the vulnerability is and where it exists
+- **Steps to reproduce** — a clear, step-by-step reproduction case
+- **Potential impact** — what an attacker could do if they exploited this vulnerability
+- **Affected versions** — app version, platform (Android/Web)
+- **Suggested fix** (optional) — if you have ideas for remediation
 
-## What to expect
+## Response timeline
 
-- We will acknowledge your report within 3 business days
-- We will investigate and keep you informed of our progress
-- We will notify you when the issue is resolved
+| Milestone | Commitment |
+|-----------|-----------|
+| Acknowledgment | Within 48 hours of receipt |
+| Initial assessment | Within 5 business days |
+| Fix timeline communicated | Within 10 business days |
+| Fix deployed | Within 90 days for confirmed vulnerabilities |
+| Public disclosure | Coordinated with reporter after fix |
 
-## Responsible disclosure
-
-Please do not publicly disclose the vulnerability until we have had a reasonable opportunity to investigate and address it. We ask for a minimum of 90 days before public disclosure.
+We will keep you informed throughout the process. If you do not receive an acknowledgment within 48 hours, please follow up.
 
 ## Scope
 
-Reports are welcome for:
-- Authentication and authorization issues
-- Data exposure or access control bypasses
-- Injection vulnerabilities
-- Privacy boundary violations in Proof Requests
-- Any issue that could expose user data
+### In scope
 
-## Out of scope
+These are the types of vulnerabilities we want to hear about:
 
+- **Authentication bypass** — ways to access an account without valid credentials
+- **Data exposure** — accessing another user's scans, assessments, or evidence
+- **RLS policy bypasses** — ways to circumvent Supabase row-level security policies
+- **API key exposure** — ways to read another user's BYOK API keys
+- **Injection vulnerabilities** — SQL injection, prompt injection in edge functions, or similar
+- **Privilege escalation** — ways to gain access beyond your account's entitlements
+- **Insecure direct object references** — accessing resources by guessing IDs
+
+### Out of scope
+
+These are not considered security vulnerabilities for our purposes:
+
+- Social engineering attacks against InvisiProof staff
+- Physical attacks against devices
 - Denial of service attacks
-- Social engineering of InvisiProof staff
-- Physical security issues
-- Issues in third-party services not under InvisiProof's control
+- Vulnerabilities in third-party services (Supabase, RevenueCat, PostHog) — report those to the respective vendors
+- Issues that require physical access to an unlocked device
+- Self-XSS (requires tricking yourself)
+- Missing security headers that don't lead to exploitable vulnerabilities
+- Rate limiting issues that don't lead to data exposure
 
-## Recognition
+## Responsible disclosure policy
 
-We appreciate responsible security research. Researchers who report valid vulnerabilities may be acknowledged in our changelog at their request.
+We ask that you:
+
+1. **Give us time to fix it** — allow 90 days before public disclosure
+2. **Don't access other users' data** — test only against your own accounts
+3. **Don't degrade service** — don't perform testing that affects other users
+4. **Don't use the vulnerability for personal gain** — don't access, modify, or exfiltrate data beyond what's needed to demonstrate the issue
+
+In return, we commit to:
+- Responding promptly and keeping you informed
+- Not pursuing legal action against good-faith security researchers
+- Crediting you in our security acknowledgments (with your permission)
+- Working with you on coordinated disclosure timing
+
+## Bug bounty
+
+InvisiProof does not currently operate a formal bug bounty program. We do recognize and credit researchers who report valid vulnerabilities (with their permission).
+
+## Security acknowledgments
+
+We thank the following researchers for responsibly disclosing security issues:
+
+*(No disclosures to date — this section will be updated as reports are received and resolved.)*
+
+## Contact
+
+**Security:** security@invisiproof.com
+
+**General support:** support@invisiproof.com
+
+**Website:** https://www.invisiproof.com

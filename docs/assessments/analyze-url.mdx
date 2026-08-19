@@ -1,54 +1,109 @@
 ---
 title: Analyze a URL
-description: How to analyze a suspicious link without visiting it
+description: How to submit a URL for risk analysis without visiting it
 ---
 
 # Analyze a URL
 
-Use URL analysis to evaluate a suspicious link for risk signals. InvisiProof analyzes the URL structure and available signals **without visiting the URL from your device**.
+Use URL analysis to evaluate suspicious links before clicking them. InvisiProof analyzes the URL's structure and patterns without visiting it from your device.
+
+<Note>
+InvisiProof does NOT visit the URL from your device. The analysis is purely structural — based on the URL string itself and known pattern databases. This means your device's IP address is never exposed to the destination server.
+</Note>
 
 ## How to analyze a URL
 
-1. Tap the **Scan** tab at the bottom of the screen
-2. Tap **Analyze URL**
-3. Paste or type the URL you want to analyze
-4. Review the consent notice
-5. Tap **Save Securely** to store the URL privately in your account
-6. Tap **Request Analysis Now** to start the assessment
+<Steps>
+  <Step title="Open the Scan tab">
+    Tap the **Scan** tab at the bottom of the screen.
+  </Step>
+  <Step title="Select Analyze URL">
+    Tap **Analyze URL** from the scan options.
+  </Step>
+  <Step title="Enter the URL">
+    Paste or type the full URL you want to analyze, including the `https://` or `http://` prefix.
 
-## Important: InvisiProof does not visit the URL from your device
-
-When you submit a URL, InvisiProof analyzes it based on its structure and available signals. **Your device does not navigate to the URL.** This means:
-
-- You are not exposed to any content the URL might load
-- No cookies, tracking pixels, or scripts from the URL are executed on your device
-- The URL is not "clicked" on your behalf
-
-<Warning>
-Do not manually open a URL you believe is suspicious before or after analysis. The analysis result does not make a URL safe to visit.
-</Warning>
+    You can submit:
+    - Full URLs from messages or emails
+    - Shortened URLs (bit.ly, tinyurl, etc.)
+    - URLs with query parameters
+    - URLs from QR codes (copy the URL before submitting)
+  </Step>
+  <Step title="Save securely">
+    Review the consent notice and tap **Save Securely**. The URL is stored privately in your account.
+  </Step>
+  <Step title="Request analysis">
+    Tap **Request Analysis Now** to start the assessment.
+  </Step>
+</Steps>
 
 ## What gets analyzed
 
-InvisiProof looks for observable signals including:
+<AccordionGroup>
+  <Accordion title="Domain structure">
+    InvisiProof examines how the domain is constructed:
 
-- Domain structure and age indicators
-- Subdomain patterns associated with phishing
-- URL path patterns (encoded characters, unusual structures)
-- Known pattern indicators in the domain or path
-- Mismatch between displayed text and actual destination (if provided)
+    - **Subdomain abuse** — domains like `paypal.com.verify-account.net` use a legitimate brand as a subdomain of a malicious domain
+    - **Typosquatting** — domains that closely mimic well-known brands with minor substitutions (`paypa1.com`, `arnazon.com`, `g00gle.com`)
+    - **Homograph attacks** — use of visually similar Unicode characters to impersonate legitimate domains
+    - **Brand name in path** — legitimate domain with a brand name in the path to create false trust (`attacker.com/paypal/login`)
+  </Accordion>
 
-## What you receive
+  <Accordion title="URL structure signals">
+    The overall structure of the URL provides risk signals:
 
-After analysis, you see:
+    - **Excessive length** — unusually long URLs with many parameters are common in phishing kits
+    - **Encoded characters** — heavy use of percent-encoding to obscure the true destination
+    - **Multiple redirects indicated** — URL structures that suggest the link will redirect through multiple domains
+    - **IP address as host** — URLs using a raw IP address instead of a domain name
+    - **Non-standard ports** — URLs specifying unusual port numbers
+    - **Data URIs** — `data:` scheme URLs that embed content directly
+  </Accordion>
 
-- **Risk Level**: Low, Medium, High, or Critical
-- **Risk Score**: 0–100
-- **Summary**: Plain-language description of what was found
-- **Warning Indicators**: Specific signals identified
-- **Recommended Actions**: Suggested next steps
-- **Limitations**: What this assessment cannot determine
+  <Accordion title="Known pattern matching">
+    InvisiProof compares the URL against structural patterns associated with:
 
-## Privacy
+    - Common phishing kit URL formats
+    - URL shortener services (which may hide the true destination)
+    - Free hosting services frequently abused for phishing pages
+    - Domain patterns associated with malware distribution
+    - Patterns from known credential harvesting campaigns
+  </Accordion>
 
-The URL is stored privately in your account. It is not shared with other users. You can delete it at any time from your scan history.
+  <Accordion title="TLD and registrar signals">
+    The top-level domain (TLD) provides statistical risk context:
+
+    - Certain TLDs have significantly higher rates of abuse (e.g. `.xyz`, `.top`, `.click`, `.work`)
+    - Recently registered domains (indicated by structural patterns) are statistically higher risk
+    - Free subdomain services are frequently abused for phishing
+  </Accordion>
+
+  <Accordion title="Redirect indicators">
+    URL structures that suggest the link will redirect:
+
+    - URL shorteners that hide the true destination
+    - Open redirect parameters (`?redirect=`, `?url=`, `?next=`)
+    - Tracking URLs that pass through multiple domains before reaching the destination
+  </Accordion>
+</AccordionGroup>
+
+## What InvisiProof does NOT do
+
+- **Does not visit the URL** — your device's IP address is never sent to the destination server
+- **Does not render the page** — no JavaScript is executed, no content is fetched
+- **Does not guarantee safety** — a Low Risk score means the URL structure does not show known risk patterns, not that the destination is safe
+- **Does not check real-time blocklists** — analysis is structural, not based on live threat intelligence feeds
+
+<Warning>
+Even a Low Risk URL score does not mean it is safe to visit. Sophisticated phishing sites may use clean URLs that pass structural analysis. Always exercise caution before entering credentials or downloading files from any link.
+</Warning>
+
+## Privacy note
+
+The URL you submit is stored privately in your account. It is not shared with other users, not used to train AI models, and not transmitted to the URL's destination server. You can delete it at any time from your scan history.
+
+## Tips for URL analysis
+
+- **Copy the full URL** — don't retype it manually, as typos may change the analysis
+- **Expand shortened URLs first** — if you can safely see the expanded URL (e.g. by hovering in a desktop browser), submit the expanded version for more accurate analysis
+- **Submit the URL from the message** — if you received a suspicious link in a message, use [Analyze Text](/assessments/analyze-text) on the full message for a more complete assessment

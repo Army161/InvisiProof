@@ -1,50 +1,98 @@
 ---
-title: FAQ
-description: Frequently asked questions about InvisiProof
+title: Frequently Asked Questions
+description: Answers to common questions about InvisiProof
 ---
 
 # Frequently Asked Questions
 
-## What does InvisiProof actually assess?
+<AccordionGroup>
+  <Accordion title="What is InvisiProof?">
+    InvisiProof is a privacy-first risk assessment tool that uses AI to evaluate suspicious images, text messages, and URLs. It helps you identify risk signals in content before you act on it — for example, before clicking a link, sending money, or trusting a document.
 
-InvisiProof analyzes observable signals in submitted images, text, and URLs. For images, it looks for visual inconsistencies and patterns. For text, it looks for linguistic patterns associated with fraud or deception. For URLs, it analyzes the structure and domain patterns without visiting the URL from your device.
+    InvisiProof also provides Proof Requests: a two-party workflow where you can ask someone to submit evidence privately and receive only the risk assessment result, not the raw evidence.
+  </Accordion>
 
-## What is a Proof Request?
+  <Accordion title="How accurate is InvisiProof?">
+    InvisiProof analyzes observable signals in submitted content. It is not infallible:
 
-A Proof Request is a two-party workflow. You create a request and share a link with someone. They submit evidence privately. You receive only the risk assessment result — not automatically the raw evidence they submitted. This lets you evaluate a claim without requiring the other person to expose more than necessary.
+    - Sophisticated deception may produce low risk scores
+    - Legitimate content with unusual patterns may produce higher risk scores
+    - The AI model can make mistakes
 
-## Does the requester see the evidence I submit?
+    Risk levels are assessments, not verdicts. A Low Risk result means the observable signals don't indicate elevated risk — not that the content is definitely safe. A Critical Risk result means strong risk signals are present — not that the content is definitely harmful.
 
-No. When you respond to a Proof Request, the requester receives the risk assessment result. They do not automatically receive your raw images, text, or files. See [Privacy Boundaries](/proof-requests/privacy-boundaries) for details.
+    Always use InvisiProof results as one input among many, especially for high-stakes decisions.
+  </Accordion>
 
-## Are results guaranteed to be accurate?
+  <Accordion title="Does InvisiProof store my data?">
+    Yes. When you submit content for analysis, it is stored in your private account in Supabase with row-level security. Only you can access it through the API.
 
-No. InvisiProof provides risk assessments based on observable signals. Results are not verdicts, legal evidence, or guarantees of safety or harm. A Low risk result does not mean content is safe. A High risk result does not mean content is definitely harmful. Always use results as one input among many.
+    How long it's stored depends on your plan:
+    - Free: 7 days
+    - Plus: 90 days
+    - Pro/Max: Unlimited (until you delete it)
 
-## Can I use my own AI provider (BYOK)?
+    You can delete any scan at any time. See [Evidence Storage](/privacy/evidence-storage) for details.
+  </Accordion>
 
-Yes, on Pro and Max plans. Go to **Profile → AI Provider** to configure your own API key. See [BYOK](/privacy/byok) for details.
+  <Accordion title="What does BYOK mean?">
+    BYOK stands for Bring Your Own Key. It means you can supply your own API key from an AI provider (OpenAI, Anthropic, or Google Gemini) so that your assessments are processed through your own provider account rather than InvisiProof's shared infrastructure.
 
-## Can I delete my data?
+    Your key is stored encrypted in Supabase and is never logged or sent to InvisiProof's application servers. See [BYOK](/privacy/byok) for full details.
+  </Accordion>
 
-Yes. You can delete individual submissions from your scan history at any time. You can also delete your entire account from **Profile → Delete Account**. See [Delete Account](/account/delete-account) for details.
+  <Accordion title="How do Proof Requests work?">
+    A Proof Request lets you ask someone to submit evidence privately. You create a request, share a 6-digit code with the other person, and they submit their evidence (image, text, or URL). You receive only the AI-generated risk assessment result — never the raw evidence.
 
-## How do subscriptions work?
+    This privacy boundary is enforced at the database level using Supabase Row Level Security policies. See [Proof Requests Overview](/proof-requests/overview) for details.
+  </Accordion>
 
-Subscriptions are billed monthly or annually through the App Store (iOS) or Google Play (Android). You can upgrade, downgrade, or cancel at any time. See [Manage Subscription](/account/manage-subscription) for details.
+  <Accordion title="Are InvisiProof results admissible in court?">
+    No. InvisiProof results are not legal evidence and are not admissible in court without independent verification by a qualified professional (such as a digital forensics expert).
 
-## Can I get a refund?
+    InvisiProof is not a legal service. Results are risk assessments based on observable signals — not expert opinions, not forensic analyses, and not legal conclusions. See the [AI Disclaimer](/legal/ai-disclaimer) for full details.
+  </Accordion>
 
-Refund requests are handled by Apple (iOS) or Google (Android). InvisiProof cannot issue refunds directly. See [Subscription and Refunds](/legal/subscription-refunds) for details.
+  <Accordion title="What happens to my data if I cancel my subscription?">
+    If you cancel your subscription and revert to the Free plan:
+    - Scans older than 7 days will be deleted within 24 hours of the downgrade
+    - New scans will follow the Free plan's 7-day retention policy
+    - Your account remains active
 
-## How do I contact support?
+    If you delete your account, all data is permanently deleted regardless of plan. See [Delete Account](/account/delete-account) for details.
+  </Accordion>
 
-Email support@invisiproof.com. We aim to respond within 2 business days.
+  <Accordion title="Is InvisiProof available on iOS?">
+    InvisiProof launched on Android and web. iOS availability has not been announced. Follow invisiproof.com for updates.
+  </Accordion>
 
-## Is InvisiProof available on Android?
+  <Accordion title="Is there a web app?">
+    Yes. InvisiProof is available as a web app at invisiproof.com in addition to the Android app. The web app has the same features as the Android app.
+  </Accordion>
 
-InvisiProof is available on iOS. Android availability will be announced when available.
+  <Accordion title="How is InvisiProof priced?">
+    InvisiProof offers four plans:
+    - **Free**: 2 assessments/month, 7-day history
+    - **Plus**: $14.99/month or $99.99/year — 25 assessments/month, 90-day history, BYOK
+    - **Pro**: $34.99/month or $249.99/year — 150 assessments/month, unlimited history, priority analysis
+    - **Max**: $79.99/month or $599.99/year — unlimited assessments, unlimited history, all features
 
-## Does InvisiProof visit URLs I submit?
+    See [Plans and Pricing](/account/plans) for full details.
+  </Accordion>
 
-No. When you submit a URL for analysis, InvisiProof analyzes the URL structure and available signals without navigating to the URL from your device. See [Analyze a URL](/assessments/analyze-url) for details.
+  <Accordion title="What is InvisiProof's refund policy?">
+    Subscriptions are processed through Google Play. Refunds are handled by Google Play according to their refund policy. InvisiProof does not issue refunds directly for used assessments.
+
+    For billing errors (charged incorrectly, duplicate charges), contact support@invisiproof.com. See [Subscription Refunds](/legal/subscription-refunds) for full details.
+  </Accordion>
+
+  <Accordion title="Does InvisiProof use my content to train AI models?">
+    No. Your submitted content (images, text, URLs) is not used to train AI models. It is analyzed by the AI model to produce your assessment result and then stored privately in your account. It is not shared with AI providers for training purposes.
+
+    See [Privacy Policy](/legal/privacy-policy) for full details.
+  </Accordion>
+
+  <Accordion title="How do I report a security vulnerability?">
+    Email security@invisiproof.com. Do not open a public GitHub issue for security vulnerabilities. See [Security Reporting](/privacy/security-reporting) for full details including response timelines and scope.
+  </Accordion>
+</AccordionGroup>

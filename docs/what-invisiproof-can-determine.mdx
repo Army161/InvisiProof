@@ -5,30 +5,96 @@ description: Honest explanation of assessment capabilities and limitations
 
 # What InvisiProof Can and Cannot Determine
 
-## What it can assess
-
-InvisiProof analyzes observable signals in submitted content:
-
-- **Images**: visual inconsistencies, metadata patterns, compression artifacts, text within images, layout anomalies
-- **Text/Messages**: linguistic patterns, urgency indicators, request patterns, structural signals
-- **URLs**: domain age, structure, known pattern indicators (without visiting the URL from your device)
-
-## What it cannot determine
-
-InvisiProof **cannot**:
-
-- Guarantee a person's identity
-- Confirm a transaction is legitimate or fraudulent
-- Provide legal advice or evidence
-- Replace professional investigation
-- Detect all forms of deception
-
-## How to interpret results
-
-Results are **risk assessments**, not verdicts. A "Low Risk" result means the observable signals do not indicate high risk—it does not mean the content is safe. A "High Risk" result means observable signals suggest elevated risk—it does not mean the content is definitely harmful.
-
-Always use results as one input among many. Consult appropriate professionals for high-stakes decisions.
+Understanding the boundaries of InvisiProof's analysis is essential for interpreting results correctly. This page explains what signals the system detects, what it cannot determine, and when to seek professional advice.
 
 <Warning>
-InvisiProof results are not legal evidence, professional opinions, or guarantees of safety or harm. See the [AI Disclaimer](/legal/ai-disclaimer) for full details.
+InvisiProof results are not legal evidence, professional opinions, or guarantees of safety or harm. A Low Risk result does not mean content is safe. A High Risk result does not mean content is definitely harmful. Always use results as one input among many.
 </Warning>
+
+## What InvisiProof can assess
+
+<AccordionGroup>
+  <Accordion title="Visual signals in images">
+    When you submit an image or screenshot, InvisiProof looks for:
+
+    - **Compression artifacts** — unusual JPEG/PNG compression patterns that may indicate the image was re-saved after editing
+    - **Layout and spacing anomalies** — inconsistent fonts, misaligned elements, or spacing that differs from authentic templates
+    - **Text within images** — names, amounts, dates, account numbers, and instructions embedded in the image
+    - **Structural patterns** — layouts common in fraudulent documents, fake invoices, or manipulated screenshots
+    - **Color and contrast inconsistencies** — areas of the image that appear to have been composited or altered
+    - **Metadata signals** — where available, patterns in image metadata that suggest editing history
+  </Accordion>
+
+  <Accordion title="Linguistic patterns in text">
+    When you submit a text message, email, or conversation, InvisiProof looks for:
+
+    - **Urgency language** — phrases designed to pressure immediate action ("act now", "your account will be closed", "limited time")
+    - **Impersonation patterns** — language mimicking banks, government agencies, tech companies, or known individuals
+    - **Financial pressure signals** — requests for payment, gift cards, wire transfers, or cryptocurrency
+    - **Suspicious instructions** — requests to click links, download files, provide credentials, or keep communication secret
+    - **Structural anomalies** — unusual formatting, inconsistent sender information, or mismatched context
+    - **Emotional manipulation** — fear, urgency, flattery, or romantic pressure used to override judgment
+  </Accordion>
+
+  <Accordion title="URL structure signals">
+    When you submit a URL, InvisiProof analyzes it structurally without visiting it from your device:
+
+    - **Domain structure** — subdomains designed to mimic legitimate domains (e.g. `paypal.com.attacker.net`)
+    - **URL length and complexity** — unusually long URLs with encoded parameters common in phishing
+    - **Known pattern matching** — structural patterns associated with phishing kits, URL shorteners, or redirect chains
+    - **TLD signals** — top-level domains statistically associated with higher abuse rates
+    - **Redirect indicators** — URL structures that suggest multi-hop redirects
+    - **Typosquatting patterns** — domains that closely resemble well-known brands with minor character substitutions
+  </Accordion>
+</AccordionGroup>
+
+## What InvisiProof cannot determine
+
+<CardGroup cols={2}>
+  <Card title="Legal authenticity" icon="gavel">
+    InvisiProof cannot confirm whether a document, signature, or transaction is legally valid or legally fraudulent.
+  </Card>
+  <Card title="Identity" icon="user">
+    InvisiProof cannot verify who sent a message, who created an image, or whether a person is who they claim to be.
+  </Card>
+  <Card title="Intent" icon="brain">
+    InvisiProof cannot determine whether a person intended to deceive. High-risk signals may appear in legitimate content.
+  </Card>
+  <Card title="Completeness" icon="magnifying-glass">
+    InvisiProof cannot detect all forms of deception. Sophisticated manipulation may produce low-risk scores.
+  </Card>
+</CardGroup>
+
+InvisiProof also **cannot**:
+- Replace a forensic investigation by a qualified professional
+- Provide legal advice or serve as expert testimony
+- Guarantee that a URL is safe to visit
+- Confirm that a transaction will succeed or fail
+- Identify the geographic origin of content
+
+## Confidence levels
+
+Every assessment includes a risk score from 0 to 100. The score reflects the density and severity of observable signals — it is not a probability of fraud.
+
+| Score Range | Risk Level | What it means |
+|-------------|------------|---------------|
+| 0–24 | Low | Few or no risk signals detected in observable content |
+| 25–49 | Medium | Some risk signals present; warrants caution |
+| 50–74 | High | Multiple significant risk signals; take protective action |
+| 75–100 | Critical | Strong concentration of high-severity risk signals |
+
+<Note>
+A score of 0 does not mean content is safe. It means the observable signals analyzed did not trigger risk indicators. Sophisticated deception may evade detection.
+</Note>
+
+## When to seek professional advice
+
+Seek professional advice when:
+
+- The stakes are high (financial transactions, legal matters, personal safety)
+- The risk level is High or Critical
+- You are considering legal action based on the content
+- The content involves a child or vulnerable person
+- You need results that will hold up in court or a formal investigation
+
+For legal matters, consult a qualified attorney. For financial fraud, contact your bank and relevant authorities. For personal safety concerns, contact local law enforcement.

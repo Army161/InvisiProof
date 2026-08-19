@@ -1,42 +1,95 @@
 ---
 title: Proof Requests Overview
-description: How the two-party private evidence workflow works
+description: The two-party workflow for private evidence submission and risk assessment
 ---
 
 # Proof Requests
 
-A Proof Request is a two-party workflow that lets you ask someone to submit evidence privately. You receive only the risk assessment result — not automatically the raw evidence they submitted.
+A Proof Request is a structured two-party workflow that lets you ask someone to submit evidence privately. You receive only the AI-generated risk assessment result — never the raw evidence itself.
 
 ## Why Proof Requests exist
 
-Ordinary "send me a screenshot" verification creates a problem: the evidence may contain information the other person should not have to reveal. A Proof Request separates the evidence from the result.
+Sometimes you need to evaluate content that someone else holds. You might want to:
+- Verify a claim someone is making about a document they possess
+- Check whether an image someone sent you has been manipulated
+- Evaluate a message or URL that a third party wants you to act on
+- Ask a potential business partner to submit credentials for risk assessment
 
-**Example**: You want to verify a claim someone is making. You create a Proof Request. They submit the supporting evidence privately. InvisiProof assesses it. You receive the risk assessment — not their private documents, messages, or images.
+The challenge: if you ask them to send you the evidence directly, you receive the raw content — which may be sensitive, may be manipulated, or may expose you to liability. Proof Requests solve this by keeping the evidence private while still giving you a risk assessment.
 
-## How it works
+## The two-party workflow
 
-<Steps>
-  <Step title="You create a request">
-    Tap the Requests tab and create a new Proof Request. Set the purpose and any instructions for the respondent.
-  </Step>
-  <Step title="You share the code or link">
-    InvisiProof generates a unique code and shareable link. Send it to the person you want to submit evidence.
-  </Step>
-  <Step title="They submit privately">
-    The respondent opens the link, reviews the consent notice, and submits their evidence. They control what they submit.
-  </Step>
-  <Step title="InvisiProof assesses the evidence">
-    The submitted content is analyzed for risk signals using the same process as direct assessments.
-  </Step>
-  <Step title="You receive the result">
-    You see the risk assessment result in your Requests tab. You do not automatically receive the raw evidence.
-  </Step>
-</Steps>
+```
+Requester                              Respondent
+    │                                      │
+    │  1. Create Request                   │
+    │     (set purpose + expiry)           │
+    │                                      │
+    │  2. Share 6-digit code ──────────────►│
+    │                                      │
+    │                          3. Enter code in app
+    │                          4. Read the challenge
+    │                          5. Submit evidence
+    │                             (image/text/URL)
+    │                                      │
+    │  6. Receive risk result ◄────────────│
+    │     (NOT the raw evidence)           │
+```
 
-## Key privacy boundaries
+## What the requester sees
 
-- Requesters cannot read the raw evidence submitted by respondents
-- Respondents can delete their submission at any time
-- The request expires if not completed within the set timeframe
+The requester receives:
+- Risk level (Low, Medium, High, Critical)
+- Risk score (0–100)
+- Summary of observable signals
+- Warning indicators
+- Recommended actions
+- Trust level
 
-See [Privacy Boundaries](/proof-requests/privacy-boundaries) for full details.
+The requester does **not** receive:
+- The raw image, text, or URL submitted by the respondent
+- Any personal information about the respondent beyond what they chose to share
+- The ability to download or view the evidence
+
+## What the respondent sees
+
+The respondent sees:
+- The purpose/challenge set by the requester
+- Confirmation that their evidence was submitted
+- A privacy notice explaining that the requester cannot read their evidence
+
+The respondent does **not** see:
+- The risk assessment result (only the requester sees this)
+- Any information about the requester beyond the challenge text
+
+## Privacy enforcement
+
+The privacy boundary between requester and respondent is enforced at the database level using Supabase Row Level Security (RLS) policies. The API cannot return evidence to the requester regardless of what the client requests. See [Privacy Boundaries](/proof-requests/privacy-boundaries) for technical details.
+
+## Use cases
+
+<CardGroup cols={2}>
+  <Card title="Document verification" icon="file">
+    Ask someone to submit a document they claim to have. You receive a risk assessment of whether the document shows signs of manipulation — without receiving the document itself.
+  </Card>
+  <Card title="Identity claim verification" icon="user-check">
+    Ask someone to submit an image of an ID or credential. You receive a risk assessment without receiving a copy of their ID.
+  </Card>
+  <Card title="Message verification" icon="message">
+    Ask someone to submit a message they received. You can assess whether it's high-risk without reading the private message yourself.
+  </Card>
+  <Card title="Link verification" icon="link">
+    Ask someone to submit a URL they want you to visit. You receive a structural risk assessment before deciding whether to click.
+  </Card>
+</CardGroup>
+
+## Getting started
+
+<CardGroup cols={2}>
+  <Card title="Requester Guide" icon="circle-plus" href="/proof-requests/requester-guide">
+    How to create a Proof Request and share the code
+  </Card>
+  <Card title="Respondent Guide" icon="circle-arrow-right" href="/proof-requests/respondent-guide">
+    How to respond to a Proof Request code
+  </Card>
+</CardGroup>

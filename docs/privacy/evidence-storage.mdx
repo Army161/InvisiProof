@@ -1,38 +1,100 @@
 ---
 title: Evidence Storage
-description: How submitted evidence is stored and protected
+description: Where evidence is stored, access controls, retention, and deletion
 ---
 
 # Evidence Storage
 
-All content you submit to InvisiProof — images, text, URLs, and Proof Request submissions — is stored privately with scoped access controls.
+All evidence submitted to InvisiProof — images, text, URLs, and Proof Request evidence — is stored in Supabase with strict access controls.
 
-## How storage works
+## Storage locations
 
-- Each piece of submitted content is stored with a reference to your user account
-- Access is scoped so that only your account can retrieve your submissions
-- For Proof Requests, respondent submissions are stored separately from requester accounts — requesters cannot read the raw evidence
+| Content type | Storage location | Access control |
+|-------------|-----------------|----------------|
+| Images | Supabase Storage (private bucket) | RLS: owner only |
+| Text content | Supabase database (encrypted column) | RLS: owner only |
+| URLs | Supabase database | RLS: owner only |
+| Proof Request evidence (images) | Supabase Storage (private bucket) | RLS: respondent only |
+| Proof Request evidence (text/URL) | Supabase database | RLS: respondent only |
+| Assessment results | Supabase database | RLS: owner only (requester for proof requests) |
 
-## Encryption
+## Access controls
 
-Content is stored using encrypted cloud storage. Data is encrypted in transit (TLS) and at rest.
+### Row Level Security (RLS)
 
-## Who can access your evidence
+Every table and storage bucket that holds user content has RLS policies enabled. These policies are enforced by PostgreSQL before any data reaches the application layer.
 
-- **You** — through your authenticated account
-- **InvisiProof's server infrastructure** — for processing assessments
-- **No other users** — other InvisiProof users cannot access your submissions
+**For direct assessments (images, text, URLs):**
+- Only the authenticated user who created the scan can read or delete it
+- No other user — including InvisiProof staff through the API — can access it
+- Service role access is used only by edge functions during analysis
 
-InvisiProof staff do not routinely access submitted content. Access may occur in limited circumstances for security investigation, legal compliance, or abuse prevention, as described in the [Privacy Policy](/legal/privacy-policy).
+**For Proof Request evidence:**
+- Only the respondent (the user who submitted the evidence) can read it
+- The requester explicitly cannot read it — this is enforced by an exclusion policy
+- Service role access is used only by edge functions during analysis
 
-## Deleting evidence
+### Private storage bucket
 
-You can delete any submission from your scan history at any time. Deletion removes the content from active storage. See [Data Retention](/privacy/data-retention) for details on backup and residual data.
+Images are stored in a private Supabase Storage bucket. This means:
+- There are no public URLs for images
+- Accessing an image requires a signed URL generated for the authenticated owner
+- Signed URLs expire after a short period (typically 1 hour)
+- The bucket is not publicly listable
 
-## Proof Request evidence
+## Retention policy
 
-Evidence submitted by respondents through Proof Requests is stored with additional access restrictions:
+How long evidence is retained depends on your plan:
 
-- The requester cannot read the raw evidence
-- The respondent can delete their submission at any time
-- After deletion, the raw evidence is removed from active storage
+| Plan | Retention |
+|------|-----------|
+| Free | 7 days from scan date |
+| Plus | 90 days from scan date |
+| Pro | Unlimited (until you delete) |
+| Max | Unlimited (until you delete) |
+
+After the retention period, evidence and its associated assessment result are automatically deleted. Deletion is permanent and cannot be undone.
+
+<Note>
+Retention is measured from the scan creation date, not the last access date. A scan created 91 days ago on a Plus plan will be deleted even if you viewed it yesterday.
+</Note>
+
+## How to delete evidence
+
+### Delete a single scan
+
+1. Open the **History** tab (or the scan detail view)
+2. Tap the scan you want to delete
+3. Tap **Delete** (or the trash icon)
+4. Confirm deletion
+
+Deletion removes both the evidence (image/text/URL) and the associated assessment result. Deletion is permanent.
+
+### Delete all scans
+
+1. Open **Profile** → **Data and Privacy**
+2. Tap **Delete All Scans**
+3. Confirm deletion
+
+This deletes all your scans and assessment results. It does not delete your account.
+
+### Delete your account
+
+Deleting your account deletes all associated data including all scans, assessments, and Proof Requests. See [Delete Account](/account/delete-account) for details.
+
+## What happens to evidence in Proof Requests
+
+For Proof Request evidence:
+- The respondent's evidence is stored in the private bucket scoped to the proof request ID
+- The requester can delete the entire proof request (which also deletes the evidence)
+- The respondent can request deletion by contacting support@invisiproof.com
+- Evidence is retained according to the requester's plan retention policy
+
+## Security of stored evidence
+
+- Images are stored in Supabase Storage with server-side encryption at rest
+- Text and URL content is stored in PostgreSQL with column-level encryption for sensitive fields
+- All data in transit is encrypted with TLS 1.2+
+- Supabase's infrastructure is hosted on AWS with SOC 2 compliance
+
+For security vulnerability reports related to evidence storage, see [Security Reporting](/privacy/security-reporting).

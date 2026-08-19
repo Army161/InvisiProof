@@ -1,49 +1,98 @@
 ---
 title: Data Retention
-description: How long InvisiProof keeps your data and how to delete it
+description: How long InvisiProof retains each type of data and how to request deletion
 ---
 
 # Data Retention
 
-## Assessment history retention
+InvisiProof retains different types of data for different periods depending on your plan and the data type.
 
-How long your assessment history is kept depends on your plan:
+## Retention by data type
 
-| Plan | History Retention |
-|------|-------------------|
-| Free | 7 days |
-| Plus | 90 days |
+### Scans and assessments
+
+| Plan | Retention period |
+|------|-----------------|
+| Free | 7 days from scan creation date |
+| Plus | 90 days from scan creation date |
+| Pro | Unlimited (until you delete or cancel) |
+| Max | Unlimited (until you delete or cancel) |
+
+After the retention period, the scan record, evidence (image/text/URL), and assessment result are permanently deleted. Deletion is automatic and cannot be undone.
+
+<Note>
+Retention is measured from the scan creation date, not the last access date. Upgrading your plan does not retroactively extend retention for scans that have already been deleted.
+</Note>
+
+### Proof Requests
+
+Proof Requests follow the same retention policy as scans, based on the **requester's** plan:
+
+| Requester's plan | Retention period |
+|-----------------|-----------------|
+| Free | 7 days from request creation date |
+| Plus | 90 days from request creation date |
 | Pro | Unlimited |
 | Max | Unlimited |
 
-After the retention period, assessments older than the limit are automatically removed from your history.
+When a Proof Request is deleted (automatically or manually), both the request record and the respondent's evidence are deleted.
 
-## Account data
+### Account data
 
-Your account information (email, profile, subscription status) is retained as long as your account is active.
+| Data type | Retention |
+|-----------|-----------|
+| Account (email, password hash) | Until account deletion |
+| Profile information | Until account deletion |
+| Subscription status | Until account deletion |
+| BYOK API keys (encrypted) | Until removed by user or account deletion |
 
-## Submitted evidence
+### Analytics data
 
-Submitted content (images, text, URLs) is retained in your account storage until you delete it or your account is deleted. Retention is not automatically limited by your plan — you control deletion.
+PostHog analytics events are retained according to PostHog's data retention policy (typically 1 year for event data). Analytics data is anonymized and does not contain scan content.
 
-## Proof Request submissions
+### Support communications
 
-Evidence submitted by respondents through Proof Requests is retained until:
+Support emails sent to support@invisiproof.com are retained for 2 years for quality and compliance purposes.
 
-- The respondent deletes their submission
-- The associated account is deleted
-- InvisiProof's standard data lifecycle processes remove it
+## What happens when you downgrade your plan
 
-## Deleting your data
+If you downgrade from Pro/Max to Plus or Free, your existing scan history is not immediately deleted. However:
+- Scans older than the new plan's retention period will be deleted at the next automatic cleanup cycle (typically within 24 hours of downgrade)
+- New scans will follow the new plan's retention policy
 
-You can delete individual submissions from your scan history at any time.
+**Example:** You downgrade from Pro (unlimited) to Plus (90 days). Scans from 6 months ago will be deleted within 24 hours. Scans from 60 days ago will be retained for another 30 days.
 
-To delete your entire account and all associated data, go to **Profile → Delete Account**. See [Delete Account](/account/delete-account) for the full process.
+## What happens when your subscription expires
 
-## Backups and residual data
+If your subscription expires and you return to the Free plan:
+- Scans older than 7 days will be deleted at the next cleanup cycle
+- You will lose access to your history beyond 7 days
 
-Deleted data may persist in encrypted backups for a limited period before being permanently removed. InvisiProof does not use deleted content for any purpose during this period.
+To avoid losing history, renew your subscription before it expires.
 
-## Legal holds
+## How to request deletion
 
-In limited circumstances, InvisiProof may be required to retain data beyond normal retention periods to comply with legal obligations. This is described in the [Privacy Policy](/legal/privacy-policy).
+### Delete specific scans
+
+See [Evidence Storage](/privacy/evidence-storage) for instructions on deleting individual scans.
+
+### Delete all your data
+
+See [Delete Account](/account/delete-account) for instructions on deleting your account and all associated data.
+
+### Request deletion of Proof Request evidence (as respondent)
+
+If you submitted evidence as a respondent and want it deleted, contact support@invisiproof.com with:
+- The approximate date you submitted the evidence
+- The challenge text you were shown (if you remember it)
+- Your email address (if you have an account)
+
+We will process deletion requests within 30 days.
+
+### GDPR / CCPA data requests
+
+For formal data subject access requests or deletion requests under GDPR, CCPA, or other privacy regulations, contact support@invisiproof.com with the subject line "Data Subject Request". We will respond within 30 days.
+
+## Automatic cleanup schedule
+
+Automatic cleanup runs daily. Scans past their retention period are deleted in batches. There may be a delay of up to 24 hours between when a scan passes its retention date and when it is actually deleted.

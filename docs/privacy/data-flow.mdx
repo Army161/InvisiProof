@@ -1,49 +1,164 @@
 ---
 title: Data Flow
-description: How your data moves through InvisiProof
+description: What leaves your device, what goes to Supabase, and what goes to the AI provider
 ---
 
 # Data Flow
 
-This page explains how data moves through InvisiProof from submission to result.
+This page describes exactly what data leaves your device for each type of scan, where it goes, and what stays private.
 
-## Direct assessment flow
+## Image analysis
 
-1. **You submit content** — image, text, or URL — through the app
-2. **Content is stored** — privately in your account, scoped to your user ID
-3. **Analysis is requested** — you tap "Request Analysis Now"
-4. **AI model processes the content** — observable signals are extracted
-5. **Result is normalized** — into a standard risk assessment format
-6. **Result is stored** — in your account history
-7. **You see the result** — risk level, score, summary, indicators, actions
+```
+Your Device
+    │
+    │  1. Image file (JPEG/PNG/HEIC/WebP)
+    │     Transmitted over HTTPS
+    ▼
+Supabase Storage (private bucket)
+    │
+    │  2. Edge function reads image from storage
+    │     Image bytes sent to AI provider
+    ▼
+AI Provider (OpenAI / Anthropic / Google Gemini)
+    │
+    │  3. Structured analysis result returned
+    ▼
+Supabase Database (your account, RLS-protected)
+    │
+    │  4. Normalized result returned to app
+    ▼
+Your Device (result displayed)
+```
 
-## Proof Request flow
+**What leaves your device:** The image file, transmitted over HTTPS to Supabase Storage.
 
-1. **You create a request** — purpose and instructions are stored
-2. **Respondent opens the link** — they see the purpose and consent notice
-3. **Respondent submits evidence** — stored privately, scoped to the request
-4. **AI model processes the evidence** — same analysis pipeline as direct assessments
-5. **Result is stored** — linked to your request, not to the raw evidence
-6. **You see the result** — risk assessment only; raw evidence is not surfaced to you
+**What goes to the AI provider:** The image bytes (or a base64 representation), along with a structured analysis prompt. Your user ID, name, and account information are not sent to the AI provider.
 
-## What leaves your device
+**What stays on your device:** Nothing — the image is uploaded to Supabase. If you want to keep the image private, delete it from your scan history after reviewing the result.
 
-- Submitted content (image, text, URL) is transmitted to InvisiProof's servers over an encrypted connection
-- Account credentials are transmitted securely for authentication
-- App usage analytics are collected (see [Analytics](/privacy/analytics) for what is and is not collected)
+**What is stored:** The image in Supabase Storage (private bucket, RLS-protected), the analysis result in the Supabase database (RLS-protected).
 
-## What stays on your device
+## Text analysis
 
-- Your session token (stored securely in device storage)
-- Cached assessment results for offline viewing
+```
+Your Device
+    │
+    │  1. Text content
+    │     Transmitted over HTTPS
+    ▼
+Supabase Database (encrypted column, RLS-protected)
+    │
+    │  2. Edge function reads text
+    │     Text sent to AI provider
+    ▼
+AI Provider (OpenAI / Anthropic / Google Gemini)
+    │
+    │  3. Structured analysis result returned
+    ▼
+Supabase Database (your account, RLS-protected)
+    │
+    │  4. Normalized result returned to app
+    ▼
+Your Device (result displayed)
+```
 
-## Third-party services
+**What leaves your device:** The text content, transmitted over HTTPS to Supabase.
 
-InvisiProof uses the following categories of third-party services:
+**What goes to the AI provider:** The text content and a structured analysis prompt. Your user ID and account information are not sent to the AI provider.
 
-- **Cloud storage**: for private evidence storage
-- **AI providers**: for assessment processing (default: InvisiProof's server infrastructure; optional: your own API key via BYOK)
-- **Authentication**: for account management
-- **Analytics**: for app usage metrics (content is never included)
+**What is stored:** The text content in the Supabase database (encrypted column, RLS-protected), the analysis result in the Supabase database (RLS-protected).
 
-Specific third-party providers are listed in the [Privacy Policy](/legal/privacy-policy).
+## URL analysis
+
+```
+Your Device
+    │
+    │  1. URL string
+    │     Transmitted over HTTPS
+    ▼
+Supabase Database (RLS-protected)
+    │
+    │  2. Edge function reads URL
+    │     URL string sent to AI provider
+    │     (URL is NOT visited/fetched)
+    ▼
+AI Provider (structural analysis only)
+    │
+    │  3. Structured analysis result returned
+    ▼
+Supabase Database (your account, RLS-protected)
+    │
+    │  4. Normalized result returned to app
+    ▼
+Your Device (result displayed)
+```
+
+**What leaves your device:** The URL string, transmitted over HTTPS to Supabase.
+
+**What goes to the AI provider:** The URL string and a structured analysis prompt. The URL is analyzed structurally — it is not visited or fetched.
+
+**What does NOT happen:** Your device's IP address is never sent to the URL's destination server. The URL is never visited from InvisiProof's servers either.
+
+**What is stored:** The URL string in the Supabase database (RLS-protected), the analysis result in the Supabase database (RLS-protected).
+
+## Proof Request evidence
+
+```
+Respondent's Device
+    │
+    │  1. Evidence (image/text/URL)
+    │     Transmitted over HTTPS
+    ▼
+Supabase Storage / Database
+    │  (RLS: respondent_user_id only)
+    │
+    │  2. Edge function reads evidence
+    │     Evidence sent to AI provider
+    ▼
+AI Provider
+    │
+    │  3. Structured analysis result returned
+    ▼
+Supabase Database
+    │  Result: RLS: requester_user_id only
+    │  Evidence: RLS: respondent_user_id only
+    │
+    │  4. Result returned to requester
+    │     Evidence NOT returned to requester
+    ▼
+Requester's Device (result only)
+```
+
+**What the requester's device receives:** The risk assessment result only. The evidence never reaches the requester's device.
+
+**What the respondent's device sends:** The evidence, transmitted over HTTPS to Supabase.
+
+## Analytics data flow
+
+```
+Your Device
+    │
+    │  Event name + properties (no content)
+    │  e.g. { event: "scan_completed", risk_level: "medium" }
+    ▼
+PostHog (privacy-conscious analytics)
+```
+
+**What is sent to PostHog:** Event names and non-sensitive properties (risk level, scan type, feature used). Image contents, text contents, URLs, and API keys are never sent to PostHog. See [Analytics](/privacy/analytics) for the full list of tracked events.
+
+## BYOK data flow
+
+When you have configured a BYOK (Bring Your Own Key) provider:
+
+```
+Supabase Edge Function
+    │
+    │  1. Fetches your encrypted API key from Supabase
+    │  2. Decrypts key in the edge function
+    │  3. Sends content + key to your provider
+    ▼
+Your AI Provider (OpenAI / Anthropic / Google Gemini)
+```
+
+**Your API key never leaves Supabase's server infrastructure.** It is decrypted in the edge function and used directly — it is not sent to InvisiProof's application servers or logged anywhere.

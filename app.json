@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "InvisiProof",
-    "slug": "invisiproof",
+    "name": "ProofLoop",
+    "slug": "proofloop",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
@@ -37,7 +37,7 @@
         }
       ]
     ],
-    "scheme": "invisiproof",
+    "scheme": "proofloop",
     "experiments": {
       "typedRoutes": true
     },

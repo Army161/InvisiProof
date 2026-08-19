@@ -1,51 +1,113 @@
 ---
-title: AI and Risk Assessment Disclaimer
-description: Important limitations of InvisiProof's AI-powered assessments
+title: AI Disclaimer
+description: Understanding the limitations of InvisiProof's AI-powered assessments
 ---
 
-# AI and Risk Assessment Disclaimer
+# AI Disclaimer
 
-**Read this before relying on any InvisiProof result.**
+InvisiProof uses artificial intelligence to analyze submitted content and produce risk assessments. This disclaimer explains the limitations of AI-powered analysis and how to interpret results responsibly.
 
-## Results are risk assessments, not verdicts
+<Warning>
+InvisiProof is not a legal service. Assessment results are not legal evidence, expert opinions, or guarantees of safety or harm. Do not make high-stakes decisions based solely on InvisiProof results.
+</Warning>
 
-InvisiProof produces **risk assessments** based on observable signals in submitted content. A risk assessment is not:
+---
 
-- A determination that content is fraudulent, harmful, or illegal
-- A determination that content is safe, legitimate, or authentic
-- Legal advice or legal evidence
-- A professional opinion (medical, financial, legal, or otherwise)
-- A guarantee of any kind
+## What AI analysis can and cannot do
+
+### What it can do
+
+- Identify observable patterns in images, text, and URLs that are statistically associated with fraud, phishing, or manipulation
+- Produce a normalized risk score based on the density and severity of detected signals
+- Generate plain-language descriptions of what was observed
+- Suggest appropriate next steps based on the risk level
+
+### What it cannot do
+
+- **Determine intent** — AI cannot determine whether a person intended to deceive
+- **Verify identity** — AI cannot confirm who created or sent content
+- **Guarantee accuracy** — AI models make mistakes. Sophisticated deception may evade detection. Legitimate content may trigger false positives
+- **Provide legal conclusions** — AI analysis is not a substitute for forensic investigation or legal expertise
+- **Detect all forms of manipulation** — new techniques may not be in the model's training data
+- **Account for context you have** — the AI does not know your relationship with the sender, the history of your communication, or other context that might change the interpretation
+
+---
 
 ## AI limitations
 
-InvisiProof uses AI models to analyze submitted content. AI models:
+### False negatives (missed detections)
 
-- Can produce incorrect results
-- Can miss signals that a human expert would catch
-- Can flag signals that are not actually indicative of risk
-- Are not infallible and are not a substitute for professional judgment
+A Low Risk result does not mean content is safe. The AI may fail to detect:
+- Novel phishing techniques not represented in training data
+- Highly sophisticated document manipulation
+- Social engineering that relies on context the AI doesn't have
+- Manipulation in languages or formats the model handles less well
 
-## What "Low Risk" means
+### False positives (incorrect flags)
 
-A Low risk result means the observable signals in the submitted content do not indicate elevated risk. It does **not** mean:
+A High Risk or Critical result does not mean content is definitely harmful. The AI may incorrectly flag:
+- Legitimate urgent communications from banks or employers
+- Documents with unusual but legitimate formatting
+- URLs with unusual but legitimate structures
+- Text that uses urgency language for legitimate reasons
 
-- The content is safe
-- The person or entity behind the content is trustworthy
-- The transaction or claim is legitimate
+### Model variability
 
-## What "High Risk" or "Critical" means
+AI models can produce different results for the same content at different times. Results may vary based on:
+- The specific model version in use
+- Server load and processing conditions
+- Minor variations in how content is processed
 
-A High or Critical risk result means the observable signals suggest elevated risk. It does **not** mean:
+---
 
-- The content is definitely fraudulent or harmful
-- The person or entity behind the content has done anything wrong
-- You should take any specific action
+## Not a substitute for professional advice
 
-## Your responsibility
+InvisiProof results should not replace:
 
-You are solely responsible for decisions you make based on InvisiProof results. InvisiProof results are one input among many. For high-stakes decisions — involving significant money, legal matters, personal safety, or professional consequences — consult appropriate professionals.
+- **Legal advice** — consult a qualified attorney for legal matters
+- **Financial advice** — consult your bank or a financial professional for financial fraud
+- **Forensic investigation** — consult a digital forensics expert for evidence that may be used in legal proceedings
+- **Law enforcement** — report crimes to appropriate authorities
+- **Medical advice** — if you are in danger, contact emergency services
 
-## No liability
+---
 
-InvisiProof is not liable for decisions you make based on assessment results. See the [Terms of Service](/legal/terms) for the full limitation of liability.
+## How to interpret results responsibly
+
+1. **Read the warning indicators** — they explain what specific signals were detected, not just the overall score
+2. **Read the limitations section** — every assessment includes explicit statements about what it cannot determine
+3. **Apply your own judgment** — you have context the AI doesn't. Use the result as one input, not the only input
+4. **Seek verification for high-stakes decisions** — if the decision involves significant money, legal consequences, or personal safety, get independent verification
+5. **Don't over-rely on Low Risk results** — a Low Risk result means the observable signals don't indicate elevated risk, not that the content is safe
+
+---
+
+## No guarantee of results
+
+InvisiProof makes no warranty that:
+- Assessment results are accurate, complete, or current
+- The Service will detect any particular type of fraud or manipulation
+- Results are suitable for any particular purpose
+- Results will be consistent across multiple analyses of the same content
+
+See the [Terms of Service](/legal/terms) for the full disclaimer and limitation of liability.
+
+---
+
+## Responsible use
+
+By using InvisiProof, you agree to:
+- Use results as one input among many, not as a definitive verdict
+- Not present InvisiProof results as legal evidence without independent verification
+- Not make irreversible decisions (sending money, taking legal action, ending relationships) based solely on InvisiProof results
+- Seek professional advice for high-stakes situations
+
+---
+
+## Contact
+
+For questions about AI limitations or to report consistently incorrect results:
+
+**Email:** support@invisiproof.com
+
+**Website:** https://www.invisiproof.com

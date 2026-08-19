@@ -1,49 +1,107 @@
 ---
-title: Bring Your Own Key (BYOK)
-description: How to use your own AI provider API key with InvisiProof
+title: BYOK (Bring Your Own Key)
+description: Use your own AI provider API key for private, self-controlled analysis
 ---
 
-# Bring Your Own Key (BYOK)
+# BYOK — Bring Your Own Key
 
-InvisiProof supports BYOK — you can configure your own AI provider API key to run assessments through a provider you control.
+BYOK lets you supply your own AI provider API key so that your assessments are processed through your own provider account rather than InvisiProof's shared infrastructure.
 
 ## Why use BYOK
 
-- You want assessments processed through a specific AI provider
-- You have an existing API key and want to use your own quota
-- You prefer to control which AI model processes your content
+- **Privacy control** — your content is processed under your own API account, not InvisiProof's
+- **Cost control** — assessments count against your own API quota, not InvisiProof's
+- **Provider choice** — use the AI provider you trust most
+- **Audit trail** — your provider's usage logs show your own activity
 
-## How to configure BYOK
-
-1. Go to **Profile → AI Provider**
-2. Select your provider
-3. Enter your API key
-4. Tap **Save**
-
-Your API key is stored securely on your device and used only for assessment requests.
+<Note>
+BYOK is available on Plus, Pro, and Max plans. Free plan users use InvisiProof's shared AI infrastructure.
+</Note>
 
 ## Supported providers
 
-InvisiProof supports BYOK for select AI providers. The list of supported providers is shown in the AI Provider settings screen.
+| Provider | Models used |
+|----------|------------|
+| OpenAI | GPT-4o, GPT-4 Vision |
+| Anthropic | Claude 3.5 Sonnet, Claude 3 Haiku |
+| Google Gemini | Gemini 1.5 Pro, Gemini 1.5 Flash |
 
-## How your key is used
+## How to add your API key
 
-When BYOK is configured:
+<Steps>
+  <Step title="Get your API key">
+    Obtain an API key from your chosen provider:
+    - **OpenAI**: platform.openai.com → API Keys
+    - **Anthropic**: console.anthropic.com → API Keys
+    - **Google Gemini**: aistudio.google.com → Get API Key
+  </Step>
 
-- Assessment requests are sent to your configured provider using your API key
-- InvisiProof's server infrastructure does not process the content for that assessment
-- The assessment result is returned to InvisiProof and stored in your account history
+  <Step title="Open InvisiProof settings">
+    Tap **Profile** → **AI Provider Settings** (or **BYOK Settings**).
+  </Step>
+
+  <Step title="Select your provider">
+    Choose OpenAI, Anthropic, or Google Gemini from the provider list.
+  </Step>
+
+  <Step title="Enter your API key">
+    Paste your API key into the field. The key is masked after entry.
+
+    <Warning>
+    Do not share your API key with anyone. Do not paste it into any other app or website. InvisiProof will never ask you to share your API key outside of this settings screen.
+    </Warning>
+  </Step>
+
+  <Step title="Save">
+    Tap **Save**. Your key is encrypted and stored in Supabase. Future assessments will use your key.
+  </Step>
+</Steps>
+
+## What happens with your key
+
+| What happens | Details |
+|-------------|---------|
+| Stored encrypted | Your key is encrypted before being stored in Supabase |
+| Never logged | Your key is never written to any log file |
+| Never sent to InvisiProof servers | The key is decrypted in the Supabase edge function and used directly |
+| Used only for your assessments | Your key is never used for other users' assessments |
+| Deletable at any time | You can remove your key from the settings screen |
+
+### Technical details
+
+When you save a BYOK key:
+1. The key is transmitted over HTTPS to Supabase
+2. It is encrypted using AES-256 with a key derived from your user ID
+3. The encrypted value is stored in a column accessible only to your user ID (RLS-protected)
+4. When an assessment runs, the Supabase edge function decrypts the key in memory and uses it to call your provider's API
+5. The decrypted key is never written to disk, never logged, and never returned to the client
+
+## How to remove your API key
+
+1. Tap **Profile** → **AI Provider Settings**
+2. Tap **Remove Key** next to your configured provider
+3. Confirm removal
+
+After removal, future assessments will use InvisiProof's shared AI infrastructure (Server Verified trust level).
 
 ## Trust level with BYOK
 
-Assessments run through BYOK are labeled `device_generated`. This indicates the result came from a provider you configured, not from InvisiProof's verified server infrastructure. See [Trust Levels](/assessments/trust-levels) for details.
+Assessments processed through your BYOK key receive the **Device Generated** trust level. This reflects that the analysis ran through your own provider account rather than InvisiProof's managed infrastructure.
 
-## Key security
+This does not mean the result is less accurate — it means the analysis path was user-controlled. See [Trust Levels](/assessments/trust-levels) for details.
 
-- Your API key is stored locally on your device
-- It is not transmitted to InvisiProof's servers
-- It is used only to make requests to your configured provider
+## API key security best practices
 
-## Removing BYOK
+- **Use a dedicated key** — create a separate API key for InvisiProof rather than reusing a key from another application
+- **Set usage limits** — most providers let you set monthly spending limits on API keys
+- **Rotate regularly** — replace your key periodically and update it in InvisiProof settings
+- **Monitor usage** — check your provider's usage dashboard for unexpected activity
+- **Revoke if compromised** — if you suspect your key has been exposed, revoke it immediately in your provider's dashboard and add a new key in InvisiProof
 
-To remove your configured key, go to **Profile → AI Provider** and tap **Remove Key**. After removal, assessments will use InvisiProof's default server infrastructure.
+## Troubleshooting
+
+**Assessment fails with "API key invalid":** Your key may have been revoked or expired. Check your provider's dashboard and add a new key.
+
+**Assessment fails with "Quota exceeded":** Your provider account has hit its usage limit. Check your provider's billing settings.
+
+**Assessment falls back to Server Verified:** If your BYOK key fails, InvisiProof may fall back to its own infrastructure. Check your key is valid and has sufficient quota.

@@ -5,41 +5,98 @@ description: The technical process behind InvisiProof assessments
 
 # How Risk Assessments Work
 
-## The assessment process
+Every InvisiProof assessment follows a structured 6-step pipeline designed to be consistent, private, and auditable.
 
-1. You submit content (image, text, or URL)
-2. The content is stored privately in your account
-3. An AI model analyzes the observable signals
-4. The result is normalized into a standard format
-5. You see the risk level, score, summary, and recommended actions
+## The 6-step pipeline
+
+<Steps>
+  <Step title="Upload">
+    You submit content — an image, text, or URL — through the app. The content is transmitted over HTTPS to Supabase Storage (for images) or the Supabase database (for text and URLs). Nothing is processed on-device before upload.
+  </Step>
+
+  <Step title="Store">
+    The content is stored privately in your account with row-level security (RLS) policies that prevent any other user — including InvisiProof staff — from reading it through the API. Images are stored in a private Supabase Storage bucket. Text and URLs are stored in an encrypted database column scoped to your user ID.
+  </Step>
+
+  <Step title="Claim">
+    A Supabase edge function claims the scan record and marks it as `analyzing`. This prevents duplicate analysis if the request is retried. The claim step also validates that the requesting user owns the scan.
+  </Step>
+
+  <Step title="Analyze">
+    The edge function sends the content to an AI model for analysis. The model evaluates observable signals and returns a structured response including risk indicators, severity scores, and plain-language descriptions. If you have configured BYOK, your own API key is used for this step.
+  </Step>
+
+  <Step title="Score">
+    The raw AI response is normalized into InvisiProof's standard result format. The risk score (0–100) is calculated from the weighted severity of detected signals. Warning indicators are extracted and categorized. The trust level is assigned based on whether analysis ran through InvisiProof's server infrastructure or a user-configured provider.
+  </Step>
+
+  <Step title="Return">
+    The normalized result is written back to your scan record and the status is updated to `completed`. The app fetches the result and displays it. The result is stored in your history according to your plan's retention policy.
+  </Step>
+</Steps>
+
+## How the AI model evaluates content
+
+The AI model receives a structured prompt that instructs it to:
+
+1. Identify observable signals in the submitted content
+2. Categorize each signal by type (urgency, impersonation, financial pressure, visual artifact, etc.)
+3. Assign a severity level to each signal (low, medium, high, critical)
+4. Produce a plain-language summary of findings
+5. List recommended actions appropriate to the risk level
+6. Explicitly state what the assessment cannot determine
+
+The model does not have access to your identity, your history, or any other scans. Each assessment is evaluated independently.
+
+## Risk score to risk level mapping
+
+| Score | Risk Level | Color | Meaning |
+|-------|------------|-------|---------|
+| 0–24 | Low | Green | Few or no risk signals in observable content |
+| 25–49 | Medium | Yellow | Some risk signals present; proceed with caution |
+| 50–74 | High | Orange | Multiple significant signals; take protective action |
+| 75–100 | Critical | Red | Strong concentration of high-severity signals |
 
 ## Assessment fields
 
 | Field | Description |
 |-------|-------------|
 | Risk Level | Low, Medium, High, or Critical |
-| Risk Score | 0–100 (higher = more risk signals) |
+| Risk Score | 0–100 (higher = more risk signals detected) |
 | Summary | Plain-language description of findings |
-| Warning Signals | Specific observable indicators found |
-| Recommended Actions | Suggested next steps |
-| Limitations | What this assessment cannot determine |
-| Trust Level | device_generated or server_verified |
+| Warning Indicators | Specific observable signals identified and categorized |
+| Recommended Actions | Suggested next steps appropriate to the risk level |
+| Limitations | Explicit statement of what this assessment cannot determine |
+| Trust Level | `device_generated` or `server_verified` |
 
 ## Trust levels
 
-**Device Generated** — The assessment was produced on your device or through a provider you configured. Results are not independently verified by InvisiProof servers.
+**Device Generated** — The assessment was produced through a provider you configured (BYOK). Results are not independently verified by InvisiProof's server infrastructure. The trust label reflects that the analysis path was user-controlled.
 
-**Server Verified** — The assessment was produced by InvisiProof's trusted server infrastructure. The trust label is assigned only after authenticated server-side processing.
+**Server Verified** — The assessment was produced by InvisiProof's trusted server infrastructure. The trust label is assigned only after authenticated server-side processing through InvisiProof's managed AI pipeline.
 
-## AI providers
+<Note>
+Neither trust level implies the result is more or less accurate. Trust level describes the analysis path, not the quality of the result.
+</Note>
 
-InvisiProof supports multiple AI providers. The default uses InvisiProof's server infrastructure. You can also configure your own API key (BYOK) for supported providers. See [BYOK](/privacy/byok) for details.
+## Warning indicators
 
-## Result storage
+Warning indicators are specific signals extracted from the AI analysis. Each indicator has:
+- A **category** (e.g. urgency, impersonation, financial pressure)
+- A **description** of what was observed
+- A **severity** (low, medium, high, critical)
 
-Assessment results are stored in your account history. You can view, share, or delete them at any time. History retention depends on your plan:
+See [Warning Indicators](/assessments/warning-indicators) for the full list of indicator categories.
 
-- **Free**: 7 days
-- **Plus**: 90 days
-- **Pro**: Unlimited
-- **Max**: Unlimited
+## Result storage and history
+
+Assessment results are stored in your account history. Retention depends on your plan:
+
+| Plan | History Retention |
+|------|-------------------|
+| Free | 7 days |
+| Plus | 90 days |
+| Pro | Unlimited |
+| Max | Unlimited |
+
+You can delete any assessment from your history at any time. Deletion is permanent and cannot be undone.

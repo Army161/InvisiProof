@@ -1,45 +1,91 @@
 ---
 title: Delete Account
-description: How to delete your InvisiProof account and what data is removed
+description: How to delete your InvisiProof account and what gets deleted
 ---
 
 # Delete Account
 
-You can delete your InvisiProof account at any time. Deletion is permanent and cannot be undone.
+You can permanently delete your InvisiProof account at any time. Deletion removes all your data from InvisiProof's systems.
+
+<Warning>
+Account deletion is permanent and cannot be undone. All your data will be deleted and cannot be recovered. Read this page carefully before proceeding.
+</Warning>
 
 ## How to delete your account
 
-1. Go to **Profile**
-2. Scroll to the bottom and tap **Delete Account**
-3. Read the confirmation message
-4. Tap **Confirm Delete**
+<Steps>
+  <Step title="Open Profile settings">
+    Tap the **Profile** tab at the bottom of the screen.
+  </Step>
 
-Your account is deleted immediately.
+  <Step title="Scroll to the bottom">
+    Scroll to the bottom of the Profile screen to find the **Delete Account** option.
+  </Step>
+
+  <Step title="Tap Delete Account">
+    Tap **Delete Account**. A confirmation screen appears explaining what will be deleted.
+  </Step>
+
+  <Step title="Confirm deletion">
+    Read the confirmation carefully. Type your email address or password to confirm you understand the action is permanent.
+
+    Tap **Permanently Delete My Account**.
+  </Step>
+
+  <Step title="Account deleted">
+    Your account and all associated data are deleted. You are signed out of the app.
+  </Step>
+</Steps>
 
 ## What gets deleted
 
-When you delete your account:
+When you delete your account, the following is permanently deleted:
 
-- Your profile and account information
-- All assessment history and results
-- All submitted content (images, text, URLs)
-- All Proof Requests you created
-- Your subscription record (does not cancel App Store/Google Play billing — see below)
+| Data | Deleted |
+|------|---------|
+| Your account (email, password hash) | Yes |
+| All scans (images, text, URLs) | Yes |
+| All assessment results | Yes |
+| All Proof Requests you created | Yes |
+| Evidence submitted in your Proof Requests | Yes |
+| Your BYOK API keys (encrypted) | Yes |
+| Your subscription record | Yes |
+| Your analytics user ID | Yes |
 
-## What is not automatically deleted
+## What cannot be recovered
 
-- **App Store / Google Play subscription**: Deleting your InvisiProof account does not cancel your subscription billing. You must cancel separately through the App Store or Google Play. See [Manage Subscription](/account/manage-subscription).
-- **Proof Request submissions by respondents**: Evidence submitted by respondents through your Proof Requests is stored separately. Respondents can delete their own submissions independently.
+After deletion, none of the above data can be recovered. InvisiProof does not maintain backups of deleted user data that can be restored on request.
 
-## Backup and residual data
+If you think you might want your data in the future, consider:
+- Exporting your scan history before deleting (Profile → Export Data, if available)
+- Taking screenshots of important assessment results
+- Downloading evidence images before deleting
 
-Deleted data may persist in encrypted backups for a limited period before being permanently removed. This is standard practice for cloud services and does not affect your ability to use InvisiProof — your account is inaccessible immediately after deletion.
+## Active subscriptions
 
-## Before you delete
+If you have an active subscription when you delete your account:
 
-- Download or note any assessment results you want to keep — they cannot be recovered after deletion
-- Cancel your subscription through the App Store or Google Play to stop future billing
+1. **Cancel your subscription first** through Google Play (see [Manage Subscription](/account/manage-subscription))
+2. Then delete your account
 
-## Need help?
+Deleting your account does not automatically cancel your Google Play subscription. If you delete your account without cancelling, you may continue to be charged by Google Play. Cancel through Google Play before deleting your account.
 
-Contact support@invisiproof.com if you have questions about account deletion.
+## Grace period
+
+There is no grace period for account deletion — deletion is immediate and permanent once confirmed.
+
+If you deleted your account by mistake, contact support@invisiproof.com immediately. We may be able to assist if you contact us within 24 hours of deletion, but we cannot guarantee recovery.
+
+## Deleting data without deleting your account
+
+If you want to delete your scan history without deleting your account:
+
+1. Go to **Profile** → **Data and Privacy**
+2. Tap **Delete All Scans**
+3. Confirm deletion
+
+This deletes all your scans and assessment results but keeps your account active.
+
+## Data deletion requests (GDPR/CCPA)
+
+For formal data deletion requests under GDPR, CCPA, or other privacy regulations, contact support@invisiproof.com with the subject line "Data Deletion Request". We will process your request within 30 days.

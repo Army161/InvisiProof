@@ -1,78 +1,167 @@
 ---
 title: Privacy Policy
-description: InvisiProof Privacy Policy
+description: InvisiProof Privacy Policy — how we collect, use, and protect your data
 ---
 
 # Privacy Policy
 
-**Last updated: January 2025**
+**Effective date:** January 1, 2025
 
-InvisiProof ("we," "us," or "our") is committed to protecting your privacy. This Privacy Policy explains what information we collect, how we use it, and your rights regarding your data.
+**Last updated:** January 1, 2025
+
+InvisiProof ("we", "us", "our") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use the InvisiProof mobile application and web application (collectively, the "Service").
+
+Please read this policy carefully. By using the Service, you agree to the collection and use of information as described here.
+
+---
 
 ## 1. Information We Collect
 
-### Account information
-When you create an account, we collect your email address and, if you sign up with Google or Apple, the information provided by those services (name, email).
+### 1.1 Account information
 
-### Submitted content
-When you use InvisiProof to analyze images, text, or URLs, that content is stored privately in your account. When you respond to a Proof Request, your submission is stored with scoped access controls.
+When you create an account, we collect:
+- Email address
+- Password (stored as a bcrypt hash — we never store your plain-text password)
+- Authentication tokens (for Google Sign-In)
 
-### Usage data
-We collect analytics events about how you use the app — screen views, feature usage, errors. We do not include submitted content in analytics events.
+### 1.2 Content you submit
 
-### Device information
-We collect your device type, operating system version, and app version for diagnostic purposes.
+When you use the Service, you may submit:
+- **Images** — screenshots, photos, or documents uploaded for analysis
+- **Text** — messages, emails, or conversations pasted for analysis
+- **URLs** — links submitted for structural analysis
 
-### Payment information
-Subscription payments are processed by Apple (iOS) or Google (Android). We do not receive or store your payment card details.
+This content is stored privately in your account with row-level security. It is used solely to produce your risk assessment.
+
+### 1.3 Assessment results
+
+We store the results of your risk assessments, including risk level, risk score, warning indicators, and recommended actions.
+
+### 1.4 BYOK API keys
+
+If you configure a Bring Your Own Key (BYOK) provider, your API key is stored encrypted in our database. It is never stored in plain text and is never logged.
+
+### 1.5 Usage analytics
+
+We collect anonymized usage events through PostHog, including:
+- App opens, feature usage, and assessment outcomes (risk level, scan type)
+- No content (images, text, URLs) is included in analytics events
+- No personally identifiable information is sent to PostHog
+
+See [Analytics](/privacy/analytics) for the full list of tracked events.
+
+### 1.6 Technical information
+
+We may collect:
+- Device type and operating system version (for troubleshooting)
+- App version
+- Error logs (without content)
+
+---
 
 ## 2. How We Use Your Information
 
-- To provide and operate InvisiProof
-- To process risk assessments
-- To manage your account and subscription
-- To send transactional emails (account verification, password reset)
-- To diagnose and fix technical issues
-- To improve the product based on usage patterns
+We use your information to:
+- Provide the Service (run risk assessments, store results, manage your account)
+- Process AI analysis of submitted content
+- Manage your subscription through RevenueCat
+- Send transactional emails (account verification, password reset)
+- Improve the Service through anonymized analytics
+- Respond to support requests
+- Enforce our Terms of Service and Acceptable Use Policy
+- Comply with legal obligations
 
-## 3. How We Share Your Information
+We do **not**:
+- Sell your personal information to third parties
+- Use your submitted content to train AI models
+- Share your content with other users
+- Use your content for advertising
 
-We do not sell your personal information.
+---
 
-We share information with:
+## 3. Third-Party Services
 
-- **AI providers**: submitted content is processed by AI models to produce assessments. The default provider is InvisiProof's server infrastructure. If you configure BYOK, your content is sent to your chosen provider.
-- **Cloud infrastructure providers**: for storage and hosting
-- **Authentication providers**: for account management (Google, Apple)
-- **Law enforcement or legal process**: when required by law or to protect rights and safety
+InvisiProof uses the following third-party services:
+
+| Service | Purpose | Data shared |
+|---------|---------|-------------|
+| **Supabase** | Database, storage, authentication, edge functions | Account data, content, results |
+| **PostHog** | Product analytics | Anonymized usage events (no content) |
+| **RevenueCat** | Subscription management | Subscription status, purchase history |
+| **OpenAI / Anthropic / Google Gemini** | AI analysis | Content submitted for analysis (when using InvisiProof's infrastructure or your BYOK key) |
+| **Google** | Google Sign-In | Email address, Google account ID |
+
+Each third-party service has its own privacy policy. We encourage you to review them.
+
+For BYOK users: your content is sent to your chosen AI provider under your own API account. InvisiProof does not control how your provider handles that data.
+
+---
 
 ## 4. Data Retention
 
-Assessment history is retained according to your plan (7 days for Free, 90 days for Plus, unlimited for Pro and Max). Submitted content is retained until you delete it or your account is deleted. Account information is retained while your account is active.
+We retain your data as follows:
+- **Free plan**: Scans and results retained for 7 days
+- **Plus plan**: Scans and results retained for 90 days
+- **Pro/Max plans**: Scans and results retained until you delete them
+- **Account data**: Retained until you delete your account
+- **Analytics**: Retained by PostHog for up to 1 year (anonymized)
 
-## 5. Your Rights
+See [Data Retention](/privacy/data-retention) for full details.
 
-You have the right to:
+---
 
-- Access the personal information we hold about you
-- Delete your account and associated data
-- Correct inaccurate information
-- Object to certain processing
+## 5. Data Security
 
-To exercise these rights, contact privacy@invisiproof.com or use the in-app deletion tools.
+We protect your data using:
+- TLS 1.2+ encryption for all data in transit
+- AES-256 encryption for sensitive fields at rest (including BYOK keys)
+- Row-level security (RLS) policies enforced at the PostgreSQL level
+- Private storage buckets with no public URLs
+- Signed URLs with short expiry for image access
 
-## 6. Children
+We follow industry-standard security practices. However, no system is perfectly secure. If you discover a security vulnerability, please report it to security@invisiproof.com.
 
-InvisiProof is not intended for users under 13 years of age. We do not knowingly collect information from children under 13.
+---
 
-## 7. Security
+## 6. Your Rights
 
-We use encryption in transit (TLS) and at rest for stored content. We implement access controls to limit who can access your data.
+Depending on your location, you may have the following rights:
 
-## 8. Changes to This Policy
+- **Access**: Request a copy of the personal data we hold about you
+- **Correction**: Request correction of inaccurate data
+- **Deletion**: Request deletion of your data (see [Delete Account](/account/delete-account))
+- **Portability**: Request your data in a portable format
+- **Objection**: Object to certain processing of your data
+- **Opt-out of analytics**: Disable analytics in Profile → Privacy Settings
 
-We may update this Privacy Policy. We will notify you of material changes through the app or by email. Continued use of InvisiProof after changes constitutes acceptance.
+To exercise these rights, contact support@invisiproof.com with the subject line "Data Subject Request". We will respond within 30 days.
 
-## 9. Contact
+---
 
-For privacy questions or requests: privacy@invisiproof.com
+## 7. Children's Privacy
+
+InvisiProof is not directed at children under 13 (or under 16 in the EU). We do not knowingly collect personal information from children. If you believe a child has provided us with personal information, contact support@invisiproof.com and we will delete it.
+
+---
+
+## 8. International Data Transfers
+
+InvisiProof is operated from the United States. If you are located outside the United States, your data may be transferred to and processed in the United States and other countries where our service providers operate. By using the Service, you consent to this transfer.
+
+---
+
+## 9. Changes to This Policy
+
+We may update this Privacy Policy from time to time. We will notify you of material changes by posting the new policy in the app and updating the "Last updated" date. Your continued use of the Service after changes take effect constitutes acceptance of the updated policy.
+
+---
+
+## 10. Contact
+
+For privacy questions or data subject requests:
+
+**Email:** support@invisiproof.com (subject: "Privacy")
+
+**Legal:** legal@invisiproof.com
+
+**Website:** https://www.invisiproof.com

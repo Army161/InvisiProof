@@ -1,34 +1,85 @@
 ---
 title: Analytics
-description: What analytics data InvisiProof collects and does not collect
+description: What InvisiProof tracks, what it never tracks, and how to opt out
 ---
 
 # Analytics
 
-InvisiProof collects limited analytics data to understand how the app is used and to improve the product. This page explains exactly what is and is not collected.
+InvisiProof uses PostHog for product analytics. This page explains exactly what is tracked, what is never tracked, and how to opt out.
 
-## What InvisiProof collects
+## Our analytics philosophy
 
-- **App events**: screen views, feature usage (e.g., "scan started", "proof request created"), button taps
-- **Error events**: crashes and errors to help diagnose and fix problems
-- **Session data**: session start/end, app version, device type (not device ID)
-- **Subscription events**: plan changes, paywall views (no payment details)
+InvisiProof is a privacy-first product. We apply the same privacy standards to our analytics that we apply to user data:
+- We track feature usage, not content
+- We never track what you submit for analysis
+- We never track your API keys, passwords, or credentials
+- Analytics data is used only to improve the product
 
-## What InvisiProof does not collect
+## What is tracked
 
-- **Submitted content**: images, text, URLs, or messages you submit for analysis are never included in analytics
-- **Assessment results**: the content of risk assessments is not tracked
-- **Proof Request content**: evidence submitted through Proof Requests is not tracked
-- **Message content**: any text you paste or type is not included in analytics events
+The following events are sent to PostHog when they occur:
 
-## Analytics providers
+| Event | Properties | Purpose |
+|-------|-----------|---------|
+| `app_opened` | platform, app_version | Understand active usage |
+| `scan_started` | scan_type (image/text/url) | Understand feature usage |
+| `scan_completed` | scan_type, risk_level, trust_level | Understand outcomes |
+| `scan_failed` | scan_type, error_type | Diagnose failures |
+| `proof_request_created` | expiry_duration | Understand feature usage |
+| `proof_request_completed` | risk_level | Understand outcomes |
+| `proof_request_expired` | (none) | Understand expiry patterns |
+| `byok_key_added` | provider | Understand provider adoption |
+| `byok_key_removed` | provider | Understand provider adoption |
+| `subscription_started` | plan | Understand plan adoption |
+| `subscription_cancelled` | plan | Understand churn |
+| `account_created` | (none) | Understand growth |
+| `account_deleted` | (none) | Understand churn |
 
-InvisiProof uses analytics infrastructure to collect and process usage data. Analytics data is not sold to third parties.
+## What is NEVER tracked
 
-## Opting out
+The following data is explicitly excluded from all analytics:
 
-You can review your analytics preferences in **Profile → Privacy**. Opting out stops event collection for your account.
+- **Image contents** — the pixels, bytes, or any representation of submitted images
+- **Text contents** — the text of any submitted message, email, or conversation
+- **URLs** — the actual URL strings submitted for analysis
+- **Assessment summaries** — the plain-language description of findings
+- **Warning indicator descriptions** — the specific text of warning indicators
+- **API keys** — BYOK keys or any other credentials
+- **Passwords** — never tracked anywhere
+- **Email addresses** — not sent to PostHog (PostHog receives an anonymous user ID)
+- **Names** — not sent to PostHog
+- **IP addresses** — PostHog is configured to not store IP addresses
 
-## Analytics and privacy
+## PostHog configuration
 
-Analytics events are designed to be content-free. An event like "scan started" tells us a scan was initiated — it does not include what was scanned. This design is intentional and is part of InvisiProof's privacy-first approach.
+InvisiProof uses PostHog with the following privacy settings:
+- IP address capture: **disabled**
+- Session recording: **disabled**
+- Autocapture (automatic click/form tracking): **disabled**
+- All events are manually instrumented — only the events listed above are sent
+
+PostHog is a privacy-conscious analytics platform that can be self-hosted. InvisiProof uses PostHog Cloud (EU region) with data processing agreements in place.
+
+## How to opt out
+
+You can opt out of analytics tracking in the app:
+
+1. Tap **Profile** → **Privacy Settings**
+2. Toggle **Analytics** to off
+
+When opted out:
+- No events are sent to PostHog
+- Your usage is not counted in product analytics
+- All other app functionality works normally
+
+<Note>
+Opting out of analytics does not affect how your scan data is stored or processed. It only affects the anonymous usage events sent to PostHog.
+</Note>
+
+## Analytics and your account
+
+PostHog receives an anonymous user ID (a UUID) that is linked to your InvisiProof account internally but is not your email address or any other personally identifiable information. If you delete your account, you can request deletion of your PostHog analytics data by contacting support@invisiproof.com.
+
+## Third-party analytics
+
+InvisiProof does not use Google Analytics, Facebook Pixel, or any advertising analytics. PostHog is the only analytics provider.

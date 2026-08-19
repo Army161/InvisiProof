@@ -1,6 +1,6 @@
 ---
 title: Analyze Text
-description: How to analyze a suspicious message, email, or conversation
+description: How to analyze a message, email, or conversation for risk signals
 ---
 
 # Analyze Text
@@ -9,41 +9,127 @@ Use text analysis to evaluate suspicious messages, emails, conversations, or any
 
 ## How to analyze text
 
-1. Tap the **Scan** tab at the bottom of the screen
-2. Tap **Analyze Text**
-3. Paste or type the text you want to analyze
-4. Review the consent notice
-5. Tap **Save Securely** to store the text privately in your account
-6. Tap **Request Analysis Now** to start the assessment
+<Steps>
+  <Step title="Open the Scan tab">
+    Tap the **Scan** tab at the bottom of the screen.
+  </Step>
+  <Step title="Select Analyze Text">
+    Tap **Analyze Text** from the scan options.
+  </Step>
+  <Step title="Paste your content">
+    Paste the message, email, or conversation into the text field. You can paste as much text as needed — longer content gives the AI more signals to evaluate.
+
+    <Note>
+    Do not include your own passwords, account numbers, or other sensitive credentials in the text you submit. Paste only the suspicious content you received.
+    </Note>
+  </Step>
+  <Step title="Save securely">
+    Review the consent notice and tap **Save Securely**. The text is stored privately in your account.
+  </Step>
+  <Step title="Request analysis">
+    Tap **Request Analysis Now** to start the assessment. Results are typically available within 10–30 seconds.
+  </Step>
+</Steps>
 
 ## What gets analyzed
 
-InvisiProof looks for observable signals including:
+InvisiProof evaluates the following patterns in submitted text:
 
-- Urgency language and pressure tactics
-- Requests for money, credentials, or personal information
-- Impersonation patterns (mimicking known brands, institutions, or people)
-- Grammatical and structural patterns associated with scam messages
-- Inconsistencies between claimed identity and message content
-- Links or contact information embedded in the text
+<AccordionGroup>
+  <Accordion title="Urgency language">
+    Phrases designed to pressure immediate action without giving you time to think:
+    - "Your account will be suspended in 24 hours"
+    - "Act now or lose access permanently"
+    - "This offer expires today"
+    - "Immediate action required"
 
-## What you receive
+    Urgency language is one of the strongest predictors of phishing and social engineering.
+  </Accordion>
 
-After analysis, you see:
+  <Accordion title="Impersonation patterns">
+    Language mimicking trusted institutions or individuals:
+    - Banks, credit card companies, or payment processors
+    - Government agencies (IRS, Social Security Administration, HMRC)
+    - Technology companies (Apple, Google, Microsoft, Amazon)
+    - Employers, HR departments, or executives
+    - Romantic partners or family members in distress
 
-- **Risk Level**: Low, Medium, High, or Critical
-- **Risk Score**: 0–100
-- **Summary**: Plain-language description of what was found
-- **Warning Indicators**: Specific signals identified
-- **Recommended Actions**: Suggested next steps
-- **Limitations**: What this assessment cannot determine
+    Impersonation is often combined with urgency to maximize pressure.
+  </Accordion>
 
-## Tips for better results
+  <Accordion title="Financial pressure signals">
+    Requests involving money, payment, or financial information:
+    - Wire transfer requests
+    - Gift card purchase requests ("buy $500 in Google Play cards and send the codes")
+    - Cryptocurrency payment requests
+    - Requests for bank account or credit card numbers
+    - Overpayment scams ("I'll send you $2,000, please send back $1,500")
+    - Invoice fraud targeting businesses
+  </Accordion>
 
-- Include the full message, not just a portion
-- If the message contains a URL, you can also run a separate [URL analysis](/assessments/analyze-url)
-- For email headers or metadata, paste the full visible content
+  <Accordion title="Suspicious instructions">
+    Instructions designed to bypass your normal judgment or security:
+    - "Don't tell anyone about this"
+    - "Click this link and enter your password"
+    - "Download this file to fix the problem"
+    - "Disable your antivirus before installing"
+    - "Reply only to this email address, not the original"
+    - Requests to move communication to a different platform
+  </Accordion>
 
-## Privacy
+  <Accordion title="Structural and formatting anomalies">
+    Technical signals in the message structure:
+    - Mismatched sender name and email address
+    - Generic greetings ("Dear Customer") when personalization is expected
+    - Unusual character substitutions (using "0" for "O", Cyrillic characters, etc.)
+    - Excessive capitalization or punctuation
+    - Poor grammar inconsistent with the claimed sender
+    - Embedded URLs that don't match the displayed link text
+  </Accordion>
+</AccordionGroup>
 
-Your text is stored privately in your account. It is not shared with other users. You can delete it at any time from your scan history.
+## High-risk vs low-risk text examples
+
+<Tabs>
+  <Tab title="High-risk patterns">
+    **Example 1 — Phishing email:**
+    > "URGENT: Your PayPal account has been limited. You must verify your information within 24 hours or your account will be permanently suspended. Click here to verify: [suspicious link]"
+
+    Risk signals: urgency language, impersonation (PayPal), threat of account loss, suspicious link.
+
+    ---
+
+    **Example 2 — Gift card scam:**
+    > "Hi, this is your CEO. I need you to purchase 10 x $100 Amazon gift cards urgently for a client gift. Please keep this confidential and send me the card codes as soon as possible."
+
+    Risk signals: impersonation (executive), financial pressure, urgency, secrecy instruction.
+
+    ---
+
+    **Example 3 — Romance scam:**
+    > "My darling, I am stuck at the airport and my wallet was stolen. I just need $800 to get home to you. Please send via Western Union. I will pay you back double when I arrive."
+
+    Risk signals: financial pressure, emotional manipulation, wire transfer request.
+  </Tab>
+  <Tab title="Low-risk patterns">
+    **Example 1 — Legitimate bank notification:**
+    > "Your statement for account ending in 4521 is now available. Log in at [bank's official domain] to view it. If you did not request this, contact us at [official number]."
+
+    Low-risk signals: no urgency, no financial request, directs to official domain, provides contact information.
+
+    ---
+
+    **Example 2 — Legitimate HR email:**
+    > "Hi Sarah, your annual performance review is scheduled for Tuesday at 2pm. Please complete the self-assessment form in the HR portal before then. Let me know if you need to reschedule."
+
+    Low-risk signals: specific personalization, no urgency, no financial request, no suspicious links.
+  </Tab>
+</Tabs>
+
+## Privacy note
+
+Your submitted text is stored privately in your account with row-level security. It is not shared with other users, not used to train AI models, and not visible to InvisiProof staff through the API. You can delete it at any time from your scan history.
+
+<Warning>
+Do not submit text that contains other people's private information (passwords, full credit card numbers, social security numbers) unless you are the authorized holder of that information and understand that it will be stored in your account.
+</Warning>

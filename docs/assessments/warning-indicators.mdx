@@ -1,36 +1,185 @@
 ---
 title: Warning Indicators
-description: What warning indicators are and how to read them
+description: The categories of warning signals InvisiProof detects and what they mean
 ---
 
 # Warning Indicators
 
-Warning indicators are specific observable signals found in the submitted content. They explain *why* a particular risk level was assigned.
+Warning indicators are specific signals extracted from the AI analysis of your submitted content. Each assessment may contain zero or more warning indicators. Understanding what each category means helps you interpret results and take appropriate action.
 
-## What warning indicators are
+## Indicator structure
 
-Each assessment may include one or more warning indicators. Each indicator describes a specific pattern or signal that was observed. Examples include:
+Each warning indicator includes:
+- **Category** — the type of signal (e.g. urgency, impersonation)
+- **Description** — what was specifically observed in your content
+- **Severity** — low, medium, high, or critical
+- **Contribution** — how much this indicator contributed to the overall risk score
 
-- **Urgency language detected** — The message uses time pressure to push you toward a quick decision
-- **Credential request** — The content asks for a password, PIN, or login information
-- **Impersonation pattern** — The content mimics a known brand, institution, or person
-- **Suspicious domain structure** — The URL uses patterns associated with phishing (e.g., brand name in subdomain)
-- **Visual inconsistency** — The image shows signs of editing or layout anomalies
-- **Unusual payment request** — The content requests payment via gift cards, wire transfer, or cryptocurrency
-- **Mismatch detected** — The claimed identity or context does not match observable signals
+## Indicator categories
 
-## How to read warning indicators
+<AccordionGroup>
+  <Accordion title="Urgency">
+    **What it is:** Language or visual elements designed to pressure immediate action without giving you time to think or verify.
 
-Warning indicators are not proof of fraud or harm. They are signals that appear more frequently in higher-risk content. A single indicator does not mean the content is dangerous. Multiple indicators increase the overall risk signal.
+    **Examples:**
+    - "Your account will be suspended in 24 hours"
+    - "Act immediately or lose access"
+    - "This is your final notice"
+    - Countdown timers in images
+    - Bold/red text emphasizing deadlines
 
-Read each indicator alongside the summary and recommended actions to understand the full picture.
+    **Why it matters:** Urgency is one of the most reliable predictors of social engineering. Legitimate organizations rarely require immediate action that bypasses normal verification.
 
-## What to do with warning indicators
+    **Severity guide:** Low = mild time pressure; Critical = extreme deadline with threat of irreversible loss.
+  </Accordion>
 
-- Use them to ask better questions before acting
-- Verify specific claims through independent channels (call the company directly, check official websites)
-- Do not share warning indicators as proof of wrongdoing — they are risk signals, not evidence
+  <Accordion title="Impersonation">
+    **What it is:** Content that mimics a trusted entity — a bank, government agency, technology company, employer, or known individual.
 
-## When no indicators are shown
+    **Examples:**
+    - Logos, branding, or formatting copied from a legitimate organization
+    - Sender name matching a known brand but with a different email domain
+    - Language mimicking official communications from a specific institution
+    - Use of an executive's name or title to add authority
 
-If no warning indicators appear, the assessment did not find specific signals to highlight. This does not mean the content is safe — it means the observable signals did not trigger specific pattern matches.
+    **Why it matters:** Impersonation exploits trust in known brands and authorities to lower your guard.
+
+    **Severity guide:** Low = vague brand reference; Critical = precise replication of a specific institution's communication style with matching visual elements.
+  </Accordion>
+
+  <Accordion title="Financial Pressure">
+    **What it is:** Requests or instructions involving money, payment, or financial information.
+
+    **Examples:**
+    - Requests for wire transfers or bank account details
+    - Gift card purchase requests
+    - Cryptocurrency payment requests
+    - Overpayment schemes
+    - Invoice fraud
+    - Requests for credit card numbers or CVV codes
+
+    **Why it matters:** Financial pressure combined with urgency or impersonation is the core mechanism of most fraud.
+
+    **Severity guide:** Low = vague financial reference; Critical = specific payment request with account details and urgency.
+  </Accordion>
+
+  <Accordion title="Suspicious Links">
+    **What it is:** URLs or link text that exhibit structural risk patterns.
+
+    **Examples:**
+    - Link text showing one domain but URL pointing to another
+    - Typosquatted domains (paypa1.com, arnazon.com)
+    - Subdomain abuse (paypal.com.attacker.net)
+    - URL shorteners hiding the true destination
+    - Unusually long URLs with encoded parameters
+    - IP address URLs
+
+    **Why it matters:** Suspicious links are the primary delivery mechanism for credential harvesting and malware.
+
+    **Severity guide:** Low = URL shortener with no other signals; Critical = typosquatted domain matching a financial institution.
+  </Accordion>
+
+  <Accordion title="Editing Artifacts">
+    **What it is:** Visual signals in images suggesting the content was edited or composited after original creation.
+
+    **Examples:**
+    - JPEG compression artifacts inconsistent with the rest of the image
+    - Pixel-level inconsistencies around text or numbers
+    - Font rendering that differs from surrounding text
+    - Inconsistent shadow or lighting on composited elements
+    - Metadata patterns suggesting re-save after editing
+
+    **Why it matters:** Editing artifacts in financial documents, screenshots, or identity documents may indicate tampering.
+
+    **Severity guide:** Low = minor compression inconsistency; Critical = clear evidence of composited elements in a financial document.
+  </Accordion>
+
+  <Accordion title="Identity Inconsistency">
+    **What it is:** Signals suggesting the claimed identity of the sender or creator does not match observable evidence.
+
+    **Examples:**
+    - Email domain not matching the claimed organization
+    - Writing style inconsistent with the claimed sender
+    - Branding elements that don't match the official brand
+    - Contact information that doesn't match official records
+    - Inconsistent use of names, titles, or identifiers
+
+    **Why it matters:** Identity inconsistency is a key signal in impersonation attacks and business email compromise.
+
+    **Severity guide:** Low = minor formatting inconsistency; Critical = email domain completely unrelated to claimed organization.
+  </Accordion>
+
+  <Accordion title="Emotional Manipulation">
+    **What it is:** Language designed to exploit emotional states — fear, love, guilt, greed, or sympathy — to override rational judgment.
+
+    **Examples:**
+    - Romantic pressure ("I thought you loved me")
+    - Fear of consequences ("You will be arrested if you don't pay")
+    - Sympathy exploitation ("I'm stranded and need help")
+    - Greed appeals ("You've won a prize, claim it now")
+    - Guilt induction ("After everything I've done for you")
+
+    **Why it matters:** Emotional manipulation is the psychological mechanism behind romance scams, grandparent scams, and many social engineering attacks.
+
+    **Severity guide:** Low = mild emotional appeal; Critical = explicit threat or extreme emotional pressure combined with financial request.
+  </Accordion>
+
+  <Accordion title="Credential Harvesting">
+    **What it is:** Instructions or elements designed to capture your login credentials or personal information.
+
+    **Examples:**
+    - Login forms in unexpected contexts
+    - Requests to "verify" your password or PIN
+    - Instructions to enter credentials on a linked page
+    - Fake security alerts requiring re-authentication
+    - Requests for two-factor authentication codes
+
+    **Why it matters:** Credential harvesting is the primary goal of most phishing attacks.
+
+    **Severity guide:** Low = vague request for account information; Critical = specific request for password or 2FA code with a linked form.
+  </Accordion>
+
+  <Accordion title="Secrecy Instructions">
+    **What it is:** Instructions to keep the communication or transaction secret from others.
+
+    **Examples:**
+    - "Don't tell your bank about this transfer"
+    - "Keep this between us"
+    - "Don't discuss this with family members"
+    - "This is confidential — do not forward"
+    - Instructions to communicate only through a specific channel
+
+    **Why it matters:** Secrecy instructions are designed to prevent you from getting a second opinion that might expose the fraud.
+
+    **Severity guide:** Low = mild confidentiality request; Critical = explicit instruction to hide a financial transaction from your bank or family.
+  </Accordion>
+
+  <Accordion title="Layout Anomalies">
+    **What it is:** Visual inconsistencies in document or screenshot layout that suggest the content was not produced by the claimed source.
+
+    **Examples:**
+    - Inconsistent fonts within a single document
+    - Misaligned elements in a form or invoice
+    - Spacing that doesn't match the claimed template
+    - Logo placement inconsistent with official branding
+    - Mixed resolution elements suggesting copy-paste composition
+
+    **Why it matters:** Fraudulent documents often contain subtle layout errors because they are assembled from multiple sources.
+
+    **Severity guide:** Low = minor formatting inconsistency; Critical = multiple layout anomalies in a financial or identity document.
+  </Accordion>
+</AccordionGroup>
+
+## How indicators affect the risk score
+
+Warning indicators contribute to the risk score based on their severity and category. The relationship is not simply additive — co-occurring indicators in related categories amplify each other:
+
+- **Urgency + Financial Pressure** together score higher than either alone
+- **Impersonation + Suspicious Links** together score higher than either alone
+- **Editing Artifacts + Identity Inconsistency** in a financial document score higher than in a casual photo
+
+This reflects how real fraud works: the combination of multiple techniques is more dangerous than any single signal.
+
+## No indicators does not mean safe
+
+An assessment with zero warning indicators means the observable signals analyzed did not trigger any indicator categories. It does not mean the content is safe, authentic, or legitimate. Sophisticated deception may evade detection.

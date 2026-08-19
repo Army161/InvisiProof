@@ -1,40 +1,81 @@
 ---
 title: Privacy Boundaries
-description: What requesters can and cannot see in a Proof Request
+description: Exactly what requesters can and cannot see, and how RLS enforces this
 ---
 
 # Privacy Boundaries
 
-Proof Requests are designed with a clear separation between the evidence and the result.
+The privacy boundary between requester and respondent in a Proof Request is the core privacy guarantee of the feature. This page explains exactly what each party can see, how the boundary is enforced, and what happens to evidence after the request completes.
 
-## What the requester can see
+## The fundamental guarantee
 
-- The risk assessment result (risk level, score, summary, warning indicators, recommended actions)
-- The status of the request (pending, completed, expired, cancelled)
-- The purpose and instructions they set when creating the request
+**The requester receives the risk assessment result. The requester does not receive the raw evidence.**
 
-## What the requester cannot see
+This is not just a UI restriction — it is enforced at the database level using Supabase Row Level Security (RLS) policies. Even if a client application attempted to fetch the evidence directly, the database would return an empty result.
 
-- The raw evidence submitted by the respondent (images, text, files)
-- The respondent's identity (unless the respondent chooses to share it)
-- Any personal information contained in the submitted evidence
+## What each party can see
 
-## What the respondent controls
+### Requester
 
-- What they choose to submit
-- Whether to submit at all
-- Deletion of their submission at any time
+| Can see | Cannot see |
+|---------|-----------|
+| Risk level (Low/Medium/High/Critical) | The submitted image, text, or URL |
+| Risk score (0–100) | The respondent's user ID or account information |
+| Warning indicators and descriptions | The raw AI prompt sent for analysis |
+| Recommended actions | The raw AI response before normalization |
+| Trust level | Any other proof requests the respondent has participated in |
+| Request status | |
+| When the request was created and completed | |
 
-## Storage and access
+### Respondent
 
-Submitted evidence is stored with scoped access controls. The storage architecture is designed so that requesters cannot read the raw evidence directly. The assessment result is produced server-side and returned to the requester separately from the evidence.
+| Can see | Cannot see |
+|---------|-----------|
+| The challenge/purpose set by the requester | The risk assessment result |
+| Confirmation that evidence was submitted | The requester's identity beyond the challenge text |
+| The request expiry time | Any other requests the requester has created |
+
+## How RLS enforces the boundary
+
+Supabase Row Level Security policies are applied at the PostgreSQL level, before any data reaches the application layer. The policies for Proof Requests work as follows:
+
+**Evidence table (proof_request_evidence):**
+- `SELECT` is permitted only for the row's `respondent_user_id`
+- The requester's user ID is explicitly excluded from `SELECT` access
+- Service role access (used by edge functions for analysis) is permitted only during the `analyzing` phase
+
+**Results table (proof_request_results):**
+- `SELECT` is permitted only for the row's `requester_user_id`
+- The respondent's user ID is explicitly excluded from `SELECT` access
+
+**Proof requests table (proof_requests):**
+- Requesters can read their own requests (status, metadata, result)
+- Respondents can read the challenge for a request they are responding to
+- Neither party can read the other's full request history
 
 <Note>
-InvisiProof's privacy boundaries are enforced at the application and storage layer. They are designed to protect respondents from having to expose more than the risk assessment result. However, no system is perfect — see the [Privacy Policy](/legal/privacy-policy) for full details.
+These RLS policies are enforced by PostgreSQL, not by application code. They cannot be bypassed by modifying the client application, intercepting API calls, or using the Supabase client library directly.
 </Note>
 
-## Limitations
+## What happens to evidence after completion
 
-- InvisiProof cannot prevent a requester from sharing the assessment result with others
-- InvisiProof cannot prevent a respondent from voluntarily sharing their own submission
-- The privacy boundaries apply to InvisiProof's systems — they do not govern what happens outside the platform
+After a Proof Request reaches **Completed** status:
+
+1. **Evidence remains stored** in the private Supabase Storage bucket, scoped to the proof request ID
+2. **RLS policies remain in effect** — the requester still cannot read the evidence
+3. **Retention** — evidence is retained according to the requester's plan history retention policy (7 days for Free, 90 days for Plus, unlimited for Pro/Max)
+4. **Deletion** — the requester can delete the entire proof request (including evidence) at any time. The respondent can request deletion by contacting support@invisiproof.com
+5. **Automatic cleanup** — expired requests with no evidence submission are cleaned up automatically after 30 days
+
+## What InvisiProof staff can see
+
+InvisiProof staff do not have routine access to evidence content. The Supabase service role is used only by edge functions during analysis. Staff access to the database is:
+- Logged and audited
+- Limited to aggregate analytics and support investigations
+- Subject to the privacy policy
+
+For security vulnerability reports related to these policies, see [Security Reporting](/privacy/security-reporting).
+
+## Reporting a privacy boundary violation
+
+If you believe the privacy boundary between requester and respondent has been violated — for example, if a requester claims to have seen your evidence — please report it immediately to security@invisiproof.com. Include as much detail as possible about what was shared and how.

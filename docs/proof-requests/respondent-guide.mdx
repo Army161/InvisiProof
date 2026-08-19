@@ -1,47 +1,92 @@
 ---
 title: Respondent Guide
-description: How to respond to a Proof Request
+description: How to respond to a Proof Request code and submit evidence privately
 ---
 
 # Respondent Guide
 
-This guide covers what to do when someone sends you a Proof Request link or code.
+As the respondent, you receive a 6-digit code from the requester, submit your evidence privately, and confirm submission. The requester receives only the risk assessment result — they cannot read your evidence.
 
-## What is a Proof Request?
+## Responding to a Proof Request
 
-A Proof Request is an invitation to submit evidence privately. The person who sent it will receive a risk assessment of what you submit — not automatically the raw evidence itself.
+<Steps>
+  <Step title="Receive the code">
+    The requester shares a 6-digit code with you through any channel — message, email, phone call, or in person. You need this code to submit your evidence.
+  </Step>
 
-You are in control of what you submit. You can also choose not to respond.
+  <Step title="Open InvisiProof">
+    Open the InvisiProof app. You do not need to have an account to respond to a Proof Request — you can respond as a guest.
 
-## How to respond
+    <Note>
+    If you respond as a guest, your evidence is still stored privately and the requester still cannot read it. However, you will not be able to view your submission history without an account.
+    </Note>
+  </Step>
 
-1. Open the link or enter the code at [invisiproof.com](https://invisiproof.com) or in the InvisiProof app
-2. Read the **purpose** and **instructions** set by the requester
-3. Review the **consent notice** — it explains what will happen with your submission
-4. Choose what to submit: an image, text, or URL
-5. Tap **Submit Privately**
+  <Step title="Navigate to Requests">
+    Tap the **Requests** tab at the bottom of the screen.
+  </Step>
 
-You do not need an InvisiProof account to respond to a request.
+  <Step title="Enter the code">
+    Tap **Enter Code** and type or paste the 6-digit code you received.
+  </Step>
 
-## What happens after you submit
+  <Step title="Read the challenge">
+    Read the challenge set by the requester carefully. It explains:
+    - What they are asking you to submit
+    - Why they are asking
+    - What the evidence will be used for
 
-- Your submission is stored privately and assessed for risk signals
-- The requester receives only the risk assessment result
-- You can delete your submission at any time (see below)
+    If the challenge is unclear or you are uncomfortable with it, you do not have to submit. You can close the screen without submitting.
+  </Step>
 
-## Deleting your submission
+  <Step title="Submit your evidence">
+    Choose the type of evidence to submit:
 
-If you want to remove what you submitted:
+    - **Image** — select from your photo library or take a photo
+    - **Text** — paste the message, email, or conversation
+    - **URL** — enter the link
 
-1. Open the same request link
-2. Tap **Delete My Submission**
+    Review the consent notice. It explains that your evidence will be stored privately, analyzed by AI, and that the requester will receive only the risk assessment result — not your evidence.
 
-Deleting your submission removes the raw evidence from storage. The requester's assessment result may remain, but it will no longer be linked to your content.
+    Tap **Submit Evidence** to confirm.
+  </Step>
 
-## What the requester can see
+  <Step title="Confirmation">
+    You will see a confirmation screen indicating that your evidence was submitted successfully. The requester will be notified when the analysis is complete.
 
-The requester sees the risk assessment result. They do not automatically receive your raw images, text, or files. See [Privacy Boundaries](/proof-requests/privacy-boundaries) for full details.
+    You will not see the risk assessment result — only the requester sees that.
+  </Step>
+</Steps>
 
-## Choosing not to respond
+## Your privacy as a respondent
 
-You are never required to respond to a Proof Request. If you do not want to submit, simply do not open the link or do not complete the submission. The request will expire on its own.
+<Note>
+Your evidence is stored privately in Supabase Storage with row-level security policies that prevent the requester from reading it through the API. This is enforced at the database level — it is not just a UI restriction.
+</Note>
+
+| What the requester sees | What the requester CANNOT see |
+|------------------------|-------------------------------|
+| Risk level and score | Your image, text, or URL |
+| Warning indicators | Your name or account information |
+| Recommended actions | Any other requests you have responded to |
+| Trust level | Your submission history |
+
+## What happens to your evidence
+
+- Your evidence is stored in a private Supabase Storage bucket scoped to the proof request
+- It is analyzed by AI to produce the risk assessment
+- After the request is completed, the evidence remains stored until you or the requester deletes the request, or until the retention period expires
+- You can request deletion of your evidence by contacting support@invisiproof.com
+
+## Before you submit
+
+Consider these questions before submitting evidence:
+
+1. **Do you recognize the requester?** You should only respond to Proof Request codes from people you know and trust.
+2. **Is the challenge reasonable?** The challenge should explain a legitimate reason for the request.
+3. **Are you comfortable with AI analysis?** Your evidence will be analyzed by an AI model. Review the [AI Disclaimer](/legal/ai-disclaimer) if you have concerns.
+4. **Does the evidence contain sensitive information?** If the evidence contains highly sensitive personal information (medical records, financial account details, etc.), consider whether you are comfortable submitting it.
+
+<Warning>
+Only respond to Proof Request codes from people you know. Do not respond to codes shared by strangers, as this could be used to trick you into submitting sensitive content.
+</Warning>

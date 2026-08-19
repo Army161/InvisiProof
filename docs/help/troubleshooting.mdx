@@ -1,64 +1,126 @@
 ---
 title: Troubleshooting
-description: Common issues and solutions
+description: Solutions to common InvisiProof issues
 ---
 
 # Troubleshooting
 
-## Assessment is taking a long time
+<AccordionGroup>
+  <Accordion title="App won't load / blank screen">
+    **Symptoms:** The app opens to a blank white or black screen, or shows a loading spinner indefinitely.
 
-Assessments typically complete within 30–60 seconds. If an assessment is still pending after several minutes:
+    **Solutions:**
 
-1. Check your internet connection
-2. Pull down to refresh the results screen
-3. If the issue persists, try submitting the content again
+    1. **Force close and reopen** — swipe the app away from your recent apps and reopen it
+    2. **Check your internet connection** — InvisiProof requires an internet connection to load. Try opening a website in your browser to confirm connectivity
+    3. **Clear app cache** — on Android, go to Settings → Apps → InvisiProof → Storage → Clear Cache, then reopen the app
+    4. **Update the app** — open Google Play and check for an InvisiProof update
+    5. **Reinstall the app** — uninstall and reinstall InvisiProof from Google Play. Your account data is stored in the cloud and will be restored when you sign in
 
-## "You have reached your monthly limit"
+    If the issue persists after reinstalling, contact support@invisiproof.com with your device model and Android version.
+  </Accordion>
 
-You have used all your assessments or Proof Requests for the current billing period. Options:
+  <Accordion title="Assessment stuck in 'analyzing' state">
+    **Symptoms:** You submitted content for analysis and the status has been "Analyzing" for more than 5 minutes.
 
-- Wait for your limit to reset at the start of your next billing period
-- Upgrade your plan from **Profile → Subscription**
+    **Solutions:**
 
-## Image upload fails
+    1. **Pull to refresh** — on the scan history or result screen, pull down to refresh the status
+    2. **Check your internet connection** — analysis requires a stable connection
+    3. **Wait a bit longer** — during high-load periods, analysis may take up to 2–3 minutes
+    4. **Close and reopen the app** — the result may have completed but the UI hasn't updated
+    5. **Try again** — if the scan is still stuck after 10 minutes, go back to the scan and tap **Retry Analysis** (if available)
 
-- Check that the image is in a supported format (JPEG, PNG, HEIC, WebP)
-- Check your internet connection
-- Try a smaller image if the file is very large
-- Make sure InvisiProof has permission to access your photo library (Settings → InvisiProof → Photos)
+    If a scan is stuck in Analyzing for more than 30 minutes, it has likely failed silently. Contact support@invisiproof.com with the approximate time you submitted the scan and your account email.
 
-## Proof Request link is not working
+    <Note>
+    Stuck analyses do not count against your monthly quota. If you are charged for a stuck analysis, contact support.
+    </Note>
+  </Accordion>
 
-- The request may have expired — check the status in your Requests tab
-- The request may have been cancelled
-- Make sure you are sharing the correct link
+  <Accordion title="Proof Request code not working">
+    **Symptoms:** You entered a 6-digit code but see "Code not found", "Code expired", or "Invalid code".
 
-## Sign-in issues
+    **Solutions:**
 
-- Check that you are using the correct email address
-- If you forgot your password, use [Reset Password](/account/reset-password)
-- If you signed up with Google or Apple, use the same sign-in method
+    - **"Code not found"** — double-check the code. Codes are case-insensitive but must be exactly 6 digits. Ask the requester to confirm the code
+    - **"Code expired"** — the request has passed its expiry time. Ask the requester to create a new Proof Request with a new code
+    - **"Already submitted"** — evidence has already been submitted for this code. Each code can only be used once. If you submitted by mistake, contact the requester
+    - **"Invalid code"** — the code format is wrong. Proof Request codes are 6 digits (numbers only). Make sure you're not including spaces or letters
 
-## Subscription not showing after reinstall
+    If none of these apply and the code is definitely correct and not expired, contact support@invisiproof.com.
+  </Accordion>
 
-1. Go to **Profile → Subscription**
-2. Tap **Restore Purchases**
+  <Accordion title="Can't sign in / forgot password">
+    **Symptoms:** You can't sign in to your account.
 
-This restores active subscriptions from your App Store or Google Play account.
+    **Solutions:**
 
-## Assessment result seems incorrect
+    - **Forgot password** — tap **Forgot Password** on the sign-in screen and follow the reset flow. See [Reset Password](/account/reset-password)
+    - **Wrong email** — try other email addresses you may have used to sign up
+    - **Signed up with Google** — if you originally signed up with Google, use **Continue with Google** instead of email/password
+    - **Email not verified** — if you never verified your email, tap **Resend Verification Email** on the sign-in screen
+    - **Account doesn't exist** — if you can't find your account with any email, you may not have completed sign-up. Try creating a new account
 
-InvisiProof provides risk assessments based on observable signals. Results are not guaranteed to be accurate. If you believe a result is significantly wrong, you can:
+    If you believe your account exists but you can't access it, contact support@invisiproof.com with the email address you used to sign up.
+  </Accordion>
 
-- Submit the content again for a fresh assessment
-- Contact support@invisiproof.com with details
+  <Accordion title="Purchase not restoring">
+    **Symptoms:** You reinstalled InvisiProof or signed in on a new device and your subscription is showing as Free.
 
-## App crashes or freezes
+    **Solutions:**
 
-1. Force-close the app and reopen it
-2. Check for app updates in the App Store or Google Play
-3. If the issue persists, contact support@invisiproof.com with a description of what happened
+    1. **Tap Restore Purchases** — go to Profile → Restore Purchases
+    2. **Check Google Play account** — ensure you are signed in to Google Play with the same account you used to purchase the subscription
+    3. **Check InvisiProof account** — ensure you are signed in to InvisiProof with the same account you used when you purchased
+    4. **Wait and retry** — Google Play subscription verification can take a few minutes. Wait 5 minutes and tap Restore Purchases again
+    5. **Check subscription status in Google Play** — open Google Play → Profile → Payments and subscriptions → Subscriptions. If InvisiProof is listed as active, the subscription exists but hasn't synced yet
 
-## Still having trouble?
+    If your subscription shows as active in Google Play but not in InvisiProof after 30 minutes, contact support@invisiproof.com with your Google Play order number.
+  </Accordion>
 
-Contact support at support@invisiproof.com. Include your account email, a description of the issue, and any relevant screenshots.
+  <Accordion title="Image upload failing">
+    **Symptoms:** You try to upload an image for analysis but see an error or the upload never completes.
+
+    **Solutions:**
+
+    1. **Check file size** — very large images (over 20MB) may fail to upload. Try compressing the image or taking a screenshot instead of uploading the original
+    2. **Check file format** — InvisiProof supports JPEG, PNG, HEIC, and WebP. Other formats may not be supported
+    3. **Check internet connection** — image uploads require a stable connection. Try on Wi-Fi if you're on mobile data
+    4. **Try a different image** — if only one specific image fails, the file may be corrupted
+    5. **Restart the app** — force close and reopen InvisiProof, then try again
+
+    If uploads consistently fail, contact support@invisiproof.com with your device model and the approximate file size of the image you're trying to upload.
+  </Accordion>
+
+  <Accordion title="Analysis returning unexpected results">
+    **Symptoms:** The risk assessment result seems wrong — a clearly suspicious message is rated Low Risk, or a legitimate document is rated High Risk.
+
+    **Understanding the result:**
+
+    InvisiProof analyzes observable signals only. It does not have context about your relationship with the sender, the history of your communication, or information you know independently. This means:
+
+    - A sophisticated phishing message with no obvious signals may score Low Risk
+    - A legitimate urgent message from your bank may score Medium Risk due to urgency language
+    - A legitimate invoice with unusual formatting may score High Risk due to layout anomalies
+
+    **What to do:**
+
+    - Read the warning indicators carefully — they explain what specific signals were detected
+    - Apply your own judgment alongside the result
+    - For high-stakes decisions, seek professional advice regardless of the risk score
+    - If you believe the result is consistently wrong for a type of content, contact support@invisiproof.com with examples (without sensitive personal information)
+
+    See [What InvisiProof Can and Cannot Determine](/what-invisiproof-can-determine) for a full explanation of limitations.
+  </Accordion>
+</AccordionGroup>
+
+## Still need help?
+
+If none of the above solutions resolve your issue, contact support@invisiproof.com. Include:
+- Your device model and Android version (or browser and OS for web)
+- Your app version (Profile → About)
+- A description of the issue and steps to reproduce it
+- Screenshots if applicable (do not include sensitive personal information)
+
+Response time: 1–2 business days.

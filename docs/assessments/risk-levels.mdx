@@ -1,53 +1,113 @@
 ---
 title: Risk Levels
-description: Understanding Low, Medium, High, and Critical risk levels
+description: Understanding InvisiProof's four risk levels and what to do about each
 ---
 
 # Risk Levels
 
-Every InvisiProof assessment includes a **risk level** that summarizes the observable signals found in the submitted content.
+Every InvisiProof assessment produces a risk level based on the density and severity of observable signals in the submitted content. There are four risk levels.
 
-## The four levels
+## Risk level overview
 
-### Low Risk
+| Risk Level | Score Range | Color | Meaning |
+|------------|-------------|-------|---------|
+| Low | 0–24 | Green | Few or no risk signals detected |
+| Medium | 25–49 | Yellow | Some risk signals present |
+| High | 50–74 | Orange | Multiple significant risk signals |
+| Critical | 75–100 | Red | Strong concentration of high-severity signals |
 
-Observable signals do not indicate elevated risk. The content does not show patterns commonly associated with fraud, phishing, or deception.
+<Warning>
+Risk levels are based on observable signals only. A Low risk level does not mean content is safe or authentic. A Critical risk level does not mean content is definitely harmful or fraudulent. Always use results as one input among many.
+</Warning>
 
-**What this means**: The signals reviewed do not raise concerns. This does not guarantee the content is safe or legitimate.
+## Low Risk (0–24)
 
-### Medium Risk
+<Card title="Low Risk" icon="circle-check">
+  **What it means:** The observable signals analyzed do not indicate elevated risk. The content does not exhibit patterns commonly associated with fraud, phishing, manipulation, or deception.
 
-Some observable signals suggest caution is warranted. The content shows one or more patterns that appear in higher-risk content, but the overall signal is mixed.
+  **What it does NOT mean:** The content is safe, authentic, or legitimate. Sophisticated deception may produce low risk scores.
 
-**What this means**: Proceed carefully. Verify claims through independent channels before acting.
+  **Recommended actions:**
+  - No immediate action required based on observable signals
+  - Continue to exercise normal judgment
+  - If the content involves a high-stakes decision, seek additional verification
+  - Consider using a [Proof Request](/proof-requests/overview) if you need independent evidence
+</Card>
 
-### High Risk
+## Medium Risk (25–49)
 
-Multiple observable signals indicate elevated risk. The content shows patterns strongly associated with fraud, phishing, impersonation, or deception.
+<Card title="Medium Risk" icon="circle-exclamation">
+  **What it means:** Some risk signals are present in the observable content. The content exhibits patterns that warrant caution, though they may also appear in legitimate content.
 
-**What this means**: Do not act on this content without independent verification. Avoid sending money, credentials, or personal information.
+  **Common causes:**
+  - Mild urgency language that could be legitimate
+  - Unusual formatting or structure
+  - A URL with a slightly unusual domain structure
+  - Text that contains some but not all hallmarks of a scam
 
-### Critical Risk
+  **Recommended actions:**
+  - Proceed with caution
+  - Verify the sender or source through an independent channel (call the company directly, not using contact info in the message)
+  - Do not click links or provide information until you have verified the source
+  - Review the specific warning indicators for guidance on what to check
+</Card>
 
-Strong observable signals indicate very high risk. The content shows patterns that are highly consistent with known fraud, phishing, or harmful content.
+## High Risk (50–74)
 
-**What this means**: Do not act on this content. Consider reporting it to the appropriate platform, institution, or authority.
+<Card title="High Risk" icon="triangle-exclamation">
+  **What it means:** Multiple significant risk signals are present. The content exhibits patterns strongly associated with fraud, phishing, impersonation, or manipulation.
 
-## Risk score
+  **Common causes:**
+  - Urgency language combined with financial requests
+  - Clear impersonation of a known brand or institution
+  - URL structure matching known phishing patterns
+  - Image with visible editing artifacts in a financial document
+  - Multiple warning indicators across different categories
 
-Each assessment also includes a **risk score** from 0 to 100. Higher scores indicate more risk signals were found. The score provides more granularity than the four-level label.
+  **Recommended actions:**
+  - Do not act on the content without independent verification
+  - Do not click any links in the content
+  - Do not provide any personal, financial, or credential information
+  - Contact the purported sender through official channels (look up the number yourself, do not use contact info in the message)
+  - Consider reporting to relevant authorities (your bank, the FTC, Action Fraud, etc.)
+  - If this involves a financial transaction, contact your bank immediately
+</Card>
 
-| Score Range | Typical Level |
-|-------------|---------------|
-| 0–24 | Low |
-| 25–49 | Medium |
-| 50–74 | High |
-| 75–100 | Critical |
+## Critical Risk (75–100)
 
-Exact thresholds may vary based on content type and context.
+<Card title="Critical Risk" icon="circle-xmark">
+  **What it means:** A strong concentration of high-severity risk signals is present. The content exhibits multiple hallmarks of fraud, phishing, or manipulation at high severity.
 
-## Important limitations
+  **Common causes:**
+  - Classic phishing email with urgency, impersonation, and a suspicious link
+  - Fake invoice or payment request with editing artifacts
+  - Romance scam message with financial pressure and emotional manipulation
+  - URL matching known phishing kit patterns with typosquatted domain
 
-Risk levels are based on observable signals only. A Low risk result does not mean content is safe. A Critical risk result does not mean content is definitively harmful. Always use results as one input among many.
+  **Recommended actions:**
+  - Do not act on this content
+  - Do not click any links
+  - Do not provide any information to the sender
+  - Report to relevant authorities:
+    - **Financial fraud**: Contact your bank and report to the FTC (reportfraud.ftc.gov) or Action Fraud (UK)
+    - **Phishing**: Report to the Anti-Phishing Working Group (reportphishing@apwg.org)
+    - **Workplace fraud**: Report to your IT security team
+    - **Personal safety**: Contact local law enforcement if you feel threatened
+  - If you have already acted on this content (clicked a link, provided credentials, sent money), take immediate protective action
+</Card>
 
-See [What InvisiProof Can and Cannot Determine](/what-invisiproof-can-determine) for full details.
+## How scores are calculated
+
+The risk score (0–100) is calculated from the weighted severity of all warning indicators detected in the content. Each indicator contributes to the score based on:
+
+- **Category weight** — some signal categories (e.g. financial pressure + impersonation together) carry higher weight
+- **Severity** — each indicator is rated low, medium, high, or critical
+- **Co-occurrence** — multiple indicators in the same category amplify each other
+
+The score is not a probability of fraud. It is a normalized measure of observable risk signal density.
+
+## Limitations
+
+<Note>
+Risk levels reflect observable signals only. They do not account for context you have that the AI does not — your relationship with the sender, the history of your communication, or information you know independently. Always apply your own judgment alongside the assessment result.
+</Note>
