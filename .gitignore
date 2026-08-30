@@ -70,3 +70,4 @@ htmlcov/
 .cache/
 build/
 next-env.d.ts
+google-play-service-account.json
