@@ -16,7 +16,7 @@
         "foregroundImage": "./assets/images/app-icon-aoa.png",
         "backgroundColor": "#0B1220"
       },
-      "package": "com.northstarrevenue.proofloopverify",
+      "package": "com.northstarrevenue.invisiproof",
       "versionCode": 1
     },
     "web": {
