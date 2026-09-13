@@ -21,9 +21,9 @@
 
 import PostHog from 'posthog-react-native';
 
-// PostHog project API key — public, safe to include in client code
-// Replace with real PostHog project API key before production launch
-const POSTHOG_API_KEY = 'phc_placeholder_replace_before_launch';
+// PostHog project API key — public write-only key, safe to include in client builds
+// Set EXPO_PUBLIC_POSTHOG_API_KEY in your .env / EAS secrets before production launch
+const POSTHOG_API_KEY = process.env.EXPO_PUBLIC_POSTHOG_API_KEY ?? '';
 const POSTHOG_HOST = 'https://us.i.posthog.com';
 
 let client: PostHog | null = null;

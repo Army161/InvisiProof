@@ -17,7 +17,15 @@
         "backgroundColor": "#0B1220"
       },
       "package": "com.northstarrevenue.proofloopverify",
-      "versionCode": 1
+      "versionCode": 1,
+      "permissions": [
+        "READ_MEDIA_IMAGES"
+      ]
+    },
+    "ios": {
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "Allow InvisiProof to select screenshots or photos you choose to review."
+      }
     },
     "web": {
       "favicon": "./assets/images/app-icon-aoa.png",
