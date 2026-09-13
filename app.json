@@ -24,7 +24,8 @@
     },
     "ios": {
       "infoPlist": {
-        "NSPhotoLibraryUsageDescription": "Allow InvisiProof to select screenshots or photos you choose to review."
+        "NSPhotoLibraryUsageDescription": "Allow InvisiProof to select screenshots or photos you choose to review.",
+        "NSCameraUsageDescription": "Allow InvisiProof to take a photo of suspicious content you choose to review."
       }
     },
     "web": {
