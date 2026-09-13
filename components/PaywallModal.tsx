@@ -2,7 +2,7 @@ import React from 'react';
 import { Modal, View, Text } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Zap, Check } from 'lucide-react-native';
+import { Zap, Check, Tag } from 'lucide-react-native';
 import { useAppTheme } from '@/hooks/useAppTheme';
 import { TYPOGRAPHY, SPACING, RADIUS } from '@/constants/theme';
 import { AnimatedPressable } from '@/components/AnimatedPressable';
@@ -133,8 +133,29 @@ export function PaywallModal({ visible, onClose, trigger = 'generic' }: PaywallM
             ))}
           </View>
 
+          {/* Pricing summary */}
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: SPACING.xs,
+              backgroundColor: colors.primaryMuted,
+              borderRadius: RADIUS.md,
+              paddingVertical: SPACING.sm,
+              paddingHorizontal: SPACING.md,
+            }}
+          >
+            <Tag size={14} color={colors.primary} />
+            <Text style={[TYPOGRAPHY.bodySmall ?? TYPOGRAPHY.body, { color: colors.primary, textAlign: 'center' }]}>
+              Plans from{' '}
+              <Text style={{ fontWeight: '700' }}>$14.99/mo</Text>
+              {' '}· Plus, Pro & Max · Cancel anytime
+            </Text>
+          </View>
+
           {/* Primary button */}
-          <PrimaryButton title="View Plans" onPress={handleViewPlans} />
+          <PrimaryButton title="View Plans & Pricing" onPress={handleViewPlans} />
 
           {/* Maybe Later */}
           <AnimatedPressable
