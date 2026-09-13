@@ -290,7 +290,7 @@ export default function SubscriptionScreen() {
     setSubscribing(true);
 
     try {
-      if (Platform.OS === 'android') {
+      if (Platform.OS === 'android' || Platform.OS === 'ios') {
         const Purchases = require('react-native-purchases').default;
         console.log('[SubscriptionScreen] calling Purchases.purchaseProduct:', productId);
         const { customerInfo } = await Purchases.purchaseProduct(productId);
@@ -301,11 +301,11 @@ export default function SubscriptionScreen() {
           Alert.alert('Subscribed!', `You are now on the ${plan.name} plan.`);
         }
       } else {
-        // Web — Stripe checkout (coming soon)
-        console.log('[SubscriptionScreen] web purchase attempted — not yet supported');
+        // Web only — native IAP not available
+        console.log('[SubscriptionScreen] web purchase attempted — not supported');
         Alert.alert(
-          'Web Billing',
-          'Web subscriptions are coming soon. Download the Android app to subscribe now.',
+          'Subscribe on Mobile',
+          'Subscriptions are available on the iOS and Android apps.',
           [{ text: 'OK' }]
         );
         trackPurchaseFailed({ plan: plan.id, reason: 'web_not_supported' });
@@ -328,7 +328,7 @@ export default function SubscriptionScreen() {
     console.log('[SubscriptionScreen] restore purchases pressed');
     setSubscribing(true);
     try {
-      if (Platform.OS === 'android') {
+      if (Platform.OS === 'android' || Platform.OS === 'ios') {
         const Purchases = require('react-native-purchases').default;
         console.log('[SubscriptionScreen] calling Purchases.restorePurchases');
         const customerInfo = await Purchases.restorePurchases();
@@ -343,7 +343,7 @@ export default function SubscriptionScreen() {
         );
       } else {
         console.log('[SubscriptionScreen] restore attempted on web — not supported');
-        Alert.alert('Restore', 'Restore is only available on Android. Web billing coming soon.');
+        Alert.alert('Restore', 'Restore is only available on the iOS and Android apps.');
         trackRestoreCompleted({ restored: false });
       }
     } catch (err: any) {
@@ -356,7 +356,11 @@ export default function SubscriptionScreen() {
 
   const handleManageSubscription = () => {
     console.log('[SubscriptionScreen] manage subscription pressed');
-    Linking.openURL('https://play.google.com/store/account/subscriptions');
+    if (Platform.OS === 'ios') {
+      Linking.openURL('https://apps.apple.com/account/subscriptions');
+    } else {
+      Linking.openURL('https://play.google.com/store/account/subscriptions');
+    }
   };
 
   const handlePrivacyPolicy = () => {
@@ -494,7 +498,8 @@ export default function SubscriptionScreen() {
       <InfoCard>
         <View style={{ gap: SPACING.sm }}>
           <Text style={[TYPOGRAPHY.caption, { color: colors.textSecondary, textAlign: 'center', lineHeight: 18 }]}>
-            Subscriptions automatically renew unless cancelled at least 24 hours before the end of the current period. Manage or cancel your subscription in your Google Play account settings.
+            Subscriptions automatically renew unless cancelled at least 24 hours before the end of the current period. Manage or cancel your subscription in your{' '}
+            {Platform.OS === 'ios' ? 'Apple ID account settings' : 'Google Play account settings'}.
           </Text>
           <View style={{ flexDirection: 'row', justifyContent: 'center', gap: SPACING.md }}>
             <AnimatedPressable
