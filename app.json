@@ -5,15 +5,15 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
-    "icon": "./assets/images/7d3cd0e7-628d-449f-8ee2-5c591bcc1615.jpeg",
+    "icon": "./assets/images/exec-0a00147c-c39f-43da-a823-407497c52f8a.png",
     "splash": {
-      "image": "./assets/images/7d3cd0e7-628d-449f-8ee2-5c591bcc1615.jpeg",
+      "image": "./assets/images/exec-0a00147c-c39f-43da-a823-407497c52f8a.png",
       "resizeMode": "contain",
       "backgroundColor": "#0B1220"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/7d3cd0e7-628d-449f-8ee2-5c591bcc1615.jpeg",
+        "foregroundImage": "./assets/images/exec-0a00147c-c39f-43da-a823-407497c52f8a.png",
         "backgroundColor": "#0B1220"
       },
       "package": "com.northstarrevenue.proofloopverify",
