@@ -17,6 +17,7 @@ import {
   trackAccountCreated,
   trackSignedIn,
 } from '@/services/analytics';
+import { syncPurchasesUser } from '@/lib/purchases';
 
 const GUEST_MODE_KEY = '@invisiproof_guest_mode';
 const PROFILE_REFRESH_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
@@ -282,6 +283,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     trackSignedIn();
     void data;
   }, []);
+
+  // Keep RevenueCat's app_user_id equal to the Supabase user id so the
+  // revenuecat-webhook can attach purchases to the right account.
+  useEffect(() => {
+    syncPurchasesUser(user?.id ?? null);
+  }, [user?.id]);
 
   const signOut = useCallback(async () => {
     console.log('[AuthContext] signOut called');
