@@ -126,6 +126,23 @@ Deno.serve(async (req) => {
 
     const userId = user.id;
 
+    const body = await req.json();
+
+    // Built-in AI: no user key means InvisiProof's own server key is used.
+    const usingBuiltInAi = !body.api_key;
+    if (usingBuiltInAi) {
+      const managedKey = Deno.env.get('INVISIPROOF_AI_KEY');
+      if (!managedKey) {
+        return new Response(JSON.stringify({ error: 'managed_ai_unavailable' }), {
+          status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      body.provider = Deno.env.get('INVISIPROOF_AI_PROVIDER') ?? 'openai';
+      body.api_key = managedKey;
+      body.model = Deno.env.get('INVISIPROOF_AI_MODEL') ?? undefined;
+      body.custom_base_url = undefined;
+    }
+
     // ── Quota enforcement ──────────────────────────────────────
     const { data: sub } = await adminClient
       .from('subscriptions')
@@ -154,6 +171,16 @@ Deno.serve(async (req) => {
     const used = usageRow?.direct_assessments_used ?? 0;
 
     if (used >= limit) {
+      if (usingBuiltInAi) {
+        return new Response(JSON.stringify({
+          error: 'quota_exceeded',
+          message: 'Monthly assessment limit reached.',
+          current_use: used,
+          limit,
+          reset_at: periodEnd,
+          upgrade_route: 'paywall',
+        }), { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      }
       return new Response(JSON.stringify({
         error: 'QUOTA_EXCEEDED',
         message: 'Monthly assessment limit reached.',
@@ -177,7 +204,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    const body = await req.json();
     const { scan_id, provider: rawProvider, model: rawModel, api_key: rawApiKey, custom_base_url: rawCustomUrl } = body;
 
     if (!scan_id) return new Response(JSON.stringify({ error: 'scan_id required' }), { status: 400, headers: corsHeaders });
@@ -275,7 +301,10 @@ Deno.serve(async (req) => {
       if (!aiResp.ok) {
         console.error('[analyze-scan] provider error:', aiResp.status);
         await adminClient.from('scans').update({ status: 'failed', analysis_error_code: 'provider_error', updated_at: new Date().toISOString() }).eq('id', scan_id);
-        return new Response(JSON.stringify({ error: 'provider_error', message: 'The AI provider returned an error. Check your API key and try again.' }), { status: 502, headers: corsHeaders });
+        const providerMessage = usingBuiltInAi
+          ? 'Analysis could not be completed. Please try again.'
+          : 'The AI provider returned an error. Check your API key and try again.';
+        return new Response(JSON.stringify({ error: 'provider_error', message: providerMessage }), { status: 502, headers: corsHeaders });
       }
 
       // Enforce response size limit (1MB)
