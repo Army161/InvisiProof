@@ -23,6 +23,9 @@ export interface ProofRequest {
   id: string;
   requester_id: string;
   share_code: string;
+  title?: string | null;
+  message?: string | null;
+  /** Derived from message/title by proofRequestService. */
   challenge: string;
   expires_at: string;
   status: 'pending' | 'completed' | 'expired' | 'cancelled' | 'responded' | 'failed';
