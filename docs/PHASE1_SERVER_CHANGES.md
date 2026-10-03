@@ -1,13 +1,19 @@
 # Phase 1 server changes (Supabase project "PROOF LOOP")
 
-The app changes on this branch depend on two server changes. The edge
-function source is not in this repo; it lives only in the Supabase
-dashboard. Both changes are applied there.
+The app changes on this branch depend on these server changes, applied in
+the Supabase dashboard. The live `analyze-scan` source is now kept in
+`supabase/functions/analyze-scan/index.ts`, with the built-in AI patch
+already applied there.
 
-## 1. Database: requester can read the verdict
+## 1. Database migrations
 
-Run `supabase/migrations/20261003000000_proof_request_result.sql` in the
-Supabase SQL editor. It adds `get_proof_request_result(p_request_id)`.
+Run these in the Supabase SQL editor, in this order. All three are additive.
+
+1. `20261003000000_proof_request_result.sql`: adds `get_proof_request_result(p_request_id)`.
+2. `20261003000100_submit_proof_response_scan_id.sql`: adds `proof_requests.response_scan_id` and makes `submit_proof_response` store it.
+3. `20261003000200_generate_proof_request_expiry.sql`: adds a `generate_proof_request(p_title, p_message, p_expires_in_hours)` overload. Until it runs, the app falls back to the live two-argument function, which always expires after 7 days.
+
+About `get_proof_request_result`:
 
 - Only the request's creator can call it, and only after a response arrives.
 - It returns the score, level, summary, warning signals and recommended
