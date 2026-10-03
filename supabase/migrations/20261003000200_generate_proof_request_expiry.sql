@@ -1,7 +1,7 @@
 -- The app lets the requester pick how long a Proof Request stays open
 -- (1 hour to 7 days). The live generate_proof_request(p_title, p_message)
 -- always uses 7 days. This adds an overload with p_expires_in_hours.
--- The existing two-argument function is left unchanged.
+-- The two-argument version is redefined below to use the same code format.
 create or replace function public.generate_proof_request(
   p_title text,
   p_message text,
@@ -48,3 +48,20 @@ $$;
 
 revoke all on function public.generate_proof_request(text, text, integer) from public, anon;
 grant execute on function public.generate_proof_request(text, text, integer) to authenticated;
+
+-- The live two-argument version made 8-character base64 codes that could
+-- contain '+', which the app's code entry rejects. proof_requests had no
+-- rows when this was written (2026-10-03), so no existing codes change.
+-- Route it through the overload above so every new code is 12 characters
+-- of A-Z and 0-9, keeping its 7-day expiry.
+create or replace function public.generate_proof_request(
+  p_title text,
+  p_message text
+)
+returns json
+language sql
+security definer
+set search_path = public, pg_temp
+as $$
+  select public.generate_proof_request(p_title, p_message, 168);
+$$;
