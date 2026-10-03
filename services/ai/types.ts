@@ -1,4 +1,4 @@
-export type InvisiProofProvider = 'local' | 'openai' | 'anthropic' | 'gemini' | 'grok' | 'custom';
+export type InvisiProofProvider = 'local' | 'openai' | 'anthropic' | 'gemini' | 'grok' | 'custom' | 'invisiproof';
 /** @deprecated Use InvisiProofProvider */
 export type InvisiProofProviderLegacy = InvisiProofProvider;
 

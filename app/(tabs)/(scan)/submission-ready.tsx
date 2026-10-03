@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { View, Text, Alert } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { ShieldCheck, CheckCircle } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppTheme } from '@/hooks/useAppTheme';
 import { triggerAnalysis } from '@/services/assessmentService';
+import { submitProofResponse } from '@/services/proofRequestService';
 import { TYPOGRAPHY, SPACING, RADIUS } from '@/constants/theme';
 import { InfoCard } from '@/components/InfoCard';
 import { PrimaryButton, SecondaryButton } from '@/components/PrimaryButton';
@@ -53,10 +54,15 @@ export default function SubmissionReadyScreen() {
     inputType: string;
     sourceType: string;
     createdAt: string;
+    proofRequestId?: string;
   }>();
+  const isProofResponse = !!params.proofRequestId;
 
   const [analysisLoading, setAnalysisLoading] = useState(false);
   const [analysisStarted, setAnalysisStarted] = useState(false);
+  const [sentToRequester, setSentToRequester] = useState(false);
+  // Lets a failed send be retried without analyzing the evidence twice.
+  const analyzedRef = useRef(false);
 
   const inputTypeLabel = mapInputType(params.inputType ?? '');
   const sourceTypeLabel = mapSourceType(params.sourceType ?? '');
@@ -67,39 +73,45 @@ export default function SubmissionReadyScreen() {
       console.log('[SubmissionReady] request analysis pressed but no scanId');
       return;
     }
-    console.log('[SubmissionReady] request analysis pressed, scanId:', params.scanId);
+    console.log('[SubmissionReady] request analysis pressed');
     setAnalysisLoading(true);
-    const result = await triggerAnalysis(params.scanId);
-    setAnalysisLoading(false);
+    const result = analyzedRef.current
+      ? { success: true as const, error: undefined }
+      : await triggerAnalysis(params.scanId);
     if (!result.success) {
+      setAnalysisLoading(false);
       const errMsg = result.error ?? 'Analysis could not be started.';
-      const isProviderError =
-        errMsg.includes('No API key configured') ||
-        errMsg.includes('Local analysis is not yet available') ||
-        errMsg.includes('Local analysis is coming soon');
-      if (isProviderError) {
-        console.log('[SubmissionReady] provider not configured, showing alert');
-        Alert.alert(
-          'Provider not configured',
-          errMsg,
-          [
-            { text: 'Cancel', style: 'cancel' },
-            {
-              text: 'Configure Provider',
-              onPress: () => {
-                console.log('[SubmissionReady] navigate to ai-provider from alert');
-                router.push('/(tabs)/(profile)/ai-provider');
-              },
-            },
-          ]
-        );
+      if (errMsg.includes('API key was rejected')) {
+        Alert.alert('Your API key was rejected', errMsg, [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Check AI Provider',
+            onPress: () => router.push('/(tabs)/(profile)/ai-provider'),
+          },
+        ]);
       } else {
         Alert.alert('Analysis failed', errMsg);
       }
-    } else {
-      console.log('[SubmissionReady] analysis started successfully');
-      setAnalysisStarted(true);
+      return;
     }
+    console.log('[SubmissionReady] analysis completed');
+    analyzedRef.current = true;
+
+    // When answering a Proof Request, send the verdict back to the requester.
+    if (params.proofRequestId) {
+      const response = await submitProofResponse(params.proofRequestId, params.scanId);
+      if (!response.success) {
+        setAnalysisLoading(false);
+        Alert.alert(
+          'Could not send to requester',
+          response.error ?? 'Your evidence was analyzed, but it could not be sent. Please try again.',
+        );
+        return;
+      }
+      setSentToRequester(true);
+    }
+    setAnalysisLoading(false);
+    setAnalysisStarted(true);
   };
 
   const handleViewInHistory = () => {
@@ -150,7 +162,11 @@ export default function SubmissionReadyScreen() {
           { color: colors.text, textAlign: 'center', marginBottom: SPACING.sm },
         ]}
       >
-        {analysisStarted ? 'Analysis Started' : 'Submission Ready'}
+        {sentToRequester
+          ? 'Sent to Requester'
+          : analysisStarted
+            ? 'Analysis Complete'
+            : isProofResponse ? 'Evidence Ready' : 'Submission Ready'}
       </Text>
 
       {/* Explanation */}
@@ -165,9 +181,13 @@ export default function SubmissionReadyScreen() {
           },
         ]}
       >
-        {analysisStarted
-          ? 'Your content is being analyzed. Check the History tab in a moment to see your results.'
-          : 'Your content was privately saved. Request an AI analysis now, or find it later in your scan history.'}
+        {sentToRequester
+          ? 'Your evidence was checked privately. The requester sees the verdict and score, not your files.'
+          : analysisStarted
+            ? 'Your results are ready in the History tab.'
+            : isProofResponse
+              ? 'Your evidence was privately saved. Submit it to have it checked and send the verdict to the requester.'
+              : 'Your content was privately saved. Request an AI analysis now, or find it later in your scan history.'}
       </Text>
 
       {/* Summary card */}
@@ -228,7 +248,7 @@ export default function SubmissionReadyScreen() {
       <View style={{ gap: SPACING.sm }}>
         {!analysisStarted ? (
           <PrimaryButton
-            title="Request Analysis Now"
+            title={isProofResponse ? 'Check and Send Verdict' : 'Request Analysis Now'}
             onPress={handleRequestAnalysis}
             loading={analysisLoading}
           />

@@ -10,7 +10,7 @@ import {
   Linking,
   Platform,
 } from 'react-native';
-import { useRouter, useNavigation } from 'expo-router';
+import { useRouter, useNavigation, useLocalSearchParams } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import type { ImagePickerAsset } from 'expo-image-picker';
 import { Camera, ImageIcon, X, RefreshCw } from 'lucide-react-native';
@@ -30,6 +30,7 @@ export default function ScanScreenshotScreen() {
   const navigation = useNavigation();
   const { user, isGuest } = useAuth();
   const { stage, stageLabel, error, submitImage, reset } = useSubmitScan();
+  const { proofRequestId } = useLocalSearchParams<{ proofRequestId?: string }>();
 
   const [preparedImage, setPreparedImage] = useState<PreparedImage | null>(null);
   const [isPreparing, setIsPreparing] = useState(false);
@@ -253,9 +254,11 @@ export default function ScanScreenshotScreen() {
       router.push({
         pathname: '/(tabs)/(scan)/submission-ready',
         params: {
+          scanId: scan.id,
           inputType: scan.input_type,
           sourceType: scan.source_type,
           createdAt: scan.created_at,
+          ...(proofRequestId ? { proofRequestId } : {}),
         },
       });
     }

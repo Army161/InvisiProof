@@ -5,6 +5,7 @@ export default function RequestsLayout() {
     <Stack screenOptions={{ headerShown: true }}>
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="create-request" options={{ title: 'New Proof Request', headerBackTitle: 'Requests' }} />
+      <Stack.Screen name="verdict" options={{ title: 'Proof Verdict', headerBackTitle: 'Requests' }} />
     </Stack>
   );
 }

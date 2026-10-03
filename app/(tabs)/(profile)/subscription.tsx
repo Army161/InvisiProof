@@ -56,9 +56,9 @@ const PLANS: PlanConfig[] = [
     annualProductId: '',
     features: [
       '2 assessments / month',
-      '1 Proof Request / month',
+      'Proof Requests on paid plans',
       '7-day scan history',
-      'Device-generated analysis',
+      'Built-in AI analysis',
     ],
   },
   {
@@ -75,7 +75,7 @@ const PLANS: PlanConfig[] = [
       '25 assessments / month',
       '8 Proof Requests / month',
       '90-day scan history',
-      'Device-generated analysis',
+      'Built-in AI analysis',
     ],
   },
   {
@@ -92,7 +92,7 @@ const PLANS: PlanConfig[] = [
       '150 assessments / month',
       '50 Proof Requests / month',
       'Unlimited scan history',
-      'Server-verified analysis',
+      'Built-in AI analysis',
     ],
     popular: true,
   },
@@ -110,7 +110,7 @@ const PLANS: PlanConfig[] = [
       'Fair-use unlimited assessments',
       '250 Proof Requests / month',
       'Unlimited scan history',
-      'Server-verified analysis',
+      'Built-in AI analysis',
     ],
   },
 ];

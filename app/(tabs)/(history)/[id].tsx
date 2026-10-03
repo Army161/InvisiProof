@@ -222,14 +222,11 @@ export default function ScanDetailScreen() {
     setTriggerLoading(false);
     if (!result.success) {
       const errMsg = result.error ?? 'Analysis could not be started.';
-      const isProviderError =
-        errMsg.includes('No API key configured') ||
-        errMsg.includes('Local analysis is not yet available') ||
-        errMsg.includes('Local analysis is coming soon');
+      const isProviderError = errMsg.includes('API key was rejected');
       if (isProviderError) {
-        console.log('[ScanDetailScreen] provider not configured, showing alert');
+        console.log('[ScanDetailScreen] own API key rejected, showing alert');
         Alert.alert(
-          'Provider not configured',
+          'Your API key was rejected',
           errMsg,
           [
             { text: 'Cancel', style: 'cancel' },

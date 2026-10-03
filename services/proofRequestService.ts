@@ -88,3 +88,29 @@ export async function submitProofResponse(requestId: string, scanId: string): Pr
   console.log('[proofRequestService] submitProofResponse success');
   return { success: true };
 }
+
+export interface ProofRequestVerdict {
+  risk_level: 'low' | 'moderate' | 'high' | 'critical' | 'inconclusive';
+  risk_score: number;
+  summary: string;
+  warning_signals: string[];
+  recommended_actions: string[];
+  responded_at: string | null;
+  completed_at: string | null;
+}
+
+/**
+ * Fetches the verdict for a Proof Request the signed-in user created.
+ * Returns only the assessment, never the respondent's evidence.
+ */
+export async function fetchProofRequestVerdict(requestId: string): Promise<ProofRequestVerdict | null> {
+  console.log('[proofRequestService] fetchProofRequestVerdict called');
+  const { data, error } = await supabase
+    .rpc('get_proof_request_result', { p_request_id: requestId });
+
+  if (error || !data || data.error) {
+    console.log('[proofRequestService] fetchProofRequestVerdict failed or not ready');
+    return null;
+  }
+  return data as ProofRequestVerdict;
+}
