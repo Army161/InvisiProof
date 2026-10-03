@@ -26,7 +26,7 @@ const HEADLINES: Record<PaywallTrigger, string> = {
 const FEATURE_BULLETS = [
   'More assessments every month',
   'More Proof Requests',
-  'Server-verified analysis',
+  'Longer scan history',
 ];
 
 export function PaywallModal({ visible, onClose, trigger = 'generic' }: PaywallModalProps) {

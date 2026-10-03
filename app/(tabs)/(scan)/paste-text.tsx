@@ -84,6 +84,7 @@ export default function PasteTextScreen() {
         router.push({
           pathname: '/(tabs)/(scan)/submission-ready',
           params: {
+            scanId: scan.id,
             inputType: scan.input_type,
             sourceType: scan.source_type,
             createdAt: scan.created_at,
@@ -104,6 +105,7 @@ export default function PasteTextScreen() {
         router.push({
           pathname: '/(tabs)/(scan)/submission-ready',
           params: {
+            scanId: scan.id,
             inputType: scan.input_type,
             sourceType: scan.source_type,
             createdAt: scan.created_at,

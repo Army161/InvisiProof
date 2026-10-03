@@ -57,11 +57,12 @@ export default function EnterProofCodeScreen() {
   const [authModalVisible, setAuthModalVisible] = useState(false);
 
   const isAuthenticated = !!user;
-  const codeClean = code.toUpperCase().replace(/[^A-Z0-9]/g, '');
-  const isValidCode = codeClean.length === 12;
+  // New codes are 12 letters and digits. Older 8-character codes may contain '+'.
+  const codeClean = code.toUpperCase().replace(/[^A-Z0-9+]/g, '');
+  const isValidCode = codeClean.length === 12 || codeClean.length === 8;
 
   const handleCodeChange = (text: string) => {
-    const cleaned = text.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12);
+    const cleaned = text.toUpperCase().replace(/[^A-Z0-9+]/g, '').slice(0, 12);
     setCode(cleaned);
     if (foundRequest) setFoundRequest(null);
     if (lookupError) setLookupError(null);
@@ -95,10 +96,10 @@ export default function EnterProofCodeScreen() {
   const handleSubmitEvidence = () => {
     if (!foundRequest) return;
     console.log('[EnterProofCodeScreen] submit evidence pressed');
-    // Navigate to scan screenshot with request ID as param
+    // Navigate to scan screenshot with the request ID and code as params
     router.push({
       pathname: '/(tabs)/(scan)/scan-screenshot',
-      params: { proofRequestId: foundRequest.id },
+      params: { proofRequestId: foundRequest.id, proofCode: codeClean },
     } as any);
   };
 
@@ -143,7 +144,7 @@ export default function EnterProofCodeScreen() {
         >
           {/* Description */}
           <Text style={[TYPOGRAPHY.body, { color: colors.textSecondary }]}>
-            Enter a 12-character proof code to respond to a verification request from another InvisiProof user.
+            Enter the proof code you were sent to respond to a verification request from another InvisiProof user.
           </Text>
 
           {/* Code input */}

@@ -3,43 +3,28 @@ import type { AssessmentResult } from '@/types/scan';
 import {
   loadActiveProvider,
   loadCredential,
-  isLocalAvailable,
-  getLocalUnavailableReason,
   runCloudAnalysis,
 } from '@/services/ai';
 
 export async function triggerAnalysis(
   scanId: string,
 ): Promise<{ success: boolean; error?: string }> {
-  console.log('[assessmentService] triggerAnalysis called, scanId:', scanId);
+  console.log('[assessmentService] triggerAnalysis called');
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) return { success: false, error: 'Your session has expired. Please sign in again.' };
 
   const activeProvider = await loadActiveProvider();
   console.log('[assessmentService] active provider:', activeProvider);
 
-  if (activeProvider === 'local') {
-    if (!isLocalAvailable()) {
-      const reason = getLocalUnavailableReason();
-      console.log('[assessmentService] local provider unavailable:', reason);
-      return { success: false, error: reason };
-    }
-    // Local path — not yet implemented
-    return { success: false, error: 'Local analysis is not yet available.' };
-  }
-
-  // Cloud BYOK path
-  const credential = await loadCredential(activeProvider);
-  if (!credential || !credential.apiKey) {
-    console.log('[assessmentService] no credential for provider:', activeProvider);
-    return {
-      success: false,
-      error: `No API key configured for ${activeProvider}. Go to Profile → AI Provider to add your key.`,
-    };
-  }
+  // A user's own key (BYOK) is used when one is selected and saved.
+  // Otherwise the scan runs on InvisiProof's built-in server AI.
+  const credential = activeProvider === 'local' || activeProvider === 'invisiproof'
+    ? null
+    : await loadCredential(activeProvider);
+  const useOwnKey = !!credential?.apiKey;
 
   try {
-    await runCloudAnalysis(scanId, credential);
+    await runCloudAnalysis(scanId, useOwnKey ? credential : null);
     console.log('[assessmentService] triggerAnalysis success');
     return { success: true };
   } catch (err: any) {
@@ -49,7 +34,7 @@ export async function triggerAnalysis(
 }
 
 export async function fetchAssessmentResult(scanId: string): Promise<AssessmentResult | null> {
-  console.log('[assessmentService] fetchAssessmentResult called, scanId:', scanId);
+  console.log('[assessmentService] fetchAssessmentResult called');
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) {
     console.log('[assessmentService] fetchAssessmentResult — no session');

@@ -93,14 +93,18 @@ function RequestRow({ request, userId, index, onCancel }: RequestRowProps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const router = useRouter();
   const isSender = request.requester_id === userId;
-  const challengePreview = request.challenge.length > 60
-    ? request.challenge.slice(0, 60) + '…'
-    : request.challenge;
+  const isAnswered = request.status === 'completed' || request.status === 'responded';
+  const hasVerdict = isSender && isAnswered;
+  const challengeText = request.challenge ?? '';
+  const challengePreview = challengeText.length > 60
+    ? challengeText.slice(0, 60) + '…'
+    : challengeText;
   const expiryText = formatExpiry(request.expires_at);
   const codeDisplay = truncateCode(request.share_code);
 
-  const statusColor = request.status === 'completed'
+  const statusColor = isAnswered
     ? colors.evidence
     : request.status === 'pending'
     ? colors.primary
@@ -108,7 +112,7 @@ function RequestRow({ request, userId, index, onCancel }: RequestRowProps) {
     ? colors.textTertiary
     : colors.danger;
 
-  const statusBg = request.status === 'completed'
+  const statusBg = isAnswered
     ? colors.evidenceMuted
     : request.status === 'pending'
     ? colors.primaryMuted
@@ -118,8 +122,8 @@ function RequestRow({ request, userId, index, onCancel }: RequestRowProps) {
 
   const statusLabel = request.status === 'pending'
     ? 'Pending'
-    : request.status === 'completed'
-    ? 'Completed'
+    : isAnswered
+    ? 'Answered'
     : request.status === 'expired'
     ? 'Expired'
     : 'Cancelled';
@@ -162,6 +166,13 @@ function RequestRow({ request, userId, index, onCancel }: RequestRowProps) {
       <AnimatedPressable
         onPress={() => {
           console.log('[RequestsScreen] request row pressed');
+          if (hasVerdict) {
+            router.push({
+              pathname: '/(tabs)/(requests)/verdict',
+              params: { requestId: request.id, challenge: challengeText },
+            });
+            return;
+          }
           setExpanded(e => !e);
         }}
         accessibilityRole="button"
@@ -203,6 +214,12 @@ function RequestRow({ request, userId, index, onCancel }: RequestRowProps) {
           <Text style={[TYPOGRAPHY.body, { color: colors.textSecondary }]} numberOfLines={expanded ? undefined : 2}>
             {challengePreview}
           </Text>
+
+          {hasVerdict ? (
+            <Text style={[TYPOGRAPHY.label, { color: colors.primary }]}>
+              View verdict →
+            </Text>
+          ) : null}
 
           {/* Expanded actions for sender */}
           {expanded && isSender ? (
@@ -369,7 +386,7 @@ export default function RequestsScreen() {
       return r.respondent_id === user.id;
     }
     if (activeSegment === 'completed') {
-      return r.requester_id === user.id && r.status === 'completed';
+      return r.requester_id === user.id && (r.status === 'completed' || r.status === 'responded');
     }
     if (activeSegment === 'expired') {
       return r.requester_id === user.id && (r.status === 'expired' || r.status === 'cancelled');
