@@ -36,9 +36,11 @@ begin
     || E'    RETURN json_build_object(''success'', false, ''error'', ''invalid_scan'');\n'
     || E'  END IF;\n\n  UPDATE public.proof_requests'
   );
-  v_new := replace(
+  -- The live definition pads the column name (status       = 'responded'),
+  -- so match any whitespace around '='.
+  v_new := regexp_replace(
     v_new,
-    'status = ''responded'',',
+    'status\s*=\s*''responded'',',
     'status = ''responded'', response_scan_id = p_scan_id,'
   );
 
