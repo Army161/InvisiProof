@@ -73,17 +73,21 @@ export async function lookupProofRequestByCode(code: string): Promise<{
   return data[0];
 }
 
-export async function submitProofResponse(requestId: string, scanId: string): Promise<{ success: boolean; error?: string }> {
+const SUBMIT_ERROR_MESSAGES: Record<string, string> = {
+  invalid_scan: 'This evidence could not be matched to your account. Please scan it again.',
+};
+
+export async function submitProofResponse(shareCode: string, scanId: string): Promise<{ success: boolean; error?: string }> {
   console.log('[proofRequestService] submitProofResponse called');
   const { data, error } = await supabase
-    .rpc('submit_proof_response', { p_request_id: requestId, p_scan_id: scanId });
+    .rpc('submit_proof_response', { p_code: shareCode.toUpperCase().trim(), p_scan_id: scanId });
 
   if (error) {
     console.log('[proofRequestService] submitProofResponse RPC error');
     return { success: false, error: 'Could not submit your response. Please try again.' };
   }
   if (data?.error) {
-    return { success: false, error: data.error };
+    return { success: false, error: SUBMIT_ERROR_MESSAGES[data.error] ?? data.error };
   }
   console.log('[proofRequestService] submitProofResponse success');
   return { success: true };

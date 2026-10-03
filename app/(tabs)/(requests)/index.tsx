@@ -97,9 +97,10 @@ function RequestRow({ request, userId, index, onCancel }: RequestRowProps) {
   const isSender = request.requester_id === userId;
   const isAnswered = request.status === 'completed' || request.status === 'responded';
   const hasVerdict = isSender && isAnswered;
-  const challengePreview = request.challenge.length > 60
-    ? request.challenge.slice(0, 60) + '…'
-    : request.challenge;
+  const challengeText = request.challenge ?? '';
+  const challengePreview = challengeText.length > 60
+    ? challengeText.slice(0, 60) + '…'
+    : challengeText;
   const expiryText = formatExpiry(request.expires_at);
   const codeDisplay = truncateCode(request.share_code);
 
@@ -168,7 +169,7 @@ function RequestRow({ request, userId, index, onCancel }: RequestRowProps) {
           if (hasVerdict) {
             router.push({
               pathname: '/(tabs)/(requests)/verdict',
-              params: { requestId: request.id, challenge: request.challenge },
+              params: { requestId: request.id, challenge: challengeText },
             });
             return;
           }

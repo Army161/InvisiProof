@@ -55,8 +55,9 @@ export default function SubmissionReadyScreen() {
     sourceType: string;
     createdAt: string;
     proofRequestId?: string;
+    proofCode?: string;
   }>();
-  const isProofResponse = !!params.proofRequestId;
+  const isProofResponse = !!params.proofRequestId && !!params.proofCode;
 
   const [analysisLoading, setAnalysisLoading] = useState(false);
   const [analysisStarted, setAnalysisStarted] = useState(false);
@@ -98,8 +99,8 @@ export default function SubmissionReadyScreen() {
     analyzedRef.current = true;
 
     // When answering a Proof Request, send the verdict back to the requester.
-    if (params.proofRequestId) {
-      const response = await submitProofResponse(params.proofRequestId, params.scanId);
+    if (isProofResponse && params.proofCode) {
+      const response = await submitProofResponse(params.proofCode, params.scanId);
       if (!response.success) {
         setAnalysisLoading(false);
         Alert.alert(

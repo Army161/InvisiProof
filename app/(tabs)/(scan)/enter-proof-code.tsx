@@ -95,10 +95,10 @@ export default function EnterProofCodeScreen() {
   const handleSubmitEvidence = () => {
     if (!foundRequest) return;
     console.log('[EnterProofCodeScreen] submit evidence pressed');
-    // Navigate to scan screenshot with request ID as param
+    // Navigate to scan screenshot with the request ID and code as params
     router.push({
       pathname: '/(tabs)/(scan)/scan-screenshot',
-      params: { proofRequestId: foundRequest.id },
+      params: { proofRequestId: foundRequest.id, proofCode: codeClean },
     } as any);
   };
 

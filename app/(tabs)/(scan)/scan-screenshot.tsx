@@ -30,7 +30,7 @@ export default function ScanScreenshotScreen() {
   const navigation = useNavigation();
   const { user, isGuest } = useAuth();
   const { stage, stageLabel, error, submitImage, reset } = useSubmitScan();
-  const { proofRequestId } = useLocalSearchParams<{ proofRequestId?: string }>();
+  const { proofRequestId, proofCode } = useLocalSearchParams<{ proofRequestId?: string; proofCode?: string }>();
 
   const [preparedImage, setPreparedImage] = useState<PreparedImage | null>(null);
   const [isPreparing, setIsPreparing] = useState(false);
@@ -258,7 +258,7 @@ export default function ScanScreenshotScreen() {
           inputType: scan.input_type,
           sourceType: scan.source_type,
           createdAt: scan.created_at,
-          ...(proofRequestId ? { proofRequestId } : {}),
+          ...(proofRequestId && proofCode ? { proofRequestId, proofCode } : {}),
         },
       });
     }
