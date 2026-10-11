@@ -25,6 +25,7 @@ import {
   Shield,
   Cpu,
   Cloud,
+  BadgeCheck,
 } from 'lucide-react-native';
 import { useAppTheme } from '@/hooks/useAppTheme';
 import { useAuth } from '@/contexts/AuthContext';
@@ -617,6 +618,25 @@ export default function ScanDetailScreen() {
                   </View>
                 ))}
               </View>
+            </InfoCard>
+          ) : null}
+
+          {/* Original ProofLoop next step: make the seller prove it */}
+          {!scan.proof_request_id ? (
+            <InfoCard style={{ gap: SPACING.sm, borderColor: colors.primary, borderWidth: 1 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.sm }}>
+                <BadgeCheck size={18} color={colors.primary} />
+                <Text style={[TYPOGRAPHY.h3, { color: colors.text }]}>
+                  About to pay?
+                </Text>
+              </View>
+              <Text style={[TYPOGRAPHY.body, { color: colors.textSecondary }]}>
+                Make the seller prove they have it first. They get a random live camera challenge and you get a Proof Receipt.
+              </Text>
+              <PrimaryButton
+                title="Request verification before I pay"
+                onPress={() => router.push('/(tabs)/(requests)/create-request')}
+              />
             </InfoCard>
           ) : null}
 

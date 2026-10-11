@@ -38,6 +38,7 @@ export async function runCloudAnalysis(
   if (!response.ok) {
     const json = await response.json().catch(() => ({}));
     console.log('[cloudProvider] runCloudAnalysis failed, status:', response.status);
+    if (json.error === 'challenge_invalid') throw new Error('This challenge has closed or the 10 minutes ran out.');
     if (response.status === 429) throw new Error('Analysis limit reached. Please try again later.');
     if (response.status === 409) throw new Error('This scan is already being analyzed.');
     if (json.error === 'managed_ai_unavailable') throw new Error('Built-in analysis is temporarily unavailable. Please try again later.');

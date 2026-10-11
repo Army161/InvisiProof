@@ -8,8 +8,9 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ShieldCheck } from 'lucide-react-native';
+import { ShieldCheck, ScanSearch, Camera, ReceiptText } from 'lucide-react-native';
 import { useAuth } from '@/contexts/AuthContext';
+import { APP_CONFIG } from '@/config/app';
 import { TYPOGRAPHY, SPACING, RADIUS } from '@/constants/theme';
 import { AnimatedPressable } from '@/components/AnimatedPressable';
 
@@ -63,7 +64,7 @@ export default function WelcomeScreen() {
         <ShieldCheck size={64} color={TEAL} />
         <View style={{ alignItems: 'center', gap: SPACING.sm }}>
           <Text style={[TYPOGRAPHY.display, { color: WHITE, textAlign: 'center' }]}>
-            InvisiProof
+            {APP_CONFIG.name}
           </Text>
           <Text
             style={[
@@ -71,22 +72,29 @@ export default function WelcomeScreen() {
               { color: TEAL, textAlign: 'center', fontWeight: '500' },
             ]}
           >
-            Verify before you trust, meet, or pay.
+            {APP_CONFIG.tagline}
           </Text>
         </View>
         <Text
           style={[
-            TYPOGRAPHY.body,
-            {
-              color: SLATE,
-              textAlign: 'center',
-              maxWidth: 320,
-              lineHeight: 24,
-            },
+            TYPOGRAPHY.h2,
+            { color: WHITE, textAlign: 'center', maxWidth: 320 },
           ]}
         >
-          Create a private account to securely save reports, manage proof requests, and access your information across devices.
+          {APP_CONFIG.pitch}
         </Text>
+        <View style={{ gap: SPACING.md, alignSelf: 'center', maxWidth: 360, width: '100%' }}>
+          {[
+            { icon: ScanSearch, text: 'Upload the listing and see the red flags.' },
+            { icon: Camera, text: 'Make the seller prove they have it with a live camera challenge.' },
+            { icon: ReceiptText, text: 'Get a Proof Receipt before you send a deposit.' },
+          ].map(({ icon: Icon, text }) => (
+            <View key={text} style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.md }}>
+              <Icon size={22} color={TEAL} />
+              <Text style={[TYPOGRAPHY.body, { color: SLATE, flex: 1 }]}>{text}</Text>
+            </View>
+          ))}
+        </View>
       </View>
 
       {/* Actions */}

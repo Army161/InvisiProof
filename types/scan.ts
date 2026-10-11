@@ -35,6 +35,11 @@ export interface ProofRequest {
   completed_at?: string | null;
   cancelled_at?: string | null;
   analysis_requirement?: 'local_or_cloud' | 'server_verified_cloud';
+  /** The seller's random live challenge, set when they open the request. */
+  live_challenge?: { phrase: string; object: string; angle: string } | null;
+  challenge_opened_at?: string | null;
+  challenge_deadline?: string | null;
+  receipt_expires_at?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -78,6 +83,8 @@ export interface Scan {
   analysis_completed_at?: string | null;
   analysis_error_code?: string | null;
   analysis_attempt_count?: number;
+  /** Set when this photo answers a buyer's live challenge. */
+  proof_request_id?: string | null;
   created_at: string;
   updated_at: string;
 }

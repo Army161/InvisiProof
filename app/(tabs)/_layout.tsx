@@ -50,6 +50,8 @@ export default function TabLayout() {
     !pathname.includes('/terms-of-use') &&
     !pathname.includes('/create-request') &&
     !pathname.includes('/respond-to-request') &&
+    !pathname.includes('/challenge') &&
+    !pathname.includes('/receipt') &&
     !/\/\(history\)\/[^/]+$/.test(pathname);
 
   return (

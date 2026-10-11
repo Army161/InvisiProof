@@ -8,7 +8,7 @@ export default function ScanLayout() {
         name="scan-screenshot"
         options={{
           headerShown: true,
-          title: 'Scan Screenshot or Photo',
+          title: 'Scan a Listing',
           headerBackTitle: 'Scan',
         }}
       />
@@ -16,7 +16,7 @@ export default function ScanLayout() {
         name="paste-text"
         options={{
           headerShown: true,
-          title: 'Paste Text or Link',
+          title: 'Paste a Link or Message',
           headerBackTitle: 'Scan',
         }}
       />
@@ -24,8 +24,16 @@ export default function ScanLayout() {
         name="enter-proof-code"
         options={{
           headerShown: true,
-          title: 'Enter Proof Code',
+          title: 'Answer a Buyer',
           headerBackTitle: 'Scan',
+        }}
+      />
+      <Stack.Screen
+        name="challenge"
+        options={{
+          headerShown: true,
+          title: 'Live Challenge',
+          gestureEnabled: false,
         }}
       />
       <Stack.Screen

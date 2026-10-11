@@ -24,9 +24,7 @@ import {
 } from 'lucide-react-native';
 import { useAppTheme } from '@/hooks/useAppTheme';
 import { useAuth } from '@/contexts/AuthContext';
-import { useSubscription } from '@/hooks/useSubscription';
-import { usePaywall } from '@/contexts/PaywallContext';
-import { fetchMyRequests, cancelProofRequest } from '@/services/proofRequestService';
+import { fetchMyRequests, cancelProofRequest, verificationShareMessage } from '@/services/proofRequestService';
 import { TYPOGRAPHY, SPACING, RADIUS, SHADOWS } from '@/constants/theme';
 import { EmptyStateCard } from '@/components/EmptyStateCard';
 import { AnimatedPressable } from '@/components/AnimatedPressable';
@@ -38,9 +36,9 @@ import type { ProofRequest } from '@/types/scan';
 type Segment = 'sent' | 'received' | 'completed' | 'expired';
 
 const SEGMENTS: { key: Segment; label: string }[] = [
-  { key: 'sent', label: 'Sent' },
-  { key: 'received', label: 'Received' },
-  { key: 'completed', label: 'Completed' },
+  { key: 'sent', label: 'Waiting' },
+  { key: 'received', label: 'Answered' },
+  { key: 'completed', label: 'Receipts' },
   { key: 'expired', label: 'Expired' },
 ];
 
@@ -49,10 +47,10 @@ const EMPTY_STATES: Record<Segment, {
   title: string;
   subtitle: string;
 }> = {
-  sent: { icon: Send, title: 'No sent requests', subtitle: 'Requests you create will appear here.' },
-  received: { icon: Inbox, title: 'No received requests', subtitle: 'Requests sent to your code will appear here.' },
-  completed: { icon: CheckCircle, title: 'No completed requests', subtitle: 'Completed verification requests will appear here.' },
-  expired: { icon: Clock, title: 'No expired requests', subtitle: 'Expired or cancelled requests will appear here.' },
+  sent: { icon: Send, title: 'No open requests', subtitle: 'Buying something? Make the seller prove they have it before you pay.' },
+  received: { icon: Inbox, title: 'Nothing answered yet', subtitle: 'Challenges you answer as a seller appear here.' },
+  completed: { icon: CheckCircle, title: 'No Proof Receipts yet', subtitle: 'When a seller answers your challenge, their Proof Receipt appears here.' },
+  expired: { icon: Clock, title: 'No expired requests', subtitle: 'Expired or cancelled requests appear here.' },
 };
 
 const STATUS_COLORS: Record<string, { bg: string; text: string }> = {};
@@ -97,11 +95,21 @@ function RequestRow({ request, userId, index, onCancel }: RequestRowProps) {
   const isSender = request.requester_id === userId;
   const isAnswered = request.status === 'completed' || request.status === 'responded';
   const hasVerdict = isSender && isAnswered;
-  const challengeText = request.challenge ?? '';
+  const challengeText = request.title || request.challenge || '';
   const challengePreview = challengeText.length > 60
     ? challengeText.slice(0, 60) + '…'
     : challengeText;
-  const expiryText = formatExpiry(request.expires_at);
+  const now = Date.now();
+  const challengeOpened = !!request.challenge_deadline;
+  const challengeTimedOut = request.status === 'pending' && challengeOpened
+    && new Date(request.challenge_deadline!).getTime() < now;
+  const receiptExpired = isAnswered && !!request.receipt_expires_at
+    && new Date(request.receipt_expires_at).getTime() < now;
+  const expiryText = isAnswered
+    ? (request.receipt_expires_at
+      ? (receiptExpired ? 'Receipt expired' : `Receipt ${formatExpiry(request.receipt_expires_at).replace('Expires', 'expires')}`)
+      : '')
+    : formatExpiry(request.expires_at);
   const codeDisplay = truncateCode(request.share_code);
 
   const statusColor = isAnswered
@@ -120,10 +128,12 @@ function RequestRow({ request, userId, index, onCancel }: RequestRowProps) {
     ? 'rgba(148,163,184,0.12)'
     : colors.dangerMuted;
 
-  const statusLabel = request.status === 'pending'
-    ? 'Pending'
+  const statusLabel = challengeTimedOut
+    ? 'Seller ran out of time'
+    : request.status === 'pending'
+    ? (challengeOpened ? 'Seller is answering' : 'Waiting for seller')
     : isAnswered
-    ? 'Answered'
+    ? (isSender ? 'Proof received' : 'You answered')
     : request.status === 'expired'
     ? 'Expired'
     : 'Cancelled';
@@ -131,14 +141,14 @@ function RequestRow({ request, userId, index, onCancel }: RequestRowProps) {
   const handleCopyCode = () => {
     console.log('[RequestsScreen] copy code pressed');
     Clipboard.setString(request.share_code);
-    Alert.alert('Copied', 'Share code copied to clipboard.');
+    Alert.alert('Copied', 'Proof code copied.');
   };
 
   const handleShare = async () => {
     console.log('[RequestsScreen] share code pressed');
     try {
       await Share.share({
-        message: `Use this InvisiProof code to submit evidence: ${request.share_code}\n\nChallenge: ${request.challenge}`,
+        message: verificationShareMessage(challengeText, request.share_code),
       });
     } catch {
       console.log('[RequestsScreen] share failed');
@@ -149,7 +159,7 @@ function RequestRow({ request, userId, index, onCancel }: RequestRowProps) {
     console.log('[RequestsScreen] cancel request pressed');
     Alert.alert(
       'Cancel this request?',
-      'The share code will no longer be usable.',
+      'The seller will no longer be able to use this code.',
       [
         { text: 'Keep it', style: 'cancel' },
         {
@@ -168,8 +178,8 @@ function RequestRow({ request, userId, index, onCancel }: RequestRowProps) {
           console.log('[RequestsScreen] request row pressed');
           if (hasVerdict) {
             router.push({
-              pathname: '/(tabs)/(requests)/verdict',
-              params: { requestId: request.id, challenge: challengeText },
+              pathname: '/(tabs)/(requests)/receipt',
+              params: { requestId: request.id },
             });
             return;
           }
@@ -217,7 +227,7 @@ function RequestRow({ request, userId, index, onCancel }: RequestRowProps) {
 
           {hasVerdict ? (
             <Text style={[TYPOGRAPHY.label, { color: colors.primary }]}>
-              View verdict →
+              {receiptExpired ? 'Receipt expired' : 'View Proof Receipt →'}
             </Text>
           ) : null}
 
@@ -291,7 +301,7 @@ function RequestRow({ request, userId, index, onCancel }: RequestRowProps) {
             <View style={{ marginTop: SPACING.xs }}>
               <Divider />
               <Text style={[TYPOGRAPHY.caption, { color: colors.textTertiary, marginTop: SPACING.sm }]}>
-                You responded to this request.
+                You answered this buyer's live challenge.
               </Text>
             </View>
           ) : null}
@@ -306,8 +316,6 @@ export default function RequestsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { user } = useAuth();
-  const { entitlement } = useSubscription();
-  const { showPaywall } = usePaywall();
 
   const [requests, setRequests] = useState<ProofRequest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -369,18 +377,14 @@ export default function RequestsScreen() {
   };
 
   const handleCreateRequest = () => {
-    console.log('[RequestsScreen] create request pressed, entitlement:', entitlement);
-    if (entitlement === 'free') {
-      showPaywall('proof_requests');
-      return;
-    }
+    console.log('[RequestsScreen] create request pressed');
     router.push('/(tabs)/(requests)/create-request');
   };
 
   const filteredRequests = requests.filter(r => {
     if (!user) return false;
     if (activeSegment === 'sent') {
-      return r.requester_id === user.id && r.status === 'pending';
+      return r.requester_id === user.id && r.status === 'pending' && new Date(r.expires_at) > new Date();
     }
     if (activeSegment === 'received') {
       return r.respondent_id === user.id;
@@ -389,7 +393,10 @@ export default function RequestsScreen() {
       return r.requester_id === user.id && (r.status === 'completed' || r.status === 'responded');
     }
     if (activeSegment === 'expired') {
-      return r.requester_id === user.id && (r.status === 'expired' || r.status === 'cancelled');
+      return r.requester_id === user.id && (
+        r.status === 'expired' || r.status === 'cancelled'
+        || (r.status === 'pending' && new Date(r.expires_at) <= new Date())
+      );
     }
     return false;
   });
@@ -412,7 +419,7 @@ export default function RequestsScreen() {
               Proof Requests
             </Text>
             <Text style={[TYPOGRAPHY.body, { color: colors.textSecondary }]}>
-              Request evidence from another person before continuing a transaction.
+              Make the seller prove it before you send money.
             </Text>
           </View>
           {isAuthenticated ? (
@@ -487,7 +494,7 @@ export default function RequestsScreen() {
           <EmptyStateCard
             icon={Send}
             title="Sign in to use requests"
-            subtitle="Create an account to send and receive proof requests."
+            subtitle="Create an account to send sellers a live challenge and get Proof Receipts."
             ctaLabel="Sign In"
             onCtaPress={() => {
               console.log('[RequestsScreen] sign in CTA pressed');
@@ -555,7 +562,7 @@ export default function RequestsScreen() {
           icon={emptyState.icon}
           title={emptyState.title}
           subtitle={emptyState.subtitle}
-          ctaLabel={activeSegment === 'sent' ? 'Create Request' : undefined}
+          ctaLabel={activeSegment === 'sent' ? 'Request Proof' : undefined}
           onCtaPress={activeSegment === 'sent' ? handleCreateRequest : undefined}
         />
       }

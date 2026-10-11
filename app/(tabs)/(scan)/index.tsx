@@ -9,6 +9,7 @@ import {
   KeyRound,
   ChevronRight,
   AlertCircle,
+  BadgeCheck,
 } from 'lucide-react-native';
 import { useAppTheme } from '@/hooks/useAppTheme';
 import { useAuth } from '@/contexts/AuthContext';
@@ -22,7 +23,7 @@ import { LegalDisclaimerCard } from '@/components/LegalDisclaimerCard';
 import { AnimatedPressable } from '@/components/AnimatedPressable';
 import { APP_CONFIG } from '@/config/app';
 
-const FREE_ASSESSMENT_LIMIT = 2;
+const FREE_ASSESSMENT_LIMIT = 3;
 
 function AnimatedListItem({ index, children }: { index: number; children: React.ReactNode }) {
   const opacity = useRef(new Animated.Value(0)).current;
@@ -157,6 +158,11 @@ export default function ScanScreen() {
     router.push('/(tabs)/(scan)/paste-text');
   };
 
+  const handleRequestProof = () => {
+    console.log('[ScanScreen] navigate to create-request');
+    router.push('/(tabs)/(requests)/create-request');
+  };
+
   const handleEnterProofCode = () => {
     console.log('[ScanScreen] navigate to enter-proof-code');
     router.push('/(tabs)/(scan)/enter-proof-code');
@@ -207,7 +213,7 @@ export default function ScanScreen() {
                 Free limit reached
               </Text>
               <Text style={[TYPOGRAPHY.caption, { color: colors.textSecondary }]}>
-                You've used your 2 free assessments this month. Upgrade to continue.
+                You've used your 3 free scans this month. Upgrade to keep scanning.
               </Text>
             </View>
             <AnimatedPressable
@@ -235,10 +241,10 @@ export default function ScanScreen() {
       {/* Hero */}
       <View style={{ paddingHorizontal: SPACING.md, paddingBottom: SPACING.lg }}>
         <Text style={[TYPOGRAPHY.display, { color: colors.text, marginBottom: SPACING.sm }]}>
-          Check something suspicious
+          {APP_CONFIG.pitch}
         </Text>
         <Text style={[TYPOGRAPHY.body, { color: colors.textSecondary }]}>
-          Review screenshots, messages, listings, links, payment requests, and online offers for observable warning signals.
+          Check a Marketplace listing, rental or deposit request for red flags. Then make the seller prove they really have it.
         </Text>
       </View>
 
@@ -246,46 +252,58 @@ export default function ScanScreen() {
       <View style={{ paddingHorizontal: SPACING.md, gap: SPACING.sm, marginBottom: SPACING.xl }}>
         <ScanActionCard
           icon={Camera}
-          title="Scan screenshot or photo"
-          description="Review an image, listing, message, receipt, or payment request."
+          title="Scan a listing"
+          description="Screenshot the listing, chat or payment request and get a 0–100 risk score."
           onPress={handleScanScreenshot}
           index={0}
         />
         <ScanActionCard
           icon={Link}
-          title="Paste text or link"
-          description="Review a message, email, URL, offer, or written conversation."
+          title="Paste a link or message"
+          description="Paste the listing link or what the seller sent you."
           onPress={handlePasteText}
           index={1}
         />
         <ScanActionCard
-          icon={KeyRound}
-          title="Enter proof code"
-          description="Respond to a verification request sent by another InvisiProof user."
-          onPress={handleEnterProofCode}
+          icon={BadgeCheck}
+          title="Request verification before I pay"
+          description="Send the seller a live camera challenge that proves they have the item."
+          onPress={handleRequestProof}
           index={2}
+        />
+        <ScanActionCard
+          icon={KeyRound}
+          title="Selling? Enter a proof code"
+          description="A buyer sent you a code. Answer their challenge to show you have the item."
+          onPress={handleEnterProofCode}
+          index={3}
         />
       </View>
 
       {/* How it works */}
       <View style={{ paddingHorizontal: SPACING.md, marginBottom: SPACING.xl }}>
-        <SectionHeader title="How InvisiProof works" />
+        <SectionHeader title="How it works" />
         <InfoCard>
           {[
             {
               num: '1',
-              title: 'Submit suspicious content',
-              desc: 'Share a screenshot, text, link, or message for review.',
+              title: 'Upload the listing',
+              desc: 'A screenshot, link or message from the seller.',
             },
             {
               num: '2',
-              title: 'Review observable risk signals',
-              desc: 'InvisiProof identifies patterns associated with fraud, scams, and deception.',
+              title: 'Check the risks',
+              desc: 'See a 0–100 risk score and the red flags we found.',
             },
             {
               num: '3',
-              title: 'Request additional proof',
-              desc: 'Ask the other party to verify their identity or claims before you proceed.',
+              title: 'Make the seller prove it',
+              desc: 'They get a random live challenge: a code word, an object and a camera angle, with 10 minutes to answer.',
+            },
+            {
+              num: '4',
+              title: 'Get your Proof Receipt',
+              desc: 'See what they proved before you pay. The receipt expires after 24 hours.',
             },
           ].map((step, i) => (
             <View key={step.num}>
@@ -324,6 +342,9 @@ export default function ScanScreen() {
             </View>
           ))}
         </InfoCard>
+        <Text style={[TYPOGRAPHY.caption, { color: colors.textTertiary, textAlign: 'center', marginTop: SPACING.md }]}>
+          Built for Marketplace electronics, rentals and vehicle deposits.
+        </Text>
       </View>
 
       {/* Legal disclaimer */}
