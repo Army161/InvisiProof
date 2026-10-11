@@ -134,9 +134,13 @@ In addition to the usual fields, include:
 }`;
 }
 
-function cleanChallengeChecks(raw: unknown): Record<string, boolean | string> {
+// Each challenge allows a few photo attempts, so a seller can retake a bad
+// photo without being able to run unlimited analyses on InvisiProof's key.
+const MAX_CHALLENGE_PHOTOS = 3;
+
+function cleanChallengeChecks(raw: unknown, scanId: string): Record<string, boolean | string> {
   const src = (raw && typeof raw === 'object') ? raw as Record<string, unknown> : {};
-  const out: Record<string, boolean | string> = {};
+  const out: Record<string, boolean | string> = { scan_id: scanId };
   for (const key of ['item_visible', 'phrase_visible', 'phrase_matches', 'object_visible', 'angle_matches', 'looks_live']) {
     out[key] = src[key] === true;
   }
@@ -187,6 +191,14 @@ Deno.serve(async (req) => {
           .eq('id', peek.proof_request_id).maybeSingle();
         const inTime = pr?.challenge_deadline && new Date(peek.created_at) <= new Date(pr.challenge_deadline);
         if (!pr || pr.respondent_id !== userId || pr.status !== 'pending' || !pr.challenge || !inTime) {
+          return new Response(JSON.stringify({ error: 'challenge_invalid' }), {
+            status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+        const { count: photoCount } = await adminClient
+          .from('scans').select('id', { count: 'exact', head: true })
+          .eq('proof_request_id', pr.id).eq('user_id', userId);
+        if ((photoCount ?? 0) > MAX_CHALLENGE_PHOTOS) {
           return new Response(JSON.stringify({ error: 'challenge_invalid' }), {
             status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           });
@@ -442,7 +454,7 @@ Deno.serve(async (req) => {
 
     if (challengeRequest) {
       const { error: checksError } = await adminClient.from('proof_requests')
-        .update({ challenge_checks: cleanChallengeChecks(parsed.challenge_checks) })
+        .update({ challenge_checks: cleanChallengeChecks(parsed.challenge_checks, scan_id) })
         .eq('id', challengeRequest.id);
       if (checksError) console.error('[analyze-scan] challenge checks error:', checksError.message);
     }

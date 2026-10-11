@@ -21,23 +21,42 @@ alter table public.scans
   add column if not exists proof_request_id uuid
   references public.proof_requests(id) on delete set null;
 
--- Challenge and receipt columns are written only by the functions below and
--- by analyze-scan (service role). Signed-in users can still cancel their own
--- requests through the existing update policy, but cannot fake a challenge.
+-- The response, challenge and receipt columns are written only by the
+-- security-definer functions (which run as the table owner) and by
+-- analyze-scan (service role). The existing update policy lets a requester
+-- update their own row, so without this a requester could mark their own
+-- request answered with someone else's scan id and read that scan's result
+-- through get_proof_request_result / get_proof_receipt. App users may only
+-- cancel a pending request.
 create or replace function public.guard_proof_challenge_columns()
 returns trigger
 language plpgsql
 as $$
 begin
-  if current_user in ('authenticated', 'anon') and (
-       new.challenge is distinct from old.challenge
+  if current_user not in ('authenticated', 'anon') then
+    return new;
+  end if;
+
+  if new.challenge is distinct from old.challenge
     or new.challenge_opened_at is distinct from old.challenge_opened_at
     or new.challenge_deadline is distinct from old.challenge_deadline
     or new.challenge_checks is distinct from old.challenge_checks
     or new.receipt_expires_at is distinct from old.receipt_expires_at
-  ) then
-    raise exception 'challenge fields are read-only';
+    or new.response_scan_id is distinct from old.response_scan_id
+    or new.respondent_id is distinct from old.respondent_id
+    or new.responded_at is distinct from old.responded_at
+    or new.requester_id is distinct from old.requester_id
+    or new.share_code is distinct from old.share_code
+  then
+    raise exception 'proof request response fields are read-only';
   end if;
+
+  if new.status is distinct from old.status
+    and not (old.status = 'pending' and new.status = 'cancelled')
+  then
+    raise exception 'proof requests can only be cancelled';
+  end if;
+
   return new;
 end;
 $$;
@@ -171,7 +190,11 @@ begin
   if v_scan.created_at > v_request.challenge_deadline then
     return jsonb_build_object('error', 'too_late');
   end if;
-  if not exists (select 1 from public.scan_assessments where scan_id = p_scan_id) then
+  -- analyze-scan stores the checks with the scan they came from. Only that
+  -- scan (the most recently analyzed one) can be sent, so the receipt's
+  -- checks and risk score always describe the same photo.
+  if not exists (select 1 from public.scan_assessments where scan_id = p_scan_id)
+     or (v_request.challenge_checks ->> 'scan_id') is distinct from p_scan_id::text then
     return jsonb_build_object('error', 'not_analyzed');
   end if;
 
@@ -240,6 +263,9 @@ begin
   end if;
 
   v_checks := coalesce(v_request.challenge_checks, '{}'::jsonb);
+  if (v_checks ->> 'scan_id') is distinct from v_request.response_scan_id::text then
+    v_checks := '{}'::jsonb;
+  end if;
   v_possession := case
     when (v_checks ->> 'item_visible')::boolean
      and (v_checks ->> 'phrase_matches')::boolean
