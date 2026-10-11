@@ -621,7 +621,7 @@ export default function ScanDetailScreen() {
             </InfoCard>
           ) : null}
 
-          {/* Original ProofLoop next step: make the seller prove it */}
+          {/* Next step: make the seller prove it */}
           {!scan.proof_request_id ? (
             <InfoCard style={{ gap: SPACING.sm, borderColor: colors.primary, borderWidth: 1 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.sm }}>

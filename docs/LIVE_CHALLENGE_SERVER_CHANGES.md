@@ -1,4 +1,4 @@
-# ProofLoop rebuild: server changes (Supabase project "PROOF LOOP")
+# Live challenge and Proof Receipt: server changes (Supabase project "PROOF LOOP")
 
 The live challenge and Proof Receipt screens need two server changes. Both
 are additive: existing scans, requests and the 1.0.3 app keep working.
@@ -40,7 +40,7 @@ version:
   the seller's monthly scans.
 - A challenge photo is refused (409 `challenge_invalid`) when the request is
   not the seller's, is closed, or the photo was uploaded after the deadline.
-- The Free plan goes from 2 to 3 scans a month, to match the original
-  ProofLoop pricing.
+- The Free plan goes from 2 to 3 scans a month, to match the July
+  launch pricing.
 
 No new secrets are needed.

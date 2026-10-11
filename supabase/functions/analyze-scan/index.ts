@@ -100,7 +100,7 @@ Respond ONLY with valid JSON in this exact shape:
 risk_level: low=no significant signals, moderate=some signals/caution, high=multiple/significant signals, critical=strong fraud indicators, inconclusive=cannot determine
 risk_score: 0=no risk, 100=maximum risk indicators observed`;
 
-// ── Live possession challenge (original ProofLoop flow) ──────
+// ── Live possession challenge ────────────────────────────────
 interface ChallengeRequest {
   id: string;
   requester_id: string;

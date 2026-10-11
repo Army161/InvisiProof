@@ -1,4 +1,4 @@
--- Original ProofLoop flow: the buyer sends a verification request, the seller
+-- Marketplace verification flow: the buyer sends a verification request, the seller
 -- opens it and only then gets a random live challenge (a code word to write
 -- down, a household object to place next to the item, and a camera angle).
 -- The seller has 10 minutes to take one camera photo. analyze-scan checks the

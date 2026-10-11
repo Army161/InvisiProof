@@ -160,7 +160,7 @@ export async function fetchProofRequestVerdict(requestId: string): Promise<Proof
   return data as ProofRequestVerdict;
 }
 
-// ── Original ProofLoop flow: verification request, live challenge, receipt ──
+// ── Verification request, live challenge, Proof Receipt ──
 
 /** How long the seller has to open the request. */
 export const VERIFICATION_REQUEST_HOURS = 48;
