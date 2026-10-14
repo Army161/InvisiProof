@@ -12,12 +12,12 @@ What it adds:
 - New columns on `proof_requests`: `challenge`, `challenge_opened_at`,
   `challenge_deadline`, `challenge_checks` and `receipt_expires_at`.
 - A new column `scans.proof_request_id`.
-- A trigger on `proof_requests` that lets app users only cancel a pending
-  request. They can't edit the status, the response columns
+- A trigger on `proof_requests` that lets app users only insert a blank
+  pending request and only cancel a pending request. They can't edit the status, the response columns
   (`response_scan_id`, `respondent_id`, `responded_at`), or the challenge
   and receipt columns. This also closes a hole that has been live since
-  Phase 1: through the requester update policy, a requester could point
-  their request at another user's scan and read that scan's result.
+  Phase 1: through the requester update or insert policy, a requester could
+  point a request at another user's scan and read that scan's result.
   The security-definer functions run as the table owner, so they are not
   affected. **Before running, check that the live `submit_proof_response`
   is security definer** (`select prosecdef from pg_proc where proname =
@@ -39,7 +39,7 @@ a stand-in schema. Cases covered:
 - buyer, seller and other-user access;
 - late photos;
 - expired receipts;
-- a requester trying to attach someone else's scan (blocked);
+- a requester trying to attach someone else's scan, by update or by insert (blocked);
 - cancel (still works);
 - sending an older photo (refused).
 

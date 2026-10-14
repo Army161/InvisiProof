@@ -26,14 +26,32 @@ alter table public.scans
 -- analyze-scan (service role). The existing update policy lets a requester
 -- update their own row, so without this a requester could mark their own
 -- request answered with someone else's scan id and read that scan's result
--- through get_proof_request_result / get_proof_receipt. App users may only
--- cancel a pending request.
+-- through get_proof_request_result / get_proof_receipt. The insert policy
+-- would allow the same thing on a new row. App users may only insert a
+-- blank pending request (the app uses generate_proof_request instead) and
+-- may only cancel a pending one.
 create or replace function public.guard_proof_challenge_columns()
 returns trigger
 language plpgsql
 as $$
 begin
   if current_user not in ('authenticated', 'anon') then
+    return new;
+  end if;
+
+  if tg_op = 'INSERT' then
+    if new.status is distinct from 'pending'
+      or new.response_scan_id is not null
+      or new.respondent_id is not null
+      or new.responded_at is not null
+      or new.challenge is not null
+      or new.challenge_opened_at is not null
+      or new.challenge_deadline is not null
+      or new.challenge_checks is not null
+      or new.receipt_expires_at is not null
+    then
+      raise exception 'new proof requests must be blank and pending';
+    end if;
     return new;
   end if;
 
@@ -63,7 +81,7 @@ $$;
 
 drop trigger if exists guard_proof_challenge_columns on public.proof_requests;
 create trigger guard_proof_challenge_columns
-  before update on public.proof_requests
+  before insert or update on public.proof_requests
   for each row execute function public.guard_proof_challenge_columns();
 
 -- Called by the seller after they tap "Start challenge". The first call
