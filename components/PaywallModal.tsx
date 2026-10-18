@@ -42,6 +42,11 @@ export function PaywallModal({ visible, onClose, trigger = 'generic' }: PaywallM
     router.push('/(tabs)/(profile)/subscription');
   };
 
+  const handleLegal = (path: '/(tabs)/(profile)/terms-of-use' | '/(tabs)/(profile)/privacy-policy') => {
+    onClose();
+    router.push(path);
+  };
+
   const handleMaybeLater = () => {
     console.log('[PaywallModal] Maybe Later pressed');
     onClose();
@@ -172,6 +177,26 @@ export function PaywallModal({ visible, onClose, trigger = 'generic' }: PaywallM
               Maybe Later
             </Text>
           </AnimatedPressable>
+
+          {/* Legal links */}
+          <Text style={[TYPOGRAPHY.caption, { color: colors.textTertiary, textAlign: 'center' }]}>
+            Subscriptions renew automatically until cancelled in your app store settings.{' '}
+            <Text
+              accessibilityRole="link"
+              onPress={() => handleLegal('/(tabs)/(profile)/terms-of-use')}
+              style={{ color: colors.primary }}
+            >
+              Terms of Use
+            </Text>
+            {' · '}
+            <Text
+              accessibilityRole="link"
+              onPress={() => handleLegal('/(tabs)/(profile)/privacy-policy')}
+              style={{ color: colors.primary }}
+            >
+              Privacy Policy
+            </Text>
+          </Text>
         </View>
       </View>
     </Modal>
