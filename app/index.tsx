@@ -3,6 +3,7 @@ import { View, Text, ActivityIndicator } from 'react-native';
 import { Redirect } from 'expo-router';
 import { ShieldCheck } from 'lucide-react-native';
 import { useAuth } from '@/contexts/AuthContext';
+import { APP_CONFIG } from '@/config/app';
 
 export default function AuthGate() {
   const { user, isGuest, loading, sessionExpired } = useAuth();
@@ -27,7 +28,7 @@ export default function AuthGate() {
             letterSpacing: -0.5,
           }}
         >
-          InvisiProof
+          {APP_CONFIG.name}
         </Text>
         <ActivityIndicator color="#14B8A6" size="large" />
       </View>

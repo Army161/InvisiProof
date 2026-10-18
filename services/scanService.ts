@@ -38,7 +38,8 @@ async function requireAuthenticatedUser(): Promise<string> {
 export async function uploadImageScan(
   image: ImageMeta,
   sourceType: 'camera' | 'library',
-  consentAt: Date
+  consentAt: Date,
+  proofRequestId?: string
 ): Promise<Scan> {
   const userId = await requireAuthenticatedUser();
 
@@ -88,6 +89,7 @@ export async function uploadImageScan(
       image_width: image.width,
       image_height: image.height,
       consent_confirmed_at: consentAt.toISOString(),
+      ...(proofRequestId ? { proof_request_id: proofRequestId } : {}),
     })
     .select()
     .single();

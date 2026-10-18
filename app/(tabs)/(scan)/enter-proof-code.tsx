@@ -8,7 +8,7 @@ import {
   Platform,
   ActivityIndicator,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack } from 'expo-router';
 import { KeyRound, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react-native';
@@ -24,6 +24,8 @@ import { LegalDisclaimerCard } from '@/components/LegalDisclaimerCard';
 
 interface LookedUpRequest {
   id: string;
+  item: string;
+  note: string | null;
   challenge: string;
   expires_at: string;
   status: string;
@@ -49,8 +51,11 @@ export default function EnterProofCodeScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { user } = useAuth();
+  const params = useLocalSearchParams<{ code?: string }>();
 
-  const [code, setCode] = useState('');
+  const [code, setCode] = useState(
+    (params.code ?? '').toUpperCase().replace(/[^A-Z0-9+]/g, '').slice(0, 12)
+  );
   const [looking, setLooking] = useState(false);
   const [lookupError, setLookupError] = useState<string | null>(null);
   const [foundRequest, setFoundRequest] = useState<LookedUpRequest | null>(null);
@@ -95,11 +100,10 @@ export default function EnterProofCodeScreen() {
 
   const handleSubmitEvidence = () => {
     if (!foundRequest) return;
-    console.log('[EnterProofCodeScreen] submit evidence pressed');
-    // Navigate to scan screenshot with the request ID and code as params
+    console.log('[EnterProofCodeScreen] start challenge pressed');
     router.push({
-      pathname: '/(tabs)/(scan)/scan-screenshot',
-      params: { proofRequestId: foundRequest.id, proofCode: codeClean },
+      pathname: '/(tabs)/(scan)/challenge',
+      params: { code: codeClean },
     } as any);
   };
 
@@ -123,7 +127,7 @@ export default function EnterProofCodeScreen() {
     <>
       <Stack.Screen
         options={{
-          title: 'Enter Proof Code',
+          title: 'Answer a Buyer',
           headerShown: true,
           headerBackTitle: 'Scan',
         }}
@@ -144,7 +148,7 @@ export default function EnterProofCodeScreen() {
         >
           {/* Description */}
           <Text style={[TYPOGRAPHY.body, { color: colors.textSecondary }]}>
-            Enter the proof code you were sent to respond to a verification request from another InvisiProof user.
+            A buyer sent you a proof code. Enter it to see what they want to buy, then answer a quick live camera challenge to show you have it.
           </Text>
 
           {/* Code input */}
@@ -218,15 +222,27 @@ export default function EnterProofCodeScreen() {
                   </View>
                 </View>
 
-                {/* Challenge */}
+                {/* Item */}
                 <View style={{ gap: SPACING.xs }}>
                   <Text style={[TYPOGRAPHY.label, { color: colors.textSecondary, textTransform: 'uppercase' }]}>
-                    Challenge
+                    The buyer wants proof you have
                   </Text>
-                  <Text style={[TYPOGRAPHY.body, { color: colors.text }]}>
-                    {foundRequest.challenge}
+                  <Text style={[TYPOGRAPHY.h3, { color: colors.text }]}>
+                    {foundRequest.item || foundRequest.challenge}
                   </Text>
+                  {foundRequest.note ? (
+                    <Text style={[TYPOGRAPHY.body, { color: colors.textSecondary }]}>
+                      "{foundRequest.note}"
+                    </Text>
+                  ) : null}
                 </View>
+
+                {canSubmit ? (
+                  <Text style={[TYPOGRAPHY.caption, { color: colors.textSecondary }]}>
+                    Have the item with you before you start. When you tap Start, you get a random code word,
+                    object and camera angle, and 10 minutes to take one photo.
+                  </Text>
+                ) : null}
 
                 {/* Expiry */}
                 <View style={{ gap: SPACING.xs }}>
@@ -280,7 +296,7 @@ export default function EnterProofCodeScreen() {
                 {/* Submit evidence button */}
                 {canSubmit ? (
                   <PrimaryButton
-                    title="Submit Evidence"
+                    title="Start Live Challenge"
                     onPress={handleSubmitEvidence}
                   />
                 ) : null}

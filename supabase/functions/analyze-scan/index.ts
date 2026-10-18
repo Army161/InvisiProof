@@ -100,9 +100,57 @@ Respond ONLY with valid JSON in this exact shape:
 risk_level: low=no significant signals, moderate=some signals/caution, high=multiple/significant signals, critical=strong fraud indicators, inconclusive=cannot determine
 risk_score: 0=no risk, 100=maximum risk indicators observed`;
 
+// ── Live possession challenge ────────────────────────────────
+interface ChallengeRequest {
+  id: string;
+  requester_id: string;
+  title: string | null;
+  challenge: { phrase: string; object: string; angle: string };
+}
+
+function challengePrompt(req: ChallengeRequest): string {
+  const item = (req.title ?? 'the item').slice(0, 120);
+  return `This photo was just taken with a phone camera by a seller answering a buyer's live possession challenge for: "${item}".
+
+The buyer's app asked the seller to take ONE photo showing all of this:
+1. The item itself.
+2. A piece of paper with this code handwritten on it: ${req.challenge.phrase}
+3. ${req.challenge.object} placed next to the item.
+4. Taken ${req.challenge.angle}.
+
+Check each requirement against what is actually visible. Also look for signs the photo is not live: a photo of a screen or printout, a screenshot, a stock or catalog image, watermarks, or editing.
+
+Here risk_score means the risk that the seller does NOT really have this item right now (0 = strong proof, 100 = no proof). Use warning_signals for anything missing or suspicious, and recommended_actions for what the buyer should do before paying (for example meet in a public place, inspect before paying, use a payment method with buyer protection).
+
+In addition to the usual fields, include:
+"challenge_checks": {
+  "item_visible": true|false,
+  "phrase_visible": true|false,
+  "phrase_matches": true|false,
+  "object_visible": true|false,
+  "angle_matches": true|false,
+  "looks_live": true|false,
+  "notes": "<one short sentence>"
+}`;
+}
+
+// Each challenge allows a few photo attempts, so a seller can retake a bad
+// photo without being able to run unlimited analyses on InvisiProof's key.
+const MAX_CHALLENGE_PHOTOS = 3;
+
+function cleanChallengeChecks(raw: unknown, scanId: string): Record<string, boolean | string> {
+  const src = (raw && typeof raw === 'object') ? raw as Record<string, unknown> : {};
+  const out: Record<string, boolean | string> = { scan_id: scanId };
+  for (const key of ['item_visible', 'phrase_visible', 'phrase_matches', 'object_visible', 'angle_matches', 'looks_live']) {
+    out[key] = src[key] === true;
+  }
+  out.notes = typeof src.notes === 'string' ? src.notes.slice(0, 300) : '';
+  return out;
+}
+
 // ── Quota limits per entitlement ─────────────────────────────
 const QUOTA_LIMITS: Record<string, number> = {
-  free: 2,
+  free: 3,
   plus: 25,
   pro: 150,
   max: 999999,
@@ -128,6 +176,39 @@ Deno.serve(async (req) => {
 
     const body = await req.json();
 
+    // A photo answering a buyer's live challenge. It is always judged by the
+    // built-in AI (never the seller's own key) and does not use the seller's
+    // monthly scans.
+    let challengeRequest: ChallengeRequest | null = null;
+    if (body.scan_id) {
+      const { data: peek } = await adminClient
+        .from('scans').select('proof_request_id, created_at')
+        .eq('id', body.scan_id).eq('user_id', userId).maybeSingle();
+      if (peek?.proof_request_id) {
+        const { data: pr } = await adminClient
+          .from('proof_requests')
+          .select('id, requester_id, respondent_id, status, title, challenge, challenge_deadline')
+          .eq('id', peek.proof_request_id).maybeSingle();
+        const inTime = pr?.challenge_deadline && new Date(peek.created_at) <= new Date(pr.challenge_deadline);
+        if (!pr || pr.respondent_id !== userId || pr.status !== 'pending' || !pr.challenge || !inTime) {
+          return new Response(JSON.stringify({ error: 'challenge_invalid' }), {
+            status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+        const { count: photoCount } = await adminClient
+          .from('scans').select('id', { count: 'exact', head: true })
+          .eq('proof_request_id', pr.id).eq('user_id', userId);
+        if ((photoCount ?? 0) > MAX_CHALLENGE_PHOTOS) {
+          return new Response(JSON.stringify({ error: 'challenge_invalid' }), {
+            status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+        challengeRequest = pr as ChallengeRequest;
+        delete body.api_key;
+        delete body.custom_base_url;
+      }
+    }
+
     // Built-in AI: no user key means InvisiProof's own server key is used.
     const usingBuiltInAi = !body.api_key;
     if (usingBuiltInAi) {
@@ -144,51 +225,53 @@ Deno.serve(async (req) => {
     }
 
     // ── Quota enforcement ──────────────────────────────────────
-    const { data: sub } = await adminClient
-      .from('subscriptions')
-      .select('entitlement, status')
-      .eq('user_id', userId)
-      .single();
-
-    const entitlement = (sub?.status === 'active' || sub?.status === 'grace_period')
-      ? (sub?.entitlement ?? 'free')
-      : 'free';
-
-    const limit = QUOTA_LIMITS[entitlement] ?? 2;
-
-    // Get current billing period (calendar month)
     const now = new Date();
     const periodStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
     const periodEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59).toISOString();
+    let used = 0;
 
-    const { data: usageRow } = await adminClient
-      .from('usage_counters')
-      .select('direct_assessments_used')
-      .eq('user_id', userId)
-      .gte('period_start', periodStart)
-      .single();
+    if (!challengeRequest) {
+      const { data: sub } = await adminClient
+        .from('subscriptions')
+        .select('entitlement, status')
+        .eq('user_id', userId)
+        .single();
 
-    const used = usageRow?.direct_assessments_used ?? 0;
+      const entitlement = (sub?.status === 'active' || sub?.status === 'grace_period')
+        ? (sub?.entitlement ?? 'free')
+        : 'free';
 
-    if (used >= limit) {
-      if (usingBuiltInAi) {
+      const limit = QUOTA_LIMITS[entitlement] ?? QUOTA_LIMITS.free;
+
+      const { data: usageRow } = await adminClient
+        .from('usage_counters')
+        .select('direct_assessments_used')
+        .eq('user_id', userId)
+        .gte('period_start', periodStart)
+        .single();
+
+      used = usageRow?.direct_assessments_used ?? 0;
+
+      if (used >= limit) {
+        if (usingBuiltInAi) {
+          return new Response(JSON.stringify({
+            error: 'quota_exceeded',
+            message: 'Monthly assessment limit reached.',
+            current_use: used,
+            limit,
+            reset_at: periodEnd,
+            upgrade_route: 'paywall',
+          }), { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        }
         return new Response(JSON.stringify({
-          error: 'quota_exceeded',
+          error: 'QUOTA_EXCEEDED',
           message: 'Monthly assessment limit reached.',
           current_use: used,
           limit,
           reset_at: periodEnd,
           upgrade_route: 'paywall',
-        }), { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        }), { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
       }
-      return new Response(JSON.stringify({
-        error: 'QUOTA_EXCEEDED',
-        message: 'Monthly assessment limit reached.',
-        current_use: used,
-        limit,
-        reset_at: periodEnd,
-        upgrade_route: 'paywall',
-      }), { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
     // ── End quota enforcement ──────────────────────────────────
 
@@ -245,9 +328,14 @@ Deno.serve(async (req) => {
     if (scan.input_type === 'image' && scan.storage_path) {
       const { data: signedData } = await adminClient.storage.from('scan-uploads').createSignedUrl(scan.storage_path, 60);
       if (!signedData?.signedUrl) throw new Error('Could not generate signed URL');
+      const imagePrompt = challengeRequest
+        ? challengePrompt(challengeRequest)
+        : 'Analyze this image for observable fraud/scam warning signals.';
       userContent = provider === 'anthropic'
-        ? [{ type: 'image', source: { type: 'url', url: signedData.signedUrl } }, { type: 'text', text: 'Analyze this image for observable fraud/scam warning signals.' }]
-        : [{ type: 'text', text: 'Analyze this image for observable fraud/scam warning signals.' }, { type: 'image_url', image_url: { url: signedData.signedUrl } }];
+        ? [{ type: 'image', source: { type: 'url', url: signedData.signedUrl } }, { type: 'text', text: imagePrompt }]
+        : [{ type: 'text', text: imagePrompt }, { type: 'image_url', image_url: { url: signedData.signedUrl } }];
+    } else if (challengeRequest) {
+      throw new Error('Challenge answers must be photos');
     } else if (scan.input_type === 'text') {
       userContent = `Analyze the following text for observable fraud/scam warning signals:\n\n${scan.text_content}`;
     } else if (scan.input_type === 'url') {
@@ -325,7 +413,7 @@ Deno.serve(async (req) => {
     }
 
     // Parse and validate AI output
-    let parsed: { risk_level: string; risk_score?: number; summary: string; warning_signals?: string[]; recommended_actions?: string[]; signals?: unknown[]; limitations?: string[] };
+    let parsed: { risk_level: string; risk_score?: number; summary: string; warning_signals?: string[]; recommended_actions?: string[]; signals?: unknown[]; limitations?: string[]; challenge_checks?: unknown };
     try {
       parsed = JSON.parse(aiResponseText);
     } catch {
@@ -364,6 +452,13 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: 'insert_error' }), { status: 500, headers: corsHeaders });
     }
 
+    if (challengeRequest) {
+      const { error: checksError } = await adminClient.from('proof_requests')
+        .update({ challenge_checks: cleanChallengeChecks(parsed.challenge_checks, scan_id) })
+        .eq('id', challengeRequest.id);
+      if (checksError) console.error('[analyze-scan] challenge checks error:', checksError.message);
+    }
+
     // Mark scan completed
     await adminClient.from('scans').update({
       status: 'completed',
@@ -372,7 +467,7 @@ Deno.serve(async (req) => {
     }).eq('id', scan_id);
 
     // Increment usage counter (upsert) — fire and forget, don't block response
-    adminClient
+    if (!challengeRequest) adminClient
       .from('usage_counters')
       .upsert({
         user_id: userId,
