@@ -27,16 +27,20 @@ export default function PrivacyPolicyScreen() {
         <View style={{ paddingHorizontal: SPACING.md, paddingTop: SPACING.md, gap: SPACING.md }}>
           <InfoCard>
             <Text style={[TYPOGRAPHY.caption, { color: colors.textSecondary, marginBottom: SPACING.sm }]}>
-              Effective Date: June 1, 2025
+              Effective Date: October 18, 2026
             </Text>
 
             <PolicySection
               title="Information We Collect"
-              body="InvisiProof collects information you provide directly, including your email address when you create an account. When you use the scan feature, we process images, text, or URLs you submit solely to perform the requested analysis. We do not store the raw content of your scans beyond the period needed to complete analysis. We also collect usage data such as feature interactions, error logs, and subscription status to operate and improve the service."
+              body="InvisiProof collects information you provide directly, including your email address when you create an account. When you use the scan feature, we process images, text, or URLs you submit solely to perform the requested analysis. When you answer a buyer's proof request, we process the live photo you take with your camera to check it against the challenge. We do not store the raw content of your scans beyond the period needed to complete analysis. We also collect usage data such as feature interactions, error logs, and subscription status to operate and improve the service."
             />
             <PolicySection
               title="How We Use Your Information"
-              body="We use your information to provide, maintain, and improve InvisiProof; to process your subscription and manage your account; to send you service-related communications such as receipts and security alerts; and to comply with applicable legal obligations. We do not sell your personal information to third parties. We do not use your submitted scan content to train AI models."
+              body="We use your information to provide, maintain, and improve InvisiProof; to process your subscription and manage your account; to send you service-related communications such as receipts and security alerts; and to comply with applicable legal obligations. We do not sell your personal information to third parties. We do not use your submitted scan content to train AI models, and we send it to our AI provider only to perform the analysis you requested."
+            />
+            <PolicySection
+              title="Proof Requests and Proof Receipts"
+              body="When a buyer sends you a proof request and you answer it, your photo is checked privately. The buyer sees only the result on a Proof Receipt (what the photo showed and an overall risk level), never the photo itself. Proof Receipts expire 24 hours after you answer. A Proof Receipt describes what one photo showed; it does not confirm anyone's identity or protect a payment."
             />
             <PolicySection
               title="Data Storage and Security"
@@ -44,7 +48,7 @@ export default function PrivacyPolicyScreen() {
             />
             <PolicySection
               title="Third-Party Services"
-              body="InvisiProof uses the following third-party services to operate: Supabase (database and authentication), RevenueCat (subscription management), and PostHog (anonymous usage analytics). Each provider processes data only as necessary to deliver their service and is bound by their own privacy policies. We do not share personally identifiable information with advertisers."
+              body="InvisiProof uses the following third-party services to operate: Supabase (database and authentication), OpenAI (AI analysis of the content you submit and of proof photos), RevenueCat (subscription management), and PostHog (anonymous usage analytics). Each provider processes data only as necessary to deliver their service and is bound by their own privacy policies. We do not share personally identifiable information with advertisers."
             />
             <PolicySection
               title="Your Rights"
