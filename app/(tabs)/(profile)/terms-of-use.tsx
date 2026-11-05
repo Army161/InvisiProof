@@ -27,7 +27,7 @@ export default function TermsOfUseScreen() {
         <View style={{ paddingHorizontal: SPACING.md, paddingTop: SPACING.md, gap: SPACING.md }}>
           <InfoCard>
             <Text style={[TYPOGRAPHY.caption, { color: colors.textSecondary, marginBottom: SPACING.sm }]}>
-              Effective Date: June 1, 2025
+              Effective Date: October 18, 2026
             </Text>
 
             <TermsSection
@@ -36,7 +36,7 @@ export default function TermsOfUseScreen() {
             />
             <TermsSection
               title="Description of Service"
-              body="InvisiProof is a mobile application that helps users assess the authenticity and risk level of digital content including images, text, and URLs. Analysis results are provided for informational purposes only and do not constitute legal, financial, or professional advice. You are solely responsible for any decisions you make based on the results provided by InvisiProof."
+              body="InvisiProof is a mobile application that helps users assess the risk level of online listings and other digital content, including images, text, and URLs, and lets buyers ask sellers to complete a live photo challenge before paying. A Proof Receipt shows what one photo showed; it does not verify identity, guarantee that a seller will deliver, or protect any payment. Analysis results are provided for informational purposes only and do not constitute legal, financial, or professional advice. You are solely responsible for any decisions you make based on the results provided by InvisiProof."
             />
             <TermsSection
               title="Use of the Service"

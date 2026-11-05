@@ -275,9 +275,8 @@ export interface ProofReceipt {
 }
 
 /**
- * The buyer's Proof Receipt. Falls back to the plain verdict for requests
- * answered before live challenges existed, or before the server has the
- * receipt function.
+ * The buyer's Proof Receipt. Requests answered before live challenges
+ * existed come back without challenge checks and without an expiry.
  */
 export async function fetchProofReceipt(requestId: string): Promise<ProofReceipt | null> {
   console.log('[proofRequestService] fetchProofReceipt called');
@@ -285,17 +284,6 @@ export async function fetchProofReceipt(requestId: string): Promise<ProofReceipt
 
   if (!error && data && !data.error) return data as ProofReceipt;
 
-  if (error?.code === 'PGRST202') {
-    const verdict = await fetchProofRequestVerdict(requestId);
-    if (!verdict) return null;
-    return {
-      expired: false,
-      item: null,
-      challenge_completed: false,
-      ...verdict,
-      receipt_expires_at: null,
-    };
-  }
   console.log('[proofRequestService] fetchProofReceipt failed or not ready');
   return null;
 }
